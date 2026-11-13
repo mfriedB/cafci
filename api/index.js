@@ -10,6 +10,7 @@ module.exports = manejar(async (req, res) => {
       "/api/snapshot": "Snapshot Industria de 1816 para cualquier periodo: patrimonio inicio/fin/promedio, susc. netas, rendimiento y honorarios ($ y %). Parametros: desde, hasta, por=total|tipo|subtipo|tipo_gerente|gerente|fondo|cuota|moneda|depositaria, moneda=ars|usd, tipo, subtipo, gerente, tipo_gerente, fondo, codigo, incluir_596",
       "/api/rendimientos": "ranking de rendimientos a la ultima fecha como 1816 (1D, 7D, MTD, 30D, 90D, YTD, 365D). Parametros: moneda=ars|usd|original, expresion=directo|tna|tea, cuotas=referencia|todas, tipo, subtipo, gerente, tipo_gerente, fondo, codigo, clase, moneda_clase, orden, top",
       "/api/vcp": "serie diaria de valor de cuotaparte. Parametros: clase (Codigo CAFCI) o codigo (Codigo CNV, cuota de referencia), desde, hasta, base100=1, moneda=original|ars|usd",
+      "/api/dashboard": "datos del tablero Ranking Fondos Balanz. Parametros: archivo=fondos|categorias|corte|historial, moneda=ARS|USD, categoria, gerente, balanz=1",
       "/api/taxonomia": "clasificacion 1816 de cada fondo (tipo, subtipo, gerente, tipo de gerente) y su fuente (1816 o regla automatica). Parametros: tipo, subtipo, gerente, tipo_gerente, fuente",
       "/api/serie": "serie mensual de uno o varios fondos. Parametros: codigo (uno o varios separados por coma), fondo, gerente, desde, hasta",
       "/api/industria": "totales mensuales. Parametros: desde, hasta, por=total|categoria|subcategoria|gerente|tipo_gerente, gerente, categoria, subcategoria, tipo_gerente",
