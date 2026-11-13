@@ -32,3 +32,29 @@ Base: `https://raw.githubusercontent.com/mfriedB/cafci/main/procesado/`
 ## Carpetas
 - `scripts/` descarga y procesamiento. `config.json` rango de fechas.
 - `call/call_fondos.py` gráficos y actualización de las slides 4 a 9 de la Call de Fondos (usa tablas de mapeo locales que no se publican).
+
+## API con filtros (Vercel)
+
+Carpeta `api/` (funciones serverless de Vercel, sin dependencias). Lee la misma base de `procesado/` y devuelve JSON
+(o CSV con `formato=csv`), con filtros. Endpoints:
+
+| Endpoint | Ejemplo |
+|---|---|
+| `/api` | descripción, meses disponibles |
+| `/api/fondos` | `/api/fondos?mes=2026-10&gerente=balanz&categoria=money` |
+| `/api/serie` | `/api/serie?codigo=876&desde=2026-01` |
+| `/api/industria` | `/api/industria?desde=2026-01&por=categoria` |
+| `/api/ranking` | `/api/ranking?mes=2026-10&por=gerente&metrica=Susc_Netas&top=10` |
+| `/api/clases` | `/api/clases?mes=2026-11&codigo=876` |
+| `/api/dolar` | `/api/dolar?desde=2026-11-01` |
+
+Los filtros de texto no distinguen mayúsculas ni acentos. Montos en millones de ARS.
+
+## Consultas SQL sobre Parquet (DuckDB)
+
+```sql
+INSTALL httpfs; LOAD httpfs;
+SELECT Mes, Gerente, sum(AUM_promedio) AS aum
+FROM 'https://raw.githubusercontent.com/mfriedB/cafci/main/procesado/parquet/fondos_mensual.parquet'
+WHERE Mes >= '2026-01' GROUP BY ALL ORDER BY Mes, aum DESC;
+```
