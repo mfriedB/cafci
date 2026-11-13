@@ -179,11 +179,12 @@ def main():
     # universo de fondos (abiertos; igual que 1816) por la clasificacion CAFCI; dentro de el, taxonomia 1816
     # (tipo, subtipo, gerente corto, tipo de gerente) desde mapeo/ o por regla para fondos nuevos (scripts/taxonomia.py)
     univ = D.apply(categoria_1816, axis=1).notna()
-    meta = D.sort_values("fecha").drop_duplicates("codigo_cnv", keep="last")[
-        ["codigo_cnv", "fondo", "gerente", "clasificacion_cafci", "moneda_fondo", "region", "horizonte", "plazo_liq", "id_cnv_padre"]]
-    meta = meta.rename(columns={"codigo_cnv": "Codigo_CNV"}).astype(object)
-    meta["Codigo_CNV"] = pd.to_numeric(meta.Codigo_CNV, errors="coerce")
-    tax = taxonomia.clasificar(meta.dropna(subset=["Codigo_CNV"]).assign(Codigo_CNV=lambda x: x.Codigo_CNV.astype(int))).set_index("Codigo_CNV")
+    meta = D[["fecha", "codigo_cnv", "fondo", "gerente", "clasificacion_cafci", "moneda_fondo", "region", "horizonte", "plazo_liq",
+              "id_cnv_padre"]].astype(object)
+    meta["Codigo_CNV"] = pd.to_numeric(meta.codigo_cnv, errors="coerce")
+    meta = meta.dropna(subset=["Codigo_CNV"]).sort_values("fecha").drop_duplicates("Codigo_CNV", keep="last").drop(columns=["fecha", "codigo_cnv"])
+    meta["Codigo_CNV"] = meta.Codigo_CNV.astype(int)
+    tax = taxonomia.clasificar(meta).drop_duplicates("Codigo_CNV").set_index("Codigo_CNV")
     tax.drop(columns=["moneda_fondo", "region", "horizonte", "plazo_liq", "id_cnv_padre"], errors="ignore").to_csv(os.path.join(PROC, "taxonomia.csv"))
     nuevos = tax[tax.fuente_tax != "1816"]
     if len(nuevos): print("fondos clasificados por regla (no estan en mapeo/taxonomia_1816.csv):", len(nuevos))
