@@ -4,7 +4,8 @@ name: Actualizar base CAFCI-CNV
 
 on:
   schedule:
-    - cron: '47 21 * * 1-5'     # 18:47 hora Argentina, lunes a viernes
+    - cron: '47 15 * * 1-5'     # 12:47 hora Argentina, lunes a viernes
+    - cron: '47 21 * * 1-5'     # 18:47 hora Argentina (la CNV suele publicar la planilla del dia anterior al mediodia)
   push:
     branches: [main]
     paths: ['scripts/**', 'config.json', '.github/workflows/actualizar.yml']
