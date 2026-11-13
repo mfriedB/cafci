@@ -33,10 +33,12 @@ def guardar(df, rel):
         return
     open(ruta, "wb").write(nuevo); cambios += 1
 
-NUM = ["vcp", "ccp", "patrimonio", "fx", "fx_planilla", "patrimonio_ars", "flujo_ars", "hon_sg", "hon_sd", "minimo_inversion", "plazo_liq"]
+NUM = ["vcp", "ccp", "patrimonio", "fx", "fx_planilla", "patrimonio_ars", "flujo_ars", "hon_sg", "hon_sd", "minimo_inversion", "plazo_liq",
+       "comision_ingreso", "comision_rescate", "comision_transferencia", "gastos_gestion", "var_mes", "var_anio", "var_12m"]
 ENT = ["codigo_cafci", "codigo_cnv"]
 TXT = ["fondo_clase", "fondo", "gerente", "clasificacion_cafci", "categoria_1816", "moneda", "moneda_fondo", "horizonte",
-       "decreto_596", "ley_27743", "tipo_dinero", "calificado"]
+       "decreto_596", "ley_27743", "tipo_dinero", "calificado", "region", "depositaria", "calificacion", "hon_exito", "indice_mm",
+       "repatriacion", "tipo_escision", "id_cafci_padre", "id_cnv_padre"]
 
 def tipos(d):
     """Mismo esquema en todos los meses (las planillas viejas no traen algunas columnas)."""
@@ -66,8 +68,10 @@ def main():
         guardar(d, f"clases_diario/{mes}.parquet")
         ult.append(d.sort_values("fecha").drop_duplicates("codigo_cafci", keep="last"))
     C = pd.concat(ult).sort_values("fecha").drop_duplicates("codigo_cafci", keep="last")
-    clases = C[["codigo_cafci", "codigo_cnv", "fondo_clase", "fondo", "gerente", "moneda", "moneda_fondo", "clasificacion_cafci",
-                "categoria_1816", "minimo_inversion", "calificado", "hon_sg", "hon_sd", "fecha"]].rename(
+    clases = C[["codigo_cafci", "codigo_cnv", "fondo_clase", "fondo", "gerente", "depositaria", "moneda", "moneda_fondo", "region", "horizonte",
+                "clasificacion_cafci", "categoria_1816", "calificacion", "minimo_inversion", "calificado", "plazo_liq", "hon_sg", "hon_sd",
+                "hon_exito", "comision_ingreso", "comision_rescate", "comision_transferencia", "gastos_gestion", "tipo_dinero",
+                "ley_27743", "decreto_596", "id_cafci_padre", "id_cnv_padre", "tipo_escision", "fecha"]].rename(
         columns={"codigo_cnv": "Codigo_CNV", "fecha": "ultimo_dato"})
     guardar(clases.sort_values(["Codigo_CNV", "codigo_cafci"]), "clases.parquet")
     fondos = clases.groupby("Codigo_CNV").agg(fondo=("fondo", "first"), gerente=("gerente", "first"),

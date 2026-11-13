@@ -7,7 +7,8 @@ Salidas (procesado/):
 
 Metodologia (montos en millones de ARS, como 1816):
   - Suscripciones netas del dia = (cuotapartes hoy - cuotapartes dia anterior) x valor de cuotaparte de hoy.
-  - Clases en dolares: se pasan a pesos con el dolar MEP de cierre del dia (procesado/dolar.csv).
+  - Clases en dolares: se pasan a pesos con el promedio de dolar MEP y CCL del dia (como 1816); con
+    config.json "tipo_cambio": "mep" se usa solo el MEP. Serie en procesado/dolar.csv.
     Se guarda tambien el implicito de la planilla (fx_planilla, igual al BCRA A3500).
   - AUM_Inicial / AUM_Final: patrimonio al cierre del mes anterior y del mes (o ultima fecha disponible).
   - Rendimiento = AUM_Final - AUM_Inicial - Suscripciones netas.
@@ -22,6 +23,7 @@ import pandas as pd
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW = os.path.join(BASE, "raw", "cnv"); PROC = os.path.join(BASE, "procesado")
+CFG = json.load(open(os.path.join(BASE, "config.json"))) if os.path.exists(os.path.join(BASE, "config.json")) else {}
 os.makedirs(os.path.join(PROC, "clases_diario"), exist_ok=True)
 
 COLS = {0: "fondo_clase", 1: "moneda", 2: "region", 3: "horizonte", 4: "fecha_txt", 5: "vcp", 6: "vcp_ant", 8: "vcp_reexp_ars",
@@ -41,7 +43,13 @@ BUSCAR = {"fondo_clase": ("fondo", None, 0), "moneda": ("clasificacion", "moneda
           "codigo_clasificacion": ("codigo de clasificacion", None, 0), "hon_sg": ("honorarios adm. sg", None, 0), "hon_sd": ("honorarios adm. sd", None, 0),
           "moneda_fondo": ("moneda fondo", None, 0), "plazo_liq": ("plazo liq", None, 0), "decreto_596": ("decreto 596", None, 0),
           "minimo_inversion": ("minimo de inversion", None, 0), "ley_27743": ("regularizacion", None, 0), "tipo_dinero": ("tipo de dinero", None, 0),
-          "calificado": ("calificado", None, 0)}
+          "calificado": ("calificado", None, 0), "calificacion": ("calificacion", None, 0),
+          "comision_ingreso": ("comision ingreso", None, 0), "comision_rescate": ("comision rescate", None, 0),
+          "comision_transferencia": ("comision transferencia", None, 0), "gastos_gestion": ("gastos ord gestion", None, 0),
+          "hon_exito": ("honorarios exito", None, 0), "indice_mm": ("indice de mm", None, 0), "repatriacion": ("repatriacion", None, 0),
+          "tipo_escision": ("tipo de escision", None, 0), "id_cafci_padre": ("id fondo cafci padre", None, 0),
+          "id_cnv_padre": ("id fondo cnv padre", None, 0), "var_mes": ("variacion cuotaparte %", None, 0),
+          "var_anio": ("variacion cuotaparte %", None, 1), "var_12m": ("variacion cuotaparte %", None, 2)}
 
 def columnas(rows):
     """Ubica cada columna por su encabezado (las planillas viejas tienen otro orden); si no aparece usa la posicion actual."""
@@ -130,7 +138,7 @@ def main():
     dfs = []
     cache = os.path.join(BASE, "raw", "parsed"); os.makedirs(cache, exist_ok=True)
     for f in files:
-        pk = os.path.join(cache, os.path.basename(f) + ".v2.pkl.gz")     # lectura cacheada (las planillas no cambian)
+        pk = os.path.join(cache, os.path.basename(f) + ".v3.pkl.gz")     # lectura cacheada (las planillas no cambian)
         if os.path.exists(pk) and os.path.getmtime(pk) >= os.path.getmtime(f):
             df = pd.read_pickle(pk)
         else:
@@ -167,15 +175,21 @@ def main():
     D.loc[D.moneda == "ARS", "fx"] = 1.0
     D["fx"] = D.groupby("moneda").fx.transform(lambda s: s.ffill().bfill())
     D["fx_planilla"] = D.fx
-    # tipo de cambio de conversion: dolar MEP de cierre del dia del dato (procesado/dolar.csv);
-    # si falta el dia se usa el ultimo MEP disponible; sin serie MEP queda el implicito de la planilla (= BCRA A3500)
+    # tipo de cambio de conversion del dia del dato (procesado/dolar.csv): promedio MEP-CCL o MEP segun config;
+    # si falta el dia se usa el ultimo disponible; sin serie queda el implicito de la planilla (= BCRA A3500)
     dolar = os.path.join(PROC, "dolar.csv")
+    serie = CFG.get("tipo_cambio", "promedio_mep_ccl")       # "promedio_mep_ccl" (igual a 1816) o "mep"
     if os.path.exists(dolar):
-        mep = pd.read_csv(dolar, parse_dates=["fecha"]).set_index("fecha").mep.dropna().sort_index()
+        dl = pd.read_csv(dolar, parse_dates=["fecha"]).set_index("fecha").sort_index()
+        if serie == "promedio_mep_ccl" and "ccl" in dl:
+            tc = ((dl.mep + dl.ccl) / 2).where(dl.ccl.notna(), dl.mep)
+        else:
+            tc = dl.mep
+        tc = tc.dropna()
         f = pd.to_datetime(D.fecha)
-        D["fx_mep"] = mep.reindex(pd.date_range(mep.index.min(), max(mep.index.max(), f.max()))).ffill().reindex(f).values
+        D["fx_usd"] = tc.reindex(pd.date_range(tc.index.min(), max(tc.index.max(), f.max()))).ffill().reindex(f).values
         usd = D.moneda != "ARS"
-        D.loc[usd & D.fx_mep.notna(), "fx"] = D.loc[usd & D.fx_mep.notna(), "fx_mep"]
+        D.loc[usd & D.fx_usd.notna(), "fx"] = D.loc[usd & D.fx_usd.notna(), "fx_usd"]
     D["patrimonio_ars"] = D.patrimonio * D.fx
     # flujo = variacion de cuotapartes entre planillas consecutivas (un dato rezagado repetido no suma dos veces)
     D = D.sort_values(["codigo_cafci", "fecha"])
@@ -194,7 +208,11 @@ def main():
     D["mes"] = pd.to_datetime(D.fecha).dt.to_period("M")
     keep = ["fecha", "planilla", "fecha_ant", "codigo_cafci", "codigo_cnv", "fondo_clase", "fondo", "gerente", "clasificacion_cafci", "categoria_1816",
             "moneda", "moneda_fondo", "horizonte", "plazo_liq", "decreto_596", "ley_27743", "tipo_dinero", "vcp", "ccp", "patrimonio", "fx", "fx_planilla",
-            "patrimonio_ars", "flujo_ars", "hon_sg", "hon_sd", "minimo_inversion", "calificado"]
+            "patrimonio_ars", "flujo_ars", "hon_sg", "hon_sd", "minimo_inversion", "calificado", "region", "depositaria", "calificacion",
+            "comision_ingreso", "comision_rescate", "comision_transferencia", "gastos_gestion", "hon_exito", "indice_mm",
+            "repatriacion", "tipo_escision", "id_cafci_padre", "id_cnv_padre", "var_mes", "var_anio", "var_12m"]
+    for c in keep:
+        if c not in D: D[c] = None
     # Guardia: si en esta corrida faltan planillas de un mes que ya estaba procesado (ej. la CNV no respondio y el
     # cache esta incompleto) se conserva lo publicado de ese mes en vez de pisarlo con datos parciales.
     viejo_idx = {}
