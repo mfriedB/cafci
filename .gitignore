@@ -1,0 +1,5 @@
+raw/
+informes/*.pdf
+__pycache__/
+call/mapeo_*.csv
+call/graficos/

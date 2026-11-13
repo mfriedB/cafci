@@ -1,0 +1,66 @@
+# Base de fondos CAFCI/CNV: descarga las planillas diarias oficiales, el dolar MEP y los informes de CAFCI,
+# procesa todo al formato de la base de 1816 y publica los resultados en procesado/ (rama main).
+name: Actualizar base CAFCI-CNV
+
+on:
+  schedule:
+    - cron: '47 21 * * 1-5'     # 18:47 hora Argentina, lunes a viernes
+  push:
+    branches: [main]
+    paths: ['scripts/**', 'config.json', '.github/workflows/actualizar.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: actualizar-base
+  cancel-in-progress: false
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: pip install requests openpyxl pandas
+      - name: Recuperar planillas originales (cache)
+        uses: actions/cache/restore@v4
+        with:
+          path: raw
+          key: planillas-${{ github.run_id }}
+          restore-keys: planillas-
+      - name: Descargar planillas CNV
+        continue-on-error: true   # un corte puntual de la CNV no frena el resto; sigue en la proxima corrida
+        run: timeout 7200 python -u scripts/descargar_cnv.py
+      - name: Informes mensuales CAFCI (cuotapartistas)
+        continue-on-error: true
+        run: |
+          sudo apt-get install -y -qq poppler-utils >/dev/null
+          python -u scripts/bajar_informes.py
+      - name: Dolar MEP y BCRA A3500
+        continue-on-error: true
+        run: python -u scripts/dolar.py
+      - name: Procesar (formato 1816)
+        run: python -u scripts/procesar.py
+      - name: Cuotapartistas (serie CAFCI y estimacion por fondo)
+        continue-on-error: true
+        run: python -u scripts/cuotapartistas.py
+      - name: Guardar planillas originales (cache)
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: raw
+          key: planillas-${{ github.run_id }}
+      - name: Publicar resultados
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add procesado informes
+          if ! git diff --cached --quiet; then
+            git commit -m "Base CAFCI-CNV: actualizacion automatica"
+            for i in 1 2 3; do git pull --rebase -X theirs origin main && git push origin HEAD:main && break; sleep 10; done
+          fi
