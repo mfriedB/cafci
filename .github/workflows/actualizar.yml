@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
-      - run: pip install requests openpyxl pandas
+      - run: pip install requests openpyxl pandas pyarrow
       - name: Recuperar planillas originales (cache)
         uses: actions/cache/restore@v4
         with:
@@ -50,6 +50,8 @@ jobs:
       - name: Cuotapartistas (serie CAFCI y estimacion por fondo)
         continue-on-error: true
         run: python -u scripts/cuotapartistas.py
+      - name: Parquet (consultas SQL por HTTP)
+        run: python -u scripts/parquet.py
       - name: Guardar planillas originales (cache)
         if: always()
         uses: actions/cache/save@v4
