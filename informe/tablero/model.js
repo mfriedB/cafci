@@ -74,7 +74,7 @@
   M.load = async function () {
     const [ind, intl] = await Promise.all([fetch("data/industria.json").then(r => r.json()),
       fetch("data/internos.json").then(r => r.ok ? r.json() : {}).catch(() => ({}))]);
-    M.meses = ind.meses; M.fechas = ind.fecha_mes; M.generado = ind.generado;
+    M.meses = ind.meses; M.fechas = ind.fecha_mes; M.generado = ind.generado; M.pend = ind.pendientes || [];
     M.ARS = decode(ind.ars, ind.dic, ind.meses, ind.fecha_mes);
     M.USD = decode(ind.usd, ind.dic, ind.meses, ind.fecha_mes);
     M.I = intl || {};
