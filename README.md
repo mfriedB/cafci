@@ -29,9 +29,26 @@ Base: `https://raw.githubusercontent.com/mfriedB/cafci/main/procesado/`
   atraso se toman de la planilla siguiente); días sin planilla se completan con la columna "día anterior".
 - Se descartan datos puntuales erróneos de la planilla (saltos de un día) y flujos imposibles.
 
+## Clasificación igual a 1816
+- `mapeo/taxonomia_1816.csv`: por Código CNV, nombre del fondo, tipo, subtipo, gerente (nombre corto) y tipo de gerente
+  (Bancaria / Independiente) tal como los muestra 1816. Se relevó una sola vez de la web de 1816 (13/11/2026, 1.251 fondos,
+  99,5% del patrimonio de la industria). `mapeo/clases_1816.csv`: cada clase CAFCI con su cuota en 1816 y si es la
+  **cuota de referencia** (la que 1816 usa para rankings de rendimiento; es la clase más grande en el 75% de los casos).
+- Fondos nuevos (no están en la tabla) se clasifican solos en `scripts/taxonomia.py`: heredan la clase del fondo padre si
+  son escisiones, por palabras del nombre (Pymes, Infraestructura, ASG) o por mayoría de los fondos con los mismos
+  atributos CAFCI; gerente y tipo de gerente de los otros fondos de la misma sociedad; cuota de referencia = clase más
+  grande. Quedan marcados en `procesado/taxonomia.csv` (`fuente_tax` = `regla: ...`). El subtipo de 1816 es criterio de
+  sus analistas: la regla acierta el tipo en ~80% y el subtipo en ~50%, así que conviene revisar los nuevos y, si hace
+  falta, agregarlos a `mapeo/taxonomia_1816.csv` (una línea; la base se regenera sola).
+- Rendimientos (`procesado/rendimientos.csv`): directos sobre el valor de cuotaparte, con las mismas ventanas que 1816
+  (1D, 7D, MTD, 30D, 90D, YTD, 365D). Validado contra el ranking de 1816 al 12/11/2026: idénticos en la moneda de la
+  clase (99,5% de las cuotas, el resto son errores puntuales de 1816). Las clases en dólares convertidas a pesos (y
+  viceversa) difieren en la variación del dólar: 1816 usa una serie propia que no coincide con ninguna oficial.
+
 ## Carpetas
 - `scripts/` descarga y procesamiento. `config.json` rango de fechas.
-- `call/call_fondos.py` gráficos y actualización de las slides 4 a 9 de la Call de Fondos (usa tablas de mapeo locales que no se publican).
+- `mapeo/` clasificación 1816 (ver arriba).
+- `call/call_fondos.py` gráficos y actualización de las slides 4 a 9 de la Call de Fondos (solo lee la base publicada).
 
 ## API con filtros (Vercel)
 
@@ -47,8 +64,15 @@ Carpeta `api/` (funciones serverless de Vercel, sin dependencias). Lee la misma 
 | `/api/ranking` | `/api/ranking?mes=2026-10&por=gerente&metrica=Susc_Netas&top=10` |
 | `/api/clases` | `/api/clases?mes=2026-11&codigo=876` |
 | `/api/dolar` | `/api/dolar?desde=2026-11-01` |
+| `/api/snapshot` | `/api/snapshot?desde=2026-06-01&hasta=2026-11-12&por=subtipo` (Snapshot Industria de 1816, cualquier período) |
+| `/api/rendimientos` | `/api/rendimientos?subtipo=MM%20ARS&orden=30D&expresion=tna` (Ranking de 1816) |
+| `/api/vcp` | `/api/vcp?codigo=876&desde=2026-01-01&base100=1` (Series de VCP) |
+| `/api/taxonomia` | `/api/taxonomia?fuente=regla` (clasificación 1816 de cada fondo) |
 
 Los filtros de texto no distinguen mayúsculas ni acentos. Montos en millones de ARS.
+
+Validación del snapshot contra 1816 (1/6 al 12/11/2026, por cuota): patrimonio inicio y fin y suscripciones netas
+de la industria dentro del 0,05%; 99% de las cuotas en pesos dentro del 1%; honorarios % iguales en 99%.
 
 ## Consultas SQL sobre Parquet (DuckDB)
 

@@ -8,7 +8,7 @@ on:
     - cron: '47 21 * * 1-5'     # 18:47 hora Argentina (la CNV suele publicar la planilla del dia anterior al mediodia)
   push:
     branches: [main]
-    paths: ['scripts/**', 'config.json', '.github/workflows/actualizar.yml']
+    paths: ['scripts/**', 'mapeo/**', 'config.json', '.github/workflows/actualizar.yml']
   workflow_dispatch:
 
 permissions:
@@ -54,6 +54,8 @@ jobs:
           key: planillas-${{ github.run_id }}-leidas
       - name: Procesar (formato 1816)
         run: python -u scripts/procesar.py
+      - name: Rendimientos (ranking como 1816)
+        run: python -u scripts/rendimientos.py
       - name: Cuotapartistas (serie CAFCI y estimacion por fondo)
         continue-on-error: true
         run: python -u scripts/cuotapartistas.py

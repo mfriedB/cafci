@@ -20,6 +20,7 @@ import glob, gzip, json, os, re
 from datetime import date, datetime, timedelta, timezone
 import openpyxl
 import pandas as pd
+import sys; sys.path.insert(0, os.path.dirname(os.path.abspath(__file__))); import taxonomia
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAW = os.path.join(BASE, "raw", "cnv"); PROC = os.path.join(BASE, "procesado")
@@ -174,8 +175,27 @@ def main():
     D = limpiar(D)
     for c in ["vcp", "vcp_ant", "vcp_reexp_ars", "ccp", "ccp_ant", "patrimonio", "patrimonio_ant", "hon_sg", "hon_sd"]:
         D[c] = pd.to_numeric(D[c], errors="coerce").fillna(0.0)
-    D["categoria_1816"] = D.apply(categoria_1816, axis=1)
     D["fondo"] = D.fondo_clase.map(nombre_fondo)
+    # universo de fondos (abiertos; igual que 1816) por la clasificacion CAFCI; dentro de el, taxonomia 1816
+    # (tipo, subtipo, gerente corto, tipo de gerente) desde mapeo/ o por regla para fondos nuevos (scripts/taxonomia.py)
+    univ = D.apply(categoria_1816, axis=1).notna()
+    meta = D.sort_values("fecha").drop_duplicates("codigo_cnv", keep="last")[
+        ["codigo_cnv", "fondo", "gerente", "clasificacion_cafci", "moneda_fondo", "region", "horizonte", "plazo_liq", "id_cnv_padre"]]
+    meta = meta.rename(columns={"codigo_cnv": "Codigo_CNV"}).astype(object)
+    meta["Codigo_CNV"] = pd.to_numeric(meta.Codigo_CNV, errors="coerce")
+    tax = taxonomia.clasificar(meta.dropna(subset=["Codigo_CNV"]).assign(Codigo_CNV=lambda x: x.Codigo_CNV.astype(int))).set_index("Codigo_CNV")
+    tax.drop(columns=["moneda_fondo", "region", "horizonte", "plazo_liq", "id_cnv_padre"], errors="ignore").to_csv(os.path.join(PROC, "taxonomia.csv"))
+    nuevos = tax[tax.fuente_tax != "1816"]
+    if len(nuevos): print("fondos clasificados por regla (no estan en mapeo/taxonomia_1816.csv):", len(nuevos))
+    cnv = pd.to_numeric(D.codigo_cnv, errors="coerce")
+    for c, t in [("categoria_1816", "Tipo_1816"), ("subcategoria_1816", "Subtipo_1816"), ("gerente_1816", "Gerente_1816"),
+                 ("tipo_gerente", "Tipo_Gerente_1816"), ("fondo_1816", "Fondo_1816")]:
+        D[c] = cnv.map(tax[t]).astype(object)
+    D["fondo_1816"] = D.fondo_1816.where(D.fondo_1816.notna(), D.fondo)
+    D.loc[~univ | D.categoria_1816.isin(["En liq/Resc especie"]), "categoria_1816"] = None     # fuera del universo
+    ref = D.sort_values("fecha").drop_duplicates("codigo_cafci", keep="last")[["codigo_cafci", "codigo_cnv", "patrimonio"]].rename(columns={"codigo_cnv": "Codigo_CNV"})
+    ref = taxonomia.referencia(ref.assign(codigo_cafci=lambda x: pd.to_numeric(x.codigo_cafci), Codigo_CNV=lambda x: pd.to_numeric(x.Codigo_CNV)))
+    D["cuota_referencia"] = pd.to_numeric(D.codigo_cafci).map(ref.set_index("codigo_cafci").referencia).fillna(0).astype(int)
     # tipo de cambio implicito por moneda y fecha
     # el patrimonio y el VCP estan expresados en la moneda de la CLASE (col. Moneda), no la del fondo
     fxr = D[(D.moneda != "ARS") & (D.vcp > 0) & (D.vcp_reexp_ars > 0)].assign(r=lambda x: x.vcp_reexp_ars / x.vcp)
@@ -216,6 +236,7 @@ def main():
     D.loc[D.flujo_ars.abs() > tope, "flujo_ars"] = simple
     D["mes"] = pd.to_datetime(D.fecha).dt.to_period("M")
     keep = ["fecha", "planilla", "fecha_ant", "codigo_cafci", "codigo_cnv", "fondo_clase", "fondo", "gerente", "clasificacion_cafci", "categoria_1816",
+            "subcategoria_1816", "gerente_1816", "tipo_gerente", "fondo_1816", "cuota_referencia",
             "moneda", "moneda_fondo", "horizonte", "plazo_liq", "decreto_596", "ley_27743", "tipo_dinero", "vcp", "ccp", "patrimonio", "fx", "fx_planilla",
             "patrimonio_ars", "flujo_ars", "hon_sg", "hon_sd", "minimo_inversion", "calificado", "region", "depositaria", "calificacion",
             "comision_ingreso", "comision_rescate", "comision_transferencia", "gastos_gestion", "hon_exito", "indice_mm",
@@ -237,11 +258,12 @@ def main():
         g[keep].sort_values(["fecha", "codigo_cafci"]).to_csv(os.path.join(PROC, "clases_diario", f"{m}.csv.gz"), index=False, compression={"method": "gzip", "mtime": 0})
 
     U = D[(D.decreto_596 != "S") & D.categoria_1816.notna()][["fecha", "mes", "codigo_cafci", "codigo_cnv", "fondo", "gerente",
-          "categoria_1816", "clasificacion_cafci", "patrimonio_ars", "flujo_ars", "hon_sg", "hon_sd"]].copy()
+          "categoria_1816", "subcategoria_1816", "gerente_1816", "tipo_gerente", "fondo_1816", "clasificacion_cafci",
+          "patrimonio_ars", "flujo_ars", "hon_sg", "hon_sd"]].copy()
     del D; import gc; gc.collect()
     # ultimo dato de cada fondo en cada mes (para nombre, gerente y categoria del mes) - tabla chica, se calcula una vez
     ULT = U.sort_values(["fecha", "patrimonio_ars"]).drop_duplicates(["codigo_cnv", "mes"], keep="last")[
-        ["codigo_cnv", "mes", "fondo", "gerente", "categoria_1816", "clasificacion_cafci"]]
+        ["codigo_cnv", "mes", "fondo", "gerente", "categoria_1816", "subcategoria_1816", "gerente_1816", "tipo_gerente", "fondo_1816", "clasificacion_cafci"]]
     fechas = sorted(U.fecha.unique())
     # foto diaria por dia calendario: cada clase con su ultimo dato disponible (hasta 7 dias de antiguedad)
     cal_all = pd.date_range(pd.Timestamp(fechas[0]), pd.Timestamp(fechas[-1]), freq="D")
@@ -277,15 +299,17 @@ def main():
         a["Rendimiento"] = a.AUM_Final - a.AUM_Inicial - a.Susc_Netas
         f0 = ini
         meta = ULT[ULT.mes <= m].drop_duplicates("codigo_cnv", keep="last").set_index("codigo_cnv")
-        a = a.join(meta[["fondo", "gerente", "categoria_1816", "clasificacion_cafci"]])
+        a = a.join(meta[["fondo", "gerente", "categoria_1816", "subcategoria_1816", "gerente_1816", "tipo_gerente", "fondo_1816", "clasificacion_cafci"]])
         out = pd.DataFrame({
             "Fecha": f1.isoformat(),
-            "Categoria": a.categoria_1816, "Subcategoria": a.clasificacion_cafci, "Fondo": a.fondo, "Gerente": a.gerente,
+            "Categoria": a.categoria_1816, "Subcategoria": a.subcategoria_1816, "Fondo": a.fondo_1816, "Gerente": a.gerente_1816,
             "AUM_promedio": a.AUM_promedio / 1e6, "AUM_Inicial": a.AUM_Inicial / 1e6, "AUM_Final": a.AUM_Final / 1e6,
             "Susc_Netas": a.Susc_Netas / 1e6, "Rendimiento": a.Rendimiento / 1e6,
             "Facturacion_Gerente": a.fac_g / 1e6, "Facturacion_Depo": a.fac_d / 1e6})
+        out["Tipo_Gerente"] = a.tipo_gerente; out["Sociedad_Gerente"] = a.gerente; out["Fondo_CAFCI"] = a.fondo
+        out["Clasificacion_CAFCI"] = a.clasificacion_cafci
         out = out[(out.AUM_promedio != 0) | (out.AUM_Inicial != 0) | (out.AUM_Final != 0)].copy()
-        tot = out.AUM_promedio.sum(); mm = out.Categoria == "Money Market"; bz = out.Gerente.str.contains("Balanz", na=False)
+        tot = out.AUM_promedio.sum(); mm = out.Categoria == "Money Market"; bz = out.Sociedad_Gerente.str.contains("Balanz", na=False)
         out["suma_aums_mensual"] = tot
         out["suma_mensual_balanz"] = bz * out[bz].AUM_promedio.sum()
         out["suma_aums_mm_mensual"] = mm * out[mm].AUM_promedio.sum()
@@ -293,7 +317,8 @@ def main():
         out = out.sort_values(["Gerente", "Fondo"]).reset_index().rename(columns={"codigo_cnv": "Codigo_CNV"})
         cols = ["Fecha", "Categoria", "Subcategoria", "Fondo", "Gerente", "AUM_promedio", "AUM_Inicial", "AUM_Final", "Susc_Netas",
                 "Rendimiento", "Facturacion_Gerente", "Facturacion_Depo", "suma_aums_mensual", "suma_mensual_balanz",
-                "suma_aums_mm_mensual", "suma_aums_no_mm_mensual", "Codigo_CNV"]
+                "suma_aums_mm_mensual", "suma_aums_no_mm_mensual", "Codigo_CNV", "Tipo_Gerente", "Sociedad_Gerente", "Fondo_CAFCI",
+                "Clasificacion_CAFCI"]
         nombre = f"fondos_cafci_{out.Fecha.iloc[0]}.csv"
         out[cols].to_csv(os.path.join(PROC, nombre), index=False, float_format="%.15g", lineterminator="\r\n")
         salidas.append({"archivo": nombre, "mes": str(m), "desde": ini.isoformat(), "hasta": f1.isoformat(),

@@ -1,8 +1,8 @@
 """Actualiza las slides 4 a 9 de la Call de Fondos sin pasar por Power BI ni por 1816.
 
 Datos: base oficial CAFCI/CNV publicada en GitHub (repo mfriedB/cafci, carpeta procesado/).
-Mapeo local (no se publica): mapeo_fondos_1816.csv (categoria y nombre corto por Codigo CNV, tomado una sola vez
-de 1816 para mantener la misma clasificacion) y mapeo_gerentes.csv (nombre corto y tipo de gerente).
+La base ya trae la clasificacion de 1816 (tipo, subtipo, nombre del fondo, gerente corto y tipo de gerente; ver
+mapeo/ y scripts/taxonomia.py), asi que no hace falta ningun archivo local.
 
 Uso:  python call_fondos.py --pptx "Call de Fondos -13.11.2026.pptx" --salida "Call de Fondos -20.11.2026.pptx"
       (sin --pptx solo genera los graficos en la carpeta graficos/)
@@ -34,16 +34,11 @@ def cargar(desde="2025-12"):
     meses = [m for m in idx["mensual"] if m["mes"] >= desde]
     D = pd.concat([pd.read_csv(io.BytesIO(leer_url(m["archivo"]))) for m in meses], ignore_index=True)
     D["mes"] = D.Fecha.str[:7]
-    mf = pd.read_csv(os.path.join(AQUI, "mapeo_fondos_1816.csv"))
-    mg = pd.read_csv(os.path.join(AQUI, "mapeo_gerentes.csv"))
-    D = D.merge(mf, on="Codigo_CNV", how="left").merge(mg, left_on="Gerente", right_on="Sociedad_Gerente", how="left", suffixes=("", "_sg"))
-    D["Gerente_corto"] = D.Gerente_corto.fillna(D.Gerente.str.split().str[0])
-    D["Tipo_Gerente"] = D.Tipo_Gerente.fillna("Independientes")
-    D["Cat"] = D.Categoria_1816.fillna(D.Categoria)
-    rf_usd_1816 = D.Subcategoria_1816.isin(["RF USD CP", "RF USD Disc", "RF USD GL Ex ARG", "RF USD GL Inc ARG", "RF USD corp loc"])
-    rf_usd_cafci = D.Subcategoria_1816.isna() & (D.Cat == "Renta Fija") & D.Subcategoria.str.startswith("Renta Fija Dolar", na=False)
-    D["RF_USD"] = rf_usd_1816 | rf_usd_cafci
-    D["Nombre"] = D.Fondo_1816.fillna(D.Fondo).str.strip()
+    D["Gerente_corto"] = D.Gerente
+    D["Tipo_Gerente"] = D.Tipo_Gerente.map({"Bancaria": "Bancarias"}).fillna("Independientes")
+    D["Cat"] = D.Categoria
+    D["RF_USD"] = D.Subcategoria.isin(["RF USD CP", "RF USD Disc", "RF USD GL Ex ARG", "RF USD GL Inc ARG", "RF USD corp loc"])
+    D["Nombre"] = D.Fondo.str.strip()
     D["Balanz"] = D.Gerente_corto.eq("Balanz")
     for c in ["AUM_promedio", "AUM_Final", "Susc_Netas"]: D[c] = D[c] / 1e6        # millones -> billones
     return D, idx

@@ -38,6 +38,44 @@ function convertir(v) {
   return v;
 }
 
+// Igual que parseCSV pero devuelve solo las columnas pedidas, como arrays (mucho menos memoria para meses enteros)
+function parseCSVcols(txt, cols) {
+  let i = 0; const n = txt.length;
+  function fila() {
+    const f = []; let campo = "", q = false;
+    for (; i < n; i++) {
+      const ch = txt[i];
+      if (q) { if (ch === '"') { if (txt[i + 1] === '"') { campo += '"'; i++; } else q = false; } else campo += ch; }
+      else if (ch === '"') q = true;
+      else if (ch === ",") { f.push(campo); campo = ""; }
+      else if (ch === "\n" || ch === "\r") { if (ch === "\r" && txt[i + 1] === "\n") i++; i++; break; }
+      else campo += ch;
+    }
+    f.push(campo); return f;
+  }
+  const h = fila(); const ix = cols.map(c => h.indexOf(c));
+  const out = [];
+  while (i < n) { const f = fila(); if (f.length < 2) continue; out.push(ix.map(k => k < 0 ? null : convertir(f[k]))); }
+  return out;
+}
+async function diarioCols(mes, cols) {
+  const gz = await bajar(`clases_diario/${mes}.csv.gz`, true);
+  return parseCSVcols(zlib.gunzipSync(gz).toString("utf8"), cols);
+}
+async function dolar() {
+  // serie diaria (dia calendario, ultimo dato disponible) del dolar de conversion: promedio MEP-CCL
+  const f = parseCSV(await bajar("dolar.csv"));
+  const m = new Map(); let ult = null;
+  if (!f.length) return m;
+  const d0 = new Date(f[0].fecha + "T00:00:00Z"), d1 = new Date(f[f.length - 1].fecha + "T00:00:00Z");
+  const porF = new Map(f.map(x => [x.fecha, x]));
+  for (let d = d0; d <= d1; d = new Date(d.getTime() + 864e5)) {
+    const k = d.toISOString().slice(0, 10), x = porF.get(k);
+    if (x) { const v = x.mep != null && x.ccl != null ? (x.mep + x.ccl) / 2 : x.mep; if (v) ult = v; }
+    m.set(k, ult);
+  }
+  return m;
+}
 async function indice() { return JSON.parse(await bajar("index.json")); }
 async function mensual(mes) {
   const idx = await indice();
@@ -77,4 +115,4 @@ function manejar(fn) {
     }
   };
 }
-module.exports = { bajar, parseCSV, indice, mensual, diario, meses, contiene, responder, manejar };
+module.exports = { bajar, parseCSV, parseCSVcols, diarioCols, dolar, convertir, indice, mensual, diario, meses, contiene, responder, manejar };

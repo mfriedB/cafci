@@ -1,0 +1,1252 @@
+Codigo_CNV,Fondo_1816,Tipo_1816,Subtipo_1816,Gerente_1816,Tipo_Gerente_1816
+1,Delval,Renta Variable,RV ARG Otros,Bayfe,Independiente
+2,HF Acciones Lideres,Renta Variable,RV ARG Merval,Galicia,Bancaria
+3,Fima Acciones,Renta Variable,RV ARG Merval,Galicia,Bancaria
+14,Alpha Acciones,Renta Variable,RV ARG Merval,ICBC,Bancaria
+52,Blacktoro Ahorro,T+1,T+1,BlackToro,Independiente
+55,Pionero Acciones Argentinas,Renta Variable,RV ARG Otros,Macro,Bancaria
+60,Alpha Renta Fija Serie 7,Renta Fija,RF ARS Disc,ICBC,Bancaria
+61,Pionero Acciones,Renta Variable,RV ARG Merval,Macro,Bancaria
+62,Toronto Trust,Renta Fija,RF MULT Disc,Investis,Independiente
+63,Arpenta (ex Mercosur),Renta Mixta,RM y Otros ARS,Mercofond,Independiente
+69,Fima Renta Pesos,Renta Fija,RF ARS CER,Galicia,Bancaria
+70,ConoSur Ahorro Dólar,Renta Fija,RF USD CP,Cono Sur,Independiente
+71,Pionero Acciones Plus,Renta Variable,RV ARG Otros,Macro,Bancaria
+78,Pionero Renta,Renta Fija,RF ARS CER,Macro,Bancaria
+79,Alpha Renta Cobertura,Renta Fija,RF USD Linked,ICBC,Bancaria
+80,Alpha Mega,Renta Variable,RV ARG Merval,ICBC,Bancaria
+95,CMA Argentina,Renta Fija,RF MULT Disc,Capital Markets,Independiente
+103,Fima Renta Plus,Renta Fija,RF ARS CER,Galicia,Bancaria
+105,Fima PB Acciones,Renta Variable,RV ARG Merval,Galicia,Bancaria
+106,1822 Raices Renta en Pesos,T+1,T+1,Provinfondos,Bancaria
+107,1822 Raices Valores Negociables,Renta Variable,RV ARG Merval,Provinfondos,Bancaria
+108,1822 Raices Abierto Pymes,Destino Esp.,PYME,Provinfondos,Bancaria
+111,Alpha Ahorro,T+1,T+1,ICBC,Bancaria
+112,Alpha Renta Fija Serie 1,Renta Fija,RF MULT Disc,ICBC,Bancaria
+113,Alpha Planeamiento Conservador,Renta Fija,RF MULT Disc,ICBC,Bancaria
+114,Alpha Renta Fija Serie 6,Renta Fija,RF ARS Lecap,ICBC,Bancaria
+120,Consultatio Balance Fund,Renta Fija,RF MULT Disc,Consultatio,Independiente
+121,Lombard Renta en Pesos,Money Market,MM ARS Clásico,Patagonia,Bancaria
+138,Superfondo Renta Variable,Renta Variable,RV ARG Merval,Santander,Bancaria
+139,Superfondo Ahorro U$S,En liq/Resc especie,En Liq Esp,Santander,Bancaria
+145,Super Ahorro $,Money Market,MM ARS Clásico,Santander,Bancaria
+146,Super Ahorro U$S ex Letes,En liq/Resc especie,En Liq Esp,Santander,Bancaria
+147,Superfondo Acciones,Renta Variable,RV ARG Otros,Santander,Bancaria
+148,Superfondo Renta $,Renta Fija,RF ARS Disc,Santander,Bancaria
+149,Superfondo 2000,En liq/Resc especie,En Liq Esp,Santander,Bancaria
+151,Pionero Pesos Plus II,Money Market,MM ARS Clásico,Macro,Bancaria
+153,Schroder Renta Variable,Renta Variable,RV ARG Merval,Schroder,Independiente
+154,Schroder Renta Fija,Renta Fija,RF MULT Disc,Schroder,Independiente
+158,Schroder Argentina,Renta Fija,RF MULT Disc,Schroder,Independiente
+161,Pellegrini Acciones,Renta Variable,RV ARG Merval,Pellegrini,Bancaria
+162,Pellegrini Renta Pesos,Money Market,MM ARS Clásico,Pellegrini,Bancaria
+163,Pellegrini Renta,Money Market,MM ARS Dinámico,Pellegrini,Bancaria
+164,Pellegrini Renta Fija Plus,Renta Fija,RF MULT Disc,Pellegrini,Bancaria
+165,FBA Money Market Pesos,Money Market,MM ARS Clásico,BBVA,Bancaria
+169,Superfondo 2001,En liq/Resc especie,En Liq Esp,Santander,Bancaria
+173,Roble Ahorro USD en $,En liq/Resc especie,En Liq Esp,GGAL AM,Bancaria
+181,SBS Tavelli Plus,Renta Variable,RV ARG Otros,SBS,Independiente
+186,Lombard Renta Fija,Renta Fija,RF USD Linked,Patagonia,Bancaria
+194,Alpha Renta Crecimiento,Renta Fija,RF ARS Lecap,ICBC,Bancaria
+198,Superfondo Renta Fija Latam,Renta Fija,RF USD GL Ex ARG,Santander,Bancaria
+211,HF Acciones Argentinas,Renta Variable,RV ARG Rofex 20,Galicia,Bancaria
+212,Fima Balanceado,Renta Fija,RF MULT Disc,Galicia,Bancaria
+214,HF Renta Fija Argentina,Renta Fija,RF USD Linked,Galicia,Bancaria
+220,Superfondo Renta Fija,Renta Fija,RF ARS CER,Santander,Bancaria
+221,Fima Ahorro Pesos,T+1,T+1,Galicia,Bancaria
+223,FBA Calificado,Renta Variable,RV ARG Merval,BBVA,Bancaria
+226,Pionero Renta Crecimiento,Renta Fija,RF ARS CER,Macro,Bancaria
+232,Premier Renta Fija Crecimiento,Renta Mixta,RM y Otros ARS,Supervielle,Bancaria
+236,Alpha Retorno Total,Renta Mixta,RM y Otros ARS,ICBC,Bancaria
+237,Alpha Planeamiento Dinamico,Renta Mixta,RM y Otros ARS,ICBC,Bancaria
+238,Alpha Planeamiento Equilibrado,Renta Mixta,RM y Otros ARS,ICBC,Bancaria
+242,Alpha Mercosur,Renta Variable,RV Global,ICBC,Bancaria
+244,1822 Raices Ahorro Pesos,Money Market,MM ARS Clásico,Provinfondos,Bancaria
+247,Lombard Ahorro,T+1,T+1,Patagonia,Bancaria
+251,SBS Tavelli Mix,T+1,T+1,SBS,Independiente
+252,Supergestion,Renta Mixta,RM y Otros ARS,Santander,Bancaria
+253,Superfondo Latinoamerica,Renta Variable,RV Global,Santander,Bancaria
+259,Pionero Renta Global,Renta Fija,RF USD Linked,Macro,Bancaria
+270,Consultatio Income Fund,Renta Fija,RF USD GL Ex ARG,Consultatio,Independiente
+271,Consultatio Acciones Argentina,Renta Variable,RV ARG Merval,Consultatio,Independiente
+276,Optimum FAE (Fondo de Aplicaciones Especiales),Renta Fija,RF MULT Disc,SAM Arg,Bancaria
+279,Premier Renta Variable,Renta Variable,RV ARG Merval,Supervielle,Bancaria
+281,Premier Renta CP en Pesos,Money Market,MM ARS Clásico,Supervielle,Bancaria
+319,Pellegrini Renta Fija,T+1,T+1,Pellegrini,Bancaria
+351,1810 Renta Variable Argentina,Renta Variable,RV ARG Merval,Proahorro,Bancaria
+352,Desarrollo Argentino I Infraestructura,Destino Esp.,INFRA,Investis,Independiente
+353,Compass Renta Fija,Renta Fija,RF USD GL Ex ARG,Investis,Independiente
+361,Premier Renta Fija Ahorro,T+1,T+1,Supervielle,Bancaria
+365,Consultatio Deuda Argentina,Renta Fija,RF ARS CER,Consultatio,Independiente
+373,Schroder Corto Plazo,Renta Fija,RF MULT Disc,Schroder,Independiente
+376,FBA Renta Fija Pesos II,T+1,T+1,BBVA,Bancaria
+391,Alpha Renta Fija Global,Renta Fija,RF USD GL Inc ARG,ICBC,Bancaria
+392,Alpha Renta Fija Serie 4,Renta Fija,RF ARS Lecap,ICBC,Bancaria
+394,1810 Ahorro,Money Market,MM ARS Clásico,Proahorro,Bancaria
+421,Compass Crecimiento,Renta Variable,RV ARG Merval,Investis,Independiente
+422,Compass Opportunity,Renta Fija,RF MULT Disc,Investis,Independiente
+423,FBA Horizonte,Renta Fija,RF USD Linked,BBVA,Bancaria
+428,Pellegrini Integral,Renta Mixta,RM y Otros ARS,Pellegrini,Bancaria
+429,Schroder Capital Renta Fija,Renta Fija,RF MULT Disc,Schroder,Independiente
+431,Schroder Infraestructura,Destino Esp.,INFRA,Schroder,Independiente
+437,CMA Proteccion,T+1,T+1,Capital Markets,Independiente
+445,Fima Premium,Money Market,MM ARS Clásico,Galicia,Bancaria
+446,SBS Tavelli Renta,Renta Fija,RF MULT Disc,SBS,Independiente
+460,Pionero Renta Pesos,Renta Fija,RF ARS Lecap,Macro,Bancaria
+461,HF Pesos,Money Market,MM ARS Clásico,Galicia,Bancaria
+464,Super Bonos,Renta Fija,RF USD Linked,Santander,Bancaria
+466,Alpha Pesos,Money Market,MM ARS Clásico,ICBC,Bancaria
+467,Pionero Pesos,Money Market,MM ARS Clásico,Macro,Bancaria
+468,Optimum Global Investment Grade,Renta Mixta,RM y Otros ARS,SAM Arg,Bancaria
+469,Stonex FF,T+1,T+1,StoneX,Independiente
+470,Galileo Event Driven,Renta Fija,RF USD GL Inc ARG,Delta,Independiente
+475,Gainvest Renta Fija,T+1,T+1,StoneX,Independiente
+481,Alpha Renta Capital Pesos,Renta Fija,RF ARS CER,ICBC,Bancaria
+482,Premier Renta Plus en Pesos,Renta Fija,RF MULT Corp,Supervielle,Bancaria
+483,Alpha Renta Capital,Renta Fija,RF MULT Disc,ICBC,Bancaria
+484,HF Pesos Renta Fija,Renta Fija,RF ARS CER,Galicia,Bancaria
+488,Optimum Renta Mixta Flexible,Renta Fija,RF USD Linked,Santander,Bancaria
+489,Optimum CDB Pesos Ultra,Money Market,MM ARS Clásico,SAM Arg,Bancaria
+490,Optimum Renta Variable III,Renta Variable,RV ARG Merval,SAM Arg,Bancaria
+491,Optimum Global Renta Mixta,Renta Mixta,RM y Otros ARS,SAM Arg,Bancaria
+492,Optimum Renta Fija Argentina,T+1,T+1,Santander,Bancaria
+493,Optimum Renta Mixta Flexible Argentina,Renta Fija,RF USD Linked,Santander,Bancaria
+494,Pionero Renta Plus,Renta Fija,RF ARS Disc,Macro,Bancaria
+503,Delta Renta,Renta Fija,RF MULT Disc,Delta,Independiente
+504,Delta Latinoamerica,Renta Variable,RV Global,Delta,Independiente
+505,Delta Acciones,Renta Variable,RV ARG Merval,Delta,Independiente
+506,Delta Ahorro,T+1,T+1,Delta,Independiente
+508,1822 Raices Valores Fiduciarios,Renta Fija,RF ARS Disc,Provinfondos,Bancaria
+509,FBA Acciones Latinoamericana,Renta Variable,RV Global,BBVA,Bancaria
+510,FBA Renta Fija Pesos I,T+1,T+1,BBVA,Bancaria
+511,Compass Argentina Abierto PyMEs,Destino Esp.,PYME,Investis,Independiente
+514,MEGAQM Estrategia 7,Renta Fija,RF ARS Disc,MegaQM,Bancaria
+515,MEGAQM Ahorro,T+1,T+1,MegaQM,Bancaria
+516,Super Renta Futura,Renta Mixta,RM y Otros ARS,Santander,Bancaria
+517,GSS I,Renta Fija,RF ARS Disc,Grupo SS,Independiente
+518,GSS II,Renta Fija,RF ARS Disc,Grupo SS,Independiente
+519,GSS III,Renta Fija,RF ARS Disc,Grupo SS,Independiente
+520,Superfondo Acciones Brasil,Renta Variable,RV Global,Santander,Bancaria
+524,Supergestion Mix VI,T+1,T+1,Santander,Bancaria
+531,Delta Select,Renta Variable,RV ARG Merval,Delta,Independiente
+532,Delta Internacional,Renta Variable,RV Global,Delta,Independiente
+533,Delta Gestion IV,Renta Fija,RF MULT Corp,Delta,Independiente
+534,Delta Moneda,Renta Fija,RF USD Linked,Delta,Independiente
+535,Delta Recursos Naturales,Renta Variable,RV ARG Otros,Delta,Independiente
+536,Delta Pesos,Money Market,MM ARS Clásico,Delta,Independiente
+537,FBA Acciones Argentinas,Renta Variable,RV ARG Merval,BBVA,Bancaria
+540,HF Pesos Plus,T+1,T+1,Galicia,Bancaria
+541,Pionero Capital Plus,T+1,T+1,Macro,Bancaria
+542,Pionero Renta Ahorro,T+1,T+1,Macro,Bancaria
+550,Pionero FF,T+1,T+1,Macro,Bancaria
+551,Gainvest Renta Fija Dólares,Renta Fija,RF USD corp loc,StoneX,Independiente
+552,Lombard Capital,T+1,T+1,Patagonia,Bancaria
+556,FBA Bonos Globales,Renta Fija,RF ARS Disc,BBVA,Bancaria
+560,FBA Renta Fija Pesos Plus I,Renta Fija,RF ARS Disc,BBVA,Bancaria
+561,Probolsa,Renta Mixta,RM y Otros ARS,Mercofond,Independiente
+562,Compass Renta Fija II,Renta Fija,RF MULT Disc,Investis,Independiente
+563,Compass Crecimiento II,Renta Mixta,RM y Otros ARS,Investis,Independiente
+564,Compass Renta Mixta Dólares,Renta Fija,RF USD GL Inc ARG,Investis,Independiente
+565,Desarrollo Argentino II Infraestructura,Destino Esp.,INFRA,Investis,Independiente
+566,Compass Renta Fija III,Renta Fija,RF USD Linked,Investis,Independiente
+567,Compass Ahorro,T+1,T+1,Investis,Independiente
+568,IAM Renta Variable,Renta Variable,RV ARG Rofex 20,BIND,Bancaria
+571,Adcap Renta Fija,Renta Fija,RF MULT Disc,Adcap,Independiente
+572,Adcap Pymes,Destino Esp.,PYME,Adcap,Independiente
+575,Arpenta Acciones Argentina,Renta Variable,RV ARG Merval,Mercofond,Independiente
+576,SBS Acciones Argentina,Renta Variable,RV ARG Merval,SBS,Independiente
+577,SBS Ahorro Pesos,Money Market,MM ARS Clásico,SBS,Independiente
+578,SBS Renta Pesos,Renta Fija,RF ARS Disc,SBS,Independiente
+579,Optimum Renta Fija Estrategica,Renta Fija,RF USD Linked,Santander,Bancaria
+581,Galileo Argentina,Renta Fija,RF USD Linked,Delta,Independiente
+582,Allaria Acciones,Renta Variable,RV ARG Merval,Allaria,Independiente
+583,Cohen Pesos,Money Market,MM ARS Clásico,Delta,Independiente
+584,Allaria Ahorro,Money Market,MM ARS Clásico,Allaria,Independiente
+585,Toronto Trust Special Opportunities,Renta Fija,RF MULT Disc,Investis,Independiente
+586,Quiron Savings,T+1,T+1,Quiron,Independiente
+588,Quiron Latam en U$S,Renta Fija,RF USD Disc,Quiron,Independiente
+589,Delta Empresas Argentinas Pymes,Destino Esp.,PYME,Delta,Independiente
+590,Schroder Desarrollo y Crecimiento PyMEs,Destino Esp.,PYME,Schroder,Independiente
+591,Allaria Renta Mixta II,Renta Fija,RF USD Linked,Allaria,Independiente
+594,Optimum Global Balanced,Renta Fija,RF MULT Disc,Santander,Bancaria
+595,Premier Abierto Pymes,Destino Esp.,PYME,Supervielle,Bancaria
+597,Allaria Abierto Pymes,Destino Esp.,PYME,Allaria,Independiente
+598,Cohen Abierto Pymes,Destino Esp.,PYME,Delta,Independiente
+599,Consultatio Estrategico,Renta Fija,RF MULT Disc,Consultatio,Independiente
+600,Consultatio Renta Plus,Renta Mixta,RM y Otros ARS,Consultatio,Independiente
+601,Gainvest Ahorro,Renta Fija,RF MULT Disc,StoneX,Independiente
+603,Allaria Ahorro Plus,T+1,T+1,Allaria,Independiente
+604,Alpha Recursos Naturales,Renta Variable,RV ARG Otros,ICBC,Bancaria
+605,Delta Federal I,Renta Fija,RF ARS Disc,Delta,Independiente
+606,Delta Ahorro Plus,T+1,T+1,Delta,Independiente
+607,Delta Multimercado I,Renta Mixta,RM y Otros ARS,Delta,Independiente
+608,SBS Balanceado,Renta Mixta,RM y Otros ARS,SBS,Independiente
+609,SBS Gestion Renta Fija,T+1,T+1,SBS,Independiente
+610,SBS Estrategia,Renta Fija,RF MULT Corp,SBS,Independiente
+611,Alpha Pesos Plus,Money Market,MM ARS Clásico,ICBC,Bancaria
+612,Schroder Renta Global FCI,Renta Mixta,RM y Otros ARS,Schroder,Independiente
+613,Stonex PYMEs,Destino Esp.,PYME,StoneX,Independiente
+614,Alpha Renta Plus,Renta Fija,RF ARS Disc,ICBC,Bancaria
+615,Quiron PYMEs,Destino Esp.,PYME,Quiron,Independiente
+616,Cohen Renta Fija Plus,T+1,T+1,Delta,Independiente
+617,Compass Renta Mixta,Renta Fija,RF MULT Disc,Investis,Independiente
+618,Compass Renta Plus,Renta Mixta,RM y Otros ARS,Investis,Independiente
+619,Allaria Renta Fija,Renta Fija,RF ARS CER,Allaria,Independiente
+620,Allaria Desa e Infra Argentino,Destino Esp.,INFRA,Allaria,Independiente
+621,Pellegrini Empresas Argentinas PyMES,Destino Esp.,PYME,Pellegrini,Bancaria
+622,Stonex Renta Fija Plus,Renta Fija,RF ARS Disc,StoneX,Independiente
+623,Pionero Ahorro Max FCI,T+1,T+1,Macro,Bancaria
+624,Delta Gestion I,Renta Fija,RF MULT Disc,Delta,Independiente
+625,Delta Gestion II,Renta Fija,RF MULT Disc,Delta,Independiente
+626,Galileo Pymes,Destino Esp.,PYME,Delta,Independiente
+627,Galileo Ahorro,Renta Fija,RF ARS Lecap,Delta,Independiente
+628,Consultatio Renta Fija Argentina,Renta Fija,RF USD Linked,Consultatio,Independiente
+629,Consultatio Ahorro Plus Argentina,Renta Fija,RF ARS Lecap,Consultatio,Independiente
+630,Schroder Renta Global Dos,Renta Fija,RF MULT Disc,Schroder,Independiente
+631,Quiron Fixed Income,Renta Fija,RF MULT Disc,Quiron,Independiente
+632,Balanz Retorno Total,Renta Mixta,RM y Otros ARS,Balanz,Independiente
+633,MAF Renta,Renta Mixta,RM y Otros ARS,Mariva,Bancaria
+634,MAF Renta Argentina 2,Renta Fija,RF MULT Disc,Mariva,Bancaria
+635,MAF Acciones Argentinas,Renta Variable,RV ARG Merval,Mariva,Bancaria
+636,MAF Pesos Plus,T+1,T+1,Mariva,Bancaria
+637,MAF Money Market,Money Market,MM ARS Clásico,Mariva,Bancaria
+638,Balanz Capital Renta Fija,Renta Fija,RF USD Linked,Balanz,Independiente
+639,Alpha Renta Balanceada Global,Renta Mixta,RM y Otros ARS,ICBC,Bancaria
+641,Fima Ahorro Plus,T+1,T+1,Galicia,Bancaria
+642,Cohen Infraestructura,Destino Esp.,INFRA,Cohen,Independiente
+643,SBS Pesos Plus,Renta Fija,RF ARS Lecap,SBS,Independiente
+644,SBS Retorno Total,Renta Fija,RF MULT Disc,SBS,Independiente
+645,SBS Desarrollo Infraestructura,Destino Esp.,INFRA,SBS,Independiente
+646,SBS Abierto Pymes,Destino Esp.,PYME,SBS,Independiente
+647,Allaria Renta Mixta,Renta Mixta,RM y Otros ARS,Allaria,Independiente
+648,Arpenta Ahorro Pesos,Renta Fija,RF MULT Disc,Mercofond,Independiente
+649,Stonex Infraestructura FCI Abierto,Destino Esp.,INFRA,StoneX,Independiente
+650,Gainvest Regional,Renta Fija,RF MULT Disc,StoneX,Independiente
+651,Stonex Renta Variable,Renta Variable,RV ARG Otros,StoneX,Independiente
+652,Consultatio Renta Mixta,Renta Fija,RF MULT Disc,Consultatio,Independiente
+653,Consultatio Renta Variable,Renta Variable,RV ARG Rofex 20,Consultatio,Independiente
+654,Argenfunds Renta Fija,Renta Fija,RF MULT Disc,Argenfunds,Independiente
+655,Argenfunds Ahorro Pesos,T+1,T+1,Argenfunds,Independiente
+656,Pellegrini Renta Fija Ahorro,Renta Fija,RF ARS Disc,Pellegrini,Bancaria
+657,Pellegrini Agro FCI,Renta Mixta,RM y Otros ARS,Pellegrini,Bancaria
+658,Premier Commodities,Renta Mixta,RM y Otros ARS,Supervielle,Bancaria
+659,Super Ahorro Plus,Money Market,MM ARS Dinámico,Santander,Bancaria
+660,Supergestion Balanceado,Renta Mixta,RM y Otros ARS,Santander,Bancaria
+661,Supergestion Multimercado,Renta Mixta,RM y Otros ARS,Santander,Bancaria
+662,SBS Tavelli Global,Renta Mixta,RM y Otros ARS,SBS,Independiente
+663,Pionero Empresas FCI Abierto Pymes,Destino Esp.,PYME,Macro,Bancaria
+665,Pionero Pesos Plus,Money Market,MM ARS Clásico,Macro,Bancaria
+666,SBS Tavelli Abierto Pymes,Destino Esp.,PYME,SBS,Independiente
+667,MEGAQM Empresas Argentinas FCIA Pymes,Destino Esp.,PYME,MegaQM,Bancaria
+668,Megainver Ahorro,T+1,T+1,MegaQM,Bancaria
+669,MEGAQM Performance II,Renta Fija,RF MULT Disc,MegaQM,Bancaria
+670,Adcap Moneda,Renta Fija,RF USD Linked,Adcap,Independiente
+671,Consultatio Renta Balanceada,Renta Fija,RF ARS Disc,Consultatio,Independiente
+672,Consultatio Renta Local,Renta Fija,RF ARS Lecap,Consultatio,Independiente
+673,Consultatio Renta Nacional,T+1,T+1,Consultatio,Independiente
+674,Fima Capital Plus,Renta Fija,RF USD Linked,Galicia,Bancaria
+675,Galileo Premium,Renta Fija,RF USD Linked,Delta,Independiente
+676,MEGAQM Cobertura,Renta Fija,RF USD Linked,MegaQM,Bancaria
+677,Schroder Retorno Absoluto,Renta Fija,RF ARS Disc,Schroder,Independiente
+678,Stonex Renta Fija Protección Plus,Renta Fija,RF USD Linked,StoneX,Independiente
+679,Stonex Balanceado,Renta Fija,RF ARS CER,StoneX,Independiente
+680,MAF Renta Balanceada 2,Renta Mixta,RM y Otros ARS,Mariva,Bancaria
+681,MAF Ahorro Pesos,Renta Fija,RF ARS CER,Mariva,Bancaria
+682,MAF Renta Fija Cobertura,Renta Fija,RF USD Linked,Mariva,Bancaria
+683,MAF Empresas Pymes,Destino Esp.,PYME,Mariva,Bancaria
+684,Balanz Capital Ahorro,T+1,T+1,Balanz,Independiente
+685,Consultatio Abierto Pymes,Destino Esp.,PYME,Consultatio,Independiente
+686,Adcap Balanceado I,Renta Fija,RF ARS Disc,Adcap,Independiente
+687,Adcap Acciones,Renta Variable,RV ARG Rofex 20,Adcap,Independiente
+688,Adcap Pesos Plus,T+1,T+1,Adcap,Independiente
+689,Schroder Renta Global Tres,Renta Fija,RF MULT Disc,Schroder,Independiente
+690,Balanz Capital Abierto Pymes FCI,Destino Esp.,PYME,Balanz,Independiente
+691,Pellegrini Crecimiento,Renta Fija,RF ARS CER,Pellegrini,Bancaria
+692,MAF Renta Argentina,Renta Fija,RF USD Linked,Mariva,Bancaria
+693,Adcap Cima Renta Fija Arg Plus,Renta Fija,RF MULT Disc,Adcap,Independiente
+694,Compass Renta Fija IV,Renta Fija,RF MULT Disc,Investis,Independiente
+695,Megainver Financiamiento Productivo Pyme,Destino Esp.,PYME,MegaQM,Bancaria
+696,Chaco Fondos Renta Fija I,Renta Fija,RF MULT Disc,Chaco,Bancaria
+697,Chaco Abierto Ahorro,T+1,T+1,Chaco,Bancaria
+698,Fima FCI Abierto Pymes,Destino Esp.,PYME,Galicia,Bancaria
+699,Toronto Trust Multimercado,Renta Variable,RV ARG Otros,Investis,Independiente
+700,Toronto Trust Renta Fija,T+1,T+1,Investis,Independiente
+701,Toronto Trust Renta Fija Plus,Renta Fija,RF MULT Disc,Investis,Independiente
+702,ST Renta Fija,Renta Fija,RF USD Linked,Consultatio,Independiente
+704,Consultatio Rofex 20,Renta Variable,RV ARG Rofex 20,Consultatio,Independiente
+705,Consultatio Gestión X,Renta Fija,RF ARS Disc,Consultatio,Independiente
+706,Consultatio Diamante Plus,T+1,T+1,Consultatio,Independiente
+707,Toronto Trust Ahorro,Money Market,MM ARS Clásico,Investis,Independiente
+708,Gestionar Abierto Pymes,Destino Esp.,PYME,Nativa,Independiente
+709,Gestionar Renta Fija,T+1,T+1,Nativa,Independiente
+710,Pellegrini Desarrollo Arg. Infraest.,Destino Esp.,INFRA,Pellegrini,Bancaria
+711,Argenfunds Abierto Pymes,Destino Esp.,PYME,Argenfunds,Independiente
+712,1822 Raices Inversion,Renta Fija,RF ARS CER,Provinfondos,Bancaria
+713,Consultatio Crecimiento,Renta Fija,RF MULT Disc,Consultatio,Independiente
+714,Allaria Renta Balanceada I,Renta Mixta,RM y Otros ARS,Allaria,Independiente
+715,Quinquela Renta Mixta,Renta Fija,RF USD Linked,MegaQM,Bancaria
+716,Schroder Pesos,Renta Fija,RF MULT Disc,Schroder,Independiente
+717,Schroder Renta Plus,T+1,T+1,Schroder,Independiente
+719,MAF Renta Mixta,Renta Mixta,RM y Otros ARS,Mariva,Bancaria
+720,Toronto Trust Abierto Pymes,Destino Esp.,PYME,Investis,Independiente
+721,Toronto Trust Global Capital,Renta Fija,RF USD Linked,Investis,Independiente
+722,Delta Crecimiento Infraestructura,Destino Esp.,INFRA,Delta,Independiente
+723,Argenfunds Renta Pesos,Renta Fija,RF MULT Disc,Argenfunds,Independiente
+724,Argenfunds Renta Argentina,Renta Fija,RF MULT Disc,Argenfunds,Independiente
+725,MAF Renta Balanceada,Renta Fija,RF MULT Disc,Mariva,Bancaria
+726,MEGAQM Estrategia 8,Renta Fija,RF MULT Disc,MegaQM,Bancaria
+727,Premier Capital,Renta Fija,RF ARS CER,Supervielle,Bancaria
+728,MEGAQM Retorno Total,Renta Mixta,RM y Otros ARS,MegaQM,Bancaria
+730,Pionero Performance,Renta Fija,RF MULT Disc,Macro,Bancaria
+733,Lombard Abierto Plus,Renta Fija,RF ARS CER,Patagonia,Bancaria
+734,Adcap Cima Renta Fija Nacional,Renta Mixta,RM y Otros ARS,Adcap,Independiente
+735,Pellegrini Renta Fija Publica,Renta Fija,RF ARS Lecap,Pellegrini,Bancaria
+737,MEGAQM Pesos,Money Market,MM ARS Clásico,MegaQM,Bancaria
+738,Adcap Gestion Estrategica VI,Renta Mixta,RM y Otros ARS,Adcap,Independiente
+739,Lombard Pesos Plus,Renta Mixta,RM y Otros ARS,Patagonia,Bancaria
+740,Cohen Cobertura,Renta Fija,RF ARS Disc,Cohen,Independiente
+741,MAF Ahorro,T+1,T+1,Mariva,Bancaria
+743,Gainvest Capital,Renta Mixta,RM y Otros ARS,StoneX,Independiente
+744,Gainvest Crecimiento,Renta Fija,RF ARS Disc,StoneX,Independiente
+745,Adcap Cima Pymes,Destino Esp.,PYME,Adcap,Independiente
+746,MEGAQM Renta Mixta,Renta Fija,RF ARS Disc,MegaQM,Bancaria
+747,Axis Renta Variable,Renta Variable,RV ARG Merval,Mariva,Bancaria
+748,Delta Performance,T+1,T+1,Delta,Independiente
+749,Delta Gestion III,Renta Fija,RF MULT Disc,Delta,Independiente
+750,SBS Renta Dólar Argentina,Renta Fija,RF USD corp loc,SBS,Independiente
+751,SBS Renta Capital,Renta Fija,RF MULT Disc,SBS,Independiente
+752,SBS Capital Plus,Renta Fija,RF USD Linked,SBS,Independiente
+753,SBS Renta Dólar Latam,Renta Fija,RF USD GL Inc ARG,SBS,Independiente
+754,MEGAQM Estrategia 4,Renta Mixta,RM y Otros ARS,MegaQM,Bancaria
+755,MEGAQM Acciones,Renta Variable,RV ARG Rofex 20,MegaQM,Bancaria
+756,MEGAQM Estrategia 5,Renta Fija,RF MULT Disc,Puente,Independiente
+757,Optimum Total Return,Renta Fija,RF USD Linked,Santander,Bancaria
+758,Chaco FCI Abierto Pymes,Destino Esp.,PYME,Chaco,Bancaria
+759,Chaco FCI Abierto Infraestructura,Destino Esp.,INFRA,Chaco,Bancaria
+760,Megainver Renta Global,Renta Fija,RF MULT Disc,MegaQM,Bancaria
+761,Allaria Renta Balanceada II,Renta Fija,RF ARS Disc,Allaria,Independiente
+762,Megainver Renta Variable,Renta Variable,RV ARG Rofex 20,MegaQM,Bancaria
+763,Galileo Acciones,Renta Variable,RV ARG Otros,Delta,Independiente
+764,Galileo Renta Fija,Renta Fija,RF MULT Disc,Delta,Independiente
+765,Galileo Ahorro Plus,T+1,T+1,Delta,Independiente
+766,Lombard Acciones Lideres,Renta Variable,RV ARG Merval,Patagonia,Bancaria
+767,Optimum Renta Fija USD,Renta Fija,RF USD Disc,Santander,Bancaria
+768,MEGAQM Infraestructura,Destino Esp.,INFRA,MegaQM,Bancaria
+769,MEGAQM Balanceado,Renta Fija,RF ARS Lecap,MegaQM,Bancaria
+770,MEGAQM Estrategia 6,Renta Fija,RF ARS Disc,MegaQM,Bancaria
+771,Superfondo Equilibrado,Renta Fija,RF ARS Lecap,Santander,Bancaria
+772,Superfondo Combinado,Renta Mixta,RM y Otros ARS,Santander,Bancaria
+773,Superfondo Renta Mixta,Renta Fija,RF MULT Disc,Santander,Bancaria
+774,IAM Ahorro Pesos,Money Market,MM ARS Clásico,BIND,Bancaria
+775,IAM Renta Plus,T+1,T+1,BIND,Bancaria
+776,IAM Renta Crecimiento,T+1,T+1,BIND,Bancaria
+777,Superfondo Empresas Args. Abierto Pymes,Destino Esp.,PYME,Santander,Bancaria
+778,Consultatio One Ahorro,Renta Fija,RF ARS CER,Consultatio,Independiente
+779,Consultatio Retorno Absoluto,Renta Mixta,RM y Otros ARS,Consultatio,Independiente
+780,Consultatio Estrategia,Renta Fija,RF MULT Disc,Consultatio,Independiente
+781,Consultatio Renta y Capital,Renta Mixta,RM y Otros ARS,Consultatio,Independiente
+782,Balanz Renta Fija Estrategica,Renta Fija,RF MULT Disc,Balanz,Independiente
+783,Balanz Excalibur Regisseur,Renta Mixta,RM y Otros ARS,Balanz,Independiente
+784,Stonex Pesos,Money Market,MM ARS Clásico,StoneX,Independiente
+785,Consultatio Renta Pesos,Renta Fija,RF MULT Disc,Consultatio,Independiente
+786,Balanz Capital Acciones Argentina,Renta Variable,RV ARG Merval,Balanz,Independiente
+787,IAM FCI Abierto Pymes,Destino Esp.,PYME,BIND,Bancaria
+788,Optimum Global Opportunity,T+1,T+1,SAM Arg,Bancaria
+789,Optimum Multi Asset Fund,Renta Fija,RF ARS CER,SAM Arg,Bancaria
+790,Superfondo Multirenta,Renta Fija,RF MULT Disc,Santander,Bancaria
+791,Superfondo Estrategico,Renta Fija,RF USD Disc,Santander,Bancaria
+792,Superfondo Renta Balance,Renta Fija,RF MULT Disc,Santander,Bancaria
+794,MAF Ahorro Plus,Renta Mixta,RM y Otros ARS,Mariva,Bancaria
+795,CMA Performance,Renta Fija,RF USD Linked,Capital Markets,Independiente
+797,Premier Inversion,Renta Mixta,RM y Otros ARS,Supervielle,Bancaria
+798,Pionero Renta Mixta I,Renta Mixta,RM y Otros ARS,Macro,Bancaria
+799,Pionero Renta Mixta II,T+1,T+1,Macro,Bancaria
+800,Pionero Renta Ahorro Plus,Renta Fija,RF USD Linked,Macro,Bancaria
+801,Allaria Gestion,Renta Fija,RF MULT Disc,Allaria,Independiente
+802,Fima Mix I,Renta Mixta,RM y Otros ARS,Galicia,Bancaria
+803,Fima Renta Dolares I,Renta Fija,RF USD GL Inc ARG,Galicia,Bancaria
+805,MEGAQM Acciones Latam,Renta Mixta,RM y Otros ARS,MegaQM,Bancaria
+806,Superfondo Renta Fija Dolares,Renta Fija,RF USD GL Inc ARG,Santander,Bancaria
+807,Adcap Balanceado VI,Renta Mixta,RM y Otros ARS,Adcap,Independiente
+808,IAM Renta Mixta,Renta Mixta,RM y Otros ARS,BIND,Bancaria
+809,IAM Renta Capital,T+1,T+1,BIND,Bancaria
+811,MAF Estrategia,Renta Mixta,RM y Otros ARS,Mariva,Bancaria
+812,GSS Retorno Total,Renta Fija,RF MULT Disc,Grupo SS,Independiente
+813,GSS Cobertura,Renta Fija,RF USD Linked,Grupo SS,Independiente
+814,GSS Renta Fija Argentina,Renta Fija,RF ARS CER,Grupo SS,Independiente
+815,Delta Gestion V,Renta Mixta,RM y Otros ARS,Delta,Independiente
+816,Delta Gestion VI,Renta Mixta,RM y Otros ARS,Delta,Independiente
+817,Consultatio Global,Renta Fija,RF MULT Disc,Consultatio,Independiente
+818,Consultatio Retorno Total,Renta Fija,RF MULT Disc,Consultatio,Independiente
+819,Cima Renta Variable,Renta Variable,RV ARG Otros,Puente,Independiente
+820,Argenfunds Renta Balanceada,Renta Fija,RF ARS CER,Argenfunds,Independiente
+821,Argenfunds Renta Mixta,Renta Fija,RF ARS Lecap,Argenfunds,Independiente
+822,Argenfunds Renta Total,Renta Fija,RF MULT Disc,Argenfunds,Independiente
+823,Argenfunds Renta Global,Renta Fija,RF MULT Disc,Argenfunds,Independiente
+824,Argenfunds Renta Flexible,Renta Fija,RF ARS Lecap,Argenfunds,Independiente
+825,Argenfunds Renta Dinamica,Renta Fija,RF MULT Disc,Argenfunds,Independiente
+826,Pionero Performance II,Renta Fija,RF MULT Disc,Macro,Bancaria
+827,Pionero Performance III,Renta Fija,RF MULT Disc,Macro,Bancaria
+828,Pionero Retorno Total,Renta Fija,RF MULT Disc,Macro,Bancaria
+829,FBA Renta Mixta,Renta Mixta,RM y Otros ARS,BBVA,Bancaria
+830,FBA Gestion I,Renta Fija,RF MULT Disc,BBVA,Bancaria
+831,Schroder Retorno Total,Renta Fija,RF USD corp loc,Schroder,Independiente
+832,Schroder Multiactivos,Renta Fija,RF MULT Disc,Schroder,Independiente
+833,Schroder Balanceado,Renta Mixta,RM y Otros ARS,Schroder,Independiente
+834,Stonex Capital II,Renta Fija,RF ARS Disc,StoneX,Independiente
+835,Stonex Capital III,Renta Mixta,RM y Otros ARS,StoneX,Independiente
+836,Stonex Crecimiento II,Renta Mixta,RM y Otros ARS,StoneX,Independiente
+837,Stonex Crecimiento III,Renta Mixta,RM y Otros ARS,StoneX,Independiente
+838,Fima Retorno Total,Renta Fija,RF ARS Disc,Galicia,Bancaria
+839,HF Renta Fija Estrategica,Renta Fija,RF USD Disc,Galicia,Bancaria
+840,HF Multimercado,Renta Mixta,RM y Otros ARS,GGAL AM,Bancaria
+842,Pionero Ahorro Dolares,Renta Fija,RF USD corp loc,Macro,Bancaria
+843,Pionero Renta Fija Dolares,Renta Fija,RF USD Disc,Macro,Bancaria
+845,MAF Gestion Activa,Renta Fija,RF MULT Disc,Mariva,Bancaria
+846,Axis Renta Plus,Renta Fija,RF ARS CER,Mariva,Bancaria
+847,SBS Patrimonio IV,Renta Fija,RF MULT Disc,SBS,Independiente
+848,SBS Patrimonio,Renta Mixta,RM y Otros ARS,SBS,Independiente
+849,Delta Renta Dolares,Renta Fija,RF USD Disc,Delta,Independiente
+850,ST Abierto Pymes,Destino Esp.,PYME,Consultatio,Independiente
+851,ST Retorno Total Dolares,Renta Fija,RF USD GL Ex ARG,Consultatio,Independiente
+852,Megainver Retorno Absoluto,Renta Fija,RF ARS CER,MegaQM,Bancaria
+854,Allaria Renta Dolar Ley 27260,Renta Fija,RF USD CP,Allaria,Independiente
+855,Allaria Renta Mixta Doláres,Renta Mixta,RM y Otros USD,Allaria,Independiente
+857,Premier Estrategico,Renta Fija,RF MULT Disc,Supervielle,Bancaria
+858,Premier Balanceado,Renta Mixta,RM y Otros ARS,Supervielle,Bancaria
+859,Premier Renta Mixta,Renta Fija,RF USD Linked,Supervielle,Bancaria
+860,Premier Renta Mixta en Dolares,Renta Fija,RF USD corp loc,Supervielle,Bancaria
+862,Integrae SC Retorno Total,Renta Mixta,RM y Otros ARS,Cohen,Independiente
+863,ST Renta Mixta,Renta Fija,RF ARS CER,Consultatio,Independiente
+864,GSS Energia,Renta Fija,RF MULT Corp,Grupo SS,Independiente
+865,SBS Dolar Plus Ley 27260,Renta Fija,RF USD CP,SBS,Independiente
+866,MEGAQM Gestión Dólares 5,Renta Fija,RF USD GL Inc ARG,MegaQM,Bancaria
+869,Adcap Ahorro Dólares,Money Market,MM USD Clásico,Adcap,Independiente
+873,Cohen Disp. Transitorias Ley 27260,Renta Fija,RF USD CP,Cohen,Independiente
+876,Balanz Ahorro en Dolares ,Renta Fija,RF USD corp loc,Balanz,Independiente
+877,DFS Renta Fija Pesos,T+1,T+1,Deal,Independiente
+878,CMA Renta Dolar ,Renta Fija,RF USD GL Inc ARG,Capital Markets,Independiente
+879,CMA Abierto Pymes,Destino Esp.,PYME,Capital Markets,Independiente
+881,Superfondo Renta Fija Dolares II,Renta Fija,RF USD GL Ex ARG,Santander,Bancaria
+883,Consultatio Liquidez Dólar,Money Market,MM USD Clásico,Consultatio,Independiente
+888,Fima Renta Dolares II,Renta Fija,RF USD Disc,Galicia,Bancaria
+889,MEGAQM Corporativo Dólares,Renta Fija,RF USD corp loc,MegaQM,Bancaria
+890,Lombard Renta Fija en Dolares,Renta Fija,RF USD GL Ex ARG,Patagonia,Bancaria
+891,Axis Argentina Local Markets,Renta Fija,RF MULT Disc,Mariva,Bancaria
+892,HF Renta Dolares,Renta Fija,RF USD Disc,Galicia,Bancaria
+894,First Abierto Pymes,Destino Esp.,PYME,First Cap Mkts,Independiente
+895,MEGAQM Liquidez Dólar,Money Market,MM USD Clásico,MegaQM,Bancaria
+896,SBS Renta Patrimonio,Renta Fija,RF USD corp loc,SBS,Independiente
+897,SBS Multiactivos,Renta Fija,RF MULT Disc,SBS,Independiente
+898,Toronto Trust Liquidez Dolar,Renta Fija,RF USD GL Ex ARG,Investis,Independiente
+903,Argenfunds Renta Capital,Renta Fija,RF USD GL Inc ARG,Argenfunds,Independiente
+904,Argenfunds Renta Crecimiento,Renta Fija,RF USD Disc,Argenfunds,Independiente
+906,MEGAQM Renta Fija LATAM,Renta Fija,RF USD GL Ex ARG,MegaQM,Bancaria
+907,Megainver Liquidez Pesos,Money Market,MM ARS Clásico,MegaQM,Bancaria
+908,Balanz Capital Renta Fija en Dolares,Renta Fija,RF USD Disc,Balanz,Independiente
+912,Schroder Retorno Total Dos,Renta Fija,RF USD GL Inc ARG,Schroder,Independiente
+913,Toronto Trust Argentina 2021,Renta Mixta,RM y Otros ARS,Investis,Independiente
+914,IAM Renta Dolares,Renta Fija,RF USD corp loc,BIND,Bancaria
+915,First Renta Pesos,T+1,T+1,First Cap Mkts,Independiente
+916,First Renta Dolares,Renta Fija,RF USD Disc,First Cap Mkts,Independiente
+917,Stonex Estrategia I,Renta Fija,RF USD Disc,StoneX,Independiente
+918,Gainvest Estrategia II,Renta Fija,RF MULT Corp,StoneX,Independiente
+919,Gainvest Estrategia III,Renta Fija,RF USD Linked,StoneX,Independiente
+920,Stonex Global I,Renta Fija,RF USD GL Ex ARG,StoneX,Independiente
+921,Stonex Global II,Renta Fija,RF ARS Disc,StoneX,Independiente
+922,Gainvest Global III,Renta Mixta,RM y Otros ARS,StoneX,Independiente
+923,MEGAQM Retorno Absoluto,Renta Fija,RF ARS CER,MegaQM,Bancaria
+930,Allaria Diversificado,Renta Mixta,RM y Otros ARS,Allaria,Independiente
+931,Allaria Dolar Latam,Renta Fija,RF USD GL Ex ARG,Allaria,Independiente
+932,FBA Renta Fija Dolar,Renta Fija,RF USD CP,BBVA,Bancaria
+933,FBA Horizonte Plus,Renta Fija,RF ARS Disc,BBVA,Bancaria
+934,FBA Renta Fija Dolar Plus,Renta Fija,RF USD Disc,BBVA,Bancaria
+938,Pionero Renta Dolares,Renta Fija,RF USD GL Ex ARG,Macro,Bancaria
+939,CMA Renta Variable,Renta Variable,RV ARG Otros,Capital Markets,Independiente
+940,CMA Renta Fija en Dolares,Renta Fija,RF USD Disc,Capital Markets,Independiente
+942,Dracma Balanceado,Renta Mixta,RM y Otros ARS,Dracma,Independiente
+944,Adcap Renta Dolar,Renta Fija,RF USD GL Inc ARG,Adcap,Independiente
+945,Balanz Institucional,Renta Fija,RF ARS CER,Balanz,Independiente
+946,Balanz Renta Fija Opportunity,Renta Fija,RF MULT Disc,Balanz,Independiente
+947,Pellegrini Renta Dolares,Renta Fija,RF USD Disc,Pellegrini,Bancaria
+948,Pellegrini Renta Publica Federal,Renta Fija,RF ARS Disc,Pellegrini,Bancaria
+949,MEGAQM Gestion Dolares I,Renta Fija,RF USD GL Inc ARG,MegaQM,Bancaria
+950,Quinquela Ahorro Dolares,Renta Fija,RF USD corp loc,MegaQM,Bancaria
+951,MEGAQM Provincial,Renta Fija,RF MULT Disc,MegaQM,Bancaria
+954,IAM Renta Balanceada,Renta Fija,RF USD Linked,BIND,Bancaria
+955,IAM Estrategia,Renta Fija,RF USD GL Inc ARG,BIND,Bancaria
+956,Mercado Fondo,Money Market,MM ARS Clásico,Mercado Pago,Independiente
+958,Galileo Estrategia,Renta Fija,RF MULT Disc,Delta,Independiente
+959,Galileo Income,Renta Fija,RF USD GL Ex ARG,Delta,Independiente
+961,Adcap Balanceado XIII,Renta Fija,RF ARS Disc,Adcap,Independiente
+962,Delta Gestion VII,Renta Mixta,RM y Otros ARS,Delta,Independiente
+963,Delta Retorno Real,Renta Fija,RF ARS CER,Delta,Independiente
+964,MEGAQM Estrategia 9,Renta Fija,RF MULT Disc,MegaQM,Bancaria
+965,Toronto Trust Retorno Total,Renta Fija,RF ARS CER,Investis,Independiente
+966,Toronto Trust Crecimiento,Renta Fija,RF USD Disc,Investis,Independiente
+968,Consultatio Arbitraje,Renta Mixta,RM y Otros ARS,Consultatio,Independiente
+969,Consultatio Multiestrategia,Renta Fija,RF MULT Corp,Consultatio,Independiente
+970,Consultatio Renta Dolares,Renta Mixta,RM y Otros ARS,Consultatio,Independiente
+971,Consultatio Tactico,Renta Fija,RF MULT Disc,Consultatio,Independiente
+972,Balanz Sudamericano USD,Renta Fija,RF USD GL Ex ARG,Balanz,Independiente
+973,1822 Raices Dolares Plus,Renta Fija,RF USD Disc,Provinfondos,Bancaria
+974,1810 Mas Ahorro,Renta Fija,RF ARS Lecap,Proahorro,Bancaria
+975,1810 Renta Fija Argentina,Renta Fija,RF MULT Disc,Proahorro,Bancaria
+977,FBA Bonos Latam,Renta Fija,RF USD GL Ex ARG,BBVA,Bancaria
+978,FBA Retorno Total I,Renta Mixta,RM y Otros ARS,BBVA,Bancaria
+979,FBA Retorno Total II,Renta Mixta,RM y Otros ARS,BBVA,Bancaria
+980,Allaria Estrategico,Renta Mixta,RM y Otros ARS,Allaria,Independiente
+981,Allaria Estructurado,Renta Fija,RF ARS Disc,Allaria,Independiente
+982,Fundcorp Performance,T+1,T+1,CMF,Bancaria
+983,Fundcorp Performance Plus,Renta Fija,RF USD Disc,CMF,Bancaria
+984,Lombard Ahorro Plus,Renta Fija,RF USD Linked,Patagonia,Bancaria
+985,Allaria Dolar Global,Renta Fija,RF USD Disc,Allaria,Independiente
+986,SMSV Renta en Dolares,Renta Fija,RF USD corp loc,Consultatio,Independiente
+987,Consultatio SMSV Renta en Pesos,Renta Fija,RF MULT Disc,Consultatio,Independiente
+988,Consultatio Gestion IX,Renta Fija,RF MULT Disc,Consultatio,Independiente
+989,GMC Retorno Total,Renta Mixta,RM y Otros ARS,GMC,Independiente
+993,CMA Acciones,Renta Variable,RV ARG Otros,Capital Markets,Independiente
+996,Delta Patrimonio I,Renta Fija,RF USD Linked,Delta,Independiente
+997,Delta Renta Dolares Plus,Renta Fija,RF USD corp loc,Delta,Independiente
+998,Delta Multimercado II,Renta Fija,RF ARS Disc,Delta,Independiente
+1000,Premier Performance Dolares,Renta Fija,RF USD Disc,Supervielle,Bancaria
+1001,Premier Global Dolares,Renta Fija,RF USD GL Ex ARG,Supervielle,Bancaria
+1003,Superfondo Multiactivos USD,Renta Fija,RF USD Disc,Santander,Bancaria
+1004,Superfondo Renta Global,Renta Fija,RF USD GL Inc ARG,Santander,Bancaria
+1005,Alamerica Renta Fija Argentina,Renta Fija,RF ARS Disc,Allaria,Independiente
+1006,CYC Renta Fija Dolares,Renta Fija,RF MULT Disc,CYC,Independiente
+1007,CYC Renta Mixta,Renta Variable,RV ARG Otros,CYC,Independiente
+1008,Axis Argentina Local Markets Plus,Renta Fija,RF USD CP,Mariva,Bancaria
+1009,Compass Ahorro en Dolares,Renta Fija,RF USD Disc,Investis,Independiente
+1010,Compass Best Ideas,Renta Fija,RF USD corp loc,Investis,Independiente
+1011,MAF Global,Renta Fija,RF USD GL Ex ARG,Mariva,Bancaria
+1012,Pionero Renta Estrategico,Renta Mixta,RM y Otros ARS,Macro,Bancaria
+1013,Pionero Renta Capital,Renta Mixta,RM y Otros ARS,Macro,Bancaria
+1014,Pionero Argentina Bicentenario,Renta Mixta,RM y Otros ARS,Macro,Bancaria
+1015,Zofingen Factoring Pyme,Destino Esp.,PYME,Zofingen Inv.,Independiente
+1016,Intervalores Dolar Total Return,Renta Fija,RF USD GL Inc ARG,Allaria,Independiente
+1017,Potencia Pyme,Destino Esp.,PYME,Zofingen Inv.,Independiente
+1019,First Crecimiento,Renta Fija,RF ARS Disc,First Cap Mkts,Independiente
+1020,First Renta Mixta I,Renta Fija,RF USD Linked,First Cap Mkts,Independiente
+1021,First Renta Mixta II,Renta Variable,RV ARG Rofex 20,First Cap Mkts,Independiente
+1022,Intervalores Ahorro,Renta Fija,RF ARS Disc,Allaria,Independiente
+1023,Zofingen Dollar Linked,Renta Fija,RF MULT Disc,Zofingen Inv.,Independiente
+1024,Zofingen Renta Fija Dólar,Renta Fija,RF USD CP,Zofingen Inv.,Independiente
+1025,Cohen Renta Fija Dolares,Renta Fija,RF USD GL Ex ARG,Delta,Independiente
+1026,Consultatio Gestion I,Renta Mixta,RM y Otros ARS,Consultatio,Independiente
+1027,Consultatio Gestion II,Renta Mixta,RM y Otros ARS,Consultatio,Independiente
+1028,Schroder Income,Renta Fija,RF USD GL Ex ARG,Schroder,Independiente
+1029,Zofingen Pesos 24,T+1,T+1,Zofingen Inv.,Independiente
+1030,Fundcorp Long Performance Plus,Renta Fija,RF USD GL Inc ARG,CMF,Bancaria
+1031,Fundcorp Long Performance,Renta Fija,RF ARS CER,CMF,Bancaria
+1032,JA Roca Val. Negociables,Renta Variable,RV ARG Otros,Tutelar,Independiente
+1033,JA Roca Ahorro Pesos,Renta Mixta,RM y Otros ARS,Tutelar,Independiente
+1034,First Ahorro Pesos,Renta Fija,RF ARS Disc,First Cap Mkts,Independiente
+1037,Pellegrini Proteccion,Renta Fija,RF USD Linked,Pellegrini,Bancaria
+1039,IAM Performance Americas,Renta Fija,RF USD GL Ex ARG,BIND,Bancaria
+1040,IAM Lider Renta Pesos,Renta Fija,RF MULT Disc,BIND,Bancaria
+1041,Ciclo Nova Ahorro Plus,T+1,T+1,Ciclo Nova,Independiente
+1042,Ciclo Nova Retorno Total,Renta Fija,RF ARS Disc,Ciclo Nova,Independiente
+1043,Balanz Long Pesos,Renta Fija,RF ARS Disc,Balanz,Independiente
+1044,1810 Renta Mixta,Renta Mixta,RM y Otros ARS,Proahorro,Bancaria
+1045,1810 Ahorros Activos,Renta Fija,RF ARS CER,Proahorro,Bancaria
+1046,1810 Renta Dólar,Renta Fija,RF USD corp loc,Proahorro,Bancaria
+1047,FBA Brasil I,Renta Variable,RV Global,BBVA,Bancaria
+1048,FBA Cobertura Pesos,Renta Fija,RF ARS CER,BBVA,Bancaria
+1049,FBA Renta Fija Dólar I,Renta Fija,RF USD GL Inc ARG,BBVA,Bancaria
+1050,FBA Renta Fija Dólar Plus I,Renta Fija,RF USD Disc,BBVA,Bancaria
+1051,Bull Market Renta Fija,Renta Mixta,RM y Otros ARS,Bull Market,Independiente
+1052,Bull Market Acciones Argentinas,Renta Variable,RV ARG Merval,Bull Market,Independiente
+1053,Galileo Fixed Income,Renta Fija,RF USD GL Inc ARG,Delta,Independiente
+1054,Galileo Renta,Renta Mixta,RM y Otros ARS,Delta,Independiente
+1055,Galileo Pesos,Money Market,MM ARS Clásico,Delta,Independiente
+1057,MEGAQM Estrategia 10,Renta Fija,RF MULT Disc,MegaQM,Bancaria
+1058,MEGAQM Estrategia 1,Renta Mixta,RM y Otros ARS,MegaQM,Bancaria
+1059,Alamerica Renta Fija Dolar Latam,Renta Fija,RF USD GL Ex ARG,Allaria,Independiente
+1060,MAF Abierto Pymes,Destino Esp.,PYME,Mariva,Bancaria
+1061,MAF Gestion Activa II,T+1,T+1,Mariva,Bancaria
+1062,MAF Gestión Activa III,Renta Fija,RF MULT Disc,Mariva,Bancaria
+1064,Fima Acciones Latinoamerica,Renta Variable,RV Global,Galicia,Bancaria
+1065,Fima Renta Fija Internacional,Renta Fija,RF USD GL Ex ARG,Galicia,Bancaria
+1066,Argenfunds Retorno Absoluto,Renta Fija,RF MULT Disc,Argenfunds,Independiente
+1067,Argenfunds Renta Variable,Renta Variable,RV ARG Rofex 20,Argenfunds,Independiente
+1068,Argenfunds Renta Mixta Plus,Renta Fija,RF USD corp loc,Argenfunds,Independiente
+1069,Consultatio Gestión XII Pesos,Renta Fija,RF ARS Disc,Consultatio,Independiente
+1070,Consultatio Gestion Xl Dolar,Renta Fija,RF USD Disc,Consultatio,Independiente
+1071,Valiant Renta Variable,Renta Variable,RV ARG Rofex 20,Valiant,Independiente
+1072,Valiant Renta Fija,T+1,T+1,Valiant,Independiente
+1073,Valiant Total Return,Renta Mixta,RM y Otros ARS,Valiant,Independiente
+1074,Probolsa Acciones,Renta Variable,RV ARG Otros,Mercofond,Independiente
+1075,Probolsa Dolares,Renta Fija,RF USD Disc,Mercofond,Independiente
+1076,SF Value,Renta Variable,RV ARG Otros,Delta,Independiente
+1077,Galileo Multimercado II,Renta Fija,RF ARS CER,Delta,Independiente
+1080,MEGAQM Gestion Balanceada Dolares,Renta Fija,RF USD Disc,MegaQM,Bancaria
+1081,MEGAQM Renta Dólares,Renta Fija,RF USD CP,MegaQM,Bancaria
+1083,MEGAQM Ahorro Dólares,Renta Fija,RF USD Disc,MegaQM,Bancaria
+1084,MEGAQM Latam Corporativo,Renta Fija,RF USD GL Ex ARG,MegaQM,Bancaria
+1085,Cocos Rendimiento,T+1,T+1,Cocos,Independiente
+1086,MAF Mix I,Renta Fija,RF USD Disc,Mariva,Bancaria
+1087,MAF Mix II,Renta Fija,RF USD corp loc,Mariva,Bancaria
+1089,Delta Gestion IX,Renta Fija,RF USD Linked,Delta,Independiente
+1090,Delta Gestion X,Renta Mixta,RM y Otros ARS,Delta,Independiente
+1092,Numancia Pesos,Renta Fija,RF MULT Disc,Zofingen Inv.,Independiente
+1094,Adcap Gestion Estrategica VIII,Renta Mixta,RM y Otros ARS,Adcap,Independiente
+1095,SBS Patrimonio III,Renta Fija,RF ARS Disc,SBS,Independiente
+1096,SBS Renta Fija Total,Renta Fija,RF MULT Corp,SBS,Independiente
+1097,SBS Patrimonio II,Renta Fija,RF MULT Disc,SBS,Independiente
+1098,Valiant Ahorro,Money Market,MM ARS Clásico,Valiant,Independiente
+1099,Valiant Abierto Pymes,Destino Esp.,PYME,Valiant,Independiente
+1100,Valiant Renta Fija Dolares,Renta Fija,RF USD GL Inc ARG,Valiant,Independiente
+1101,Ciclo Nova Multiestrategia,Renta Fija,RF ARS CER,Ciclo Nova,Independiente
+1102,Ciclo Nova Value,Renta Variable,RV ARG Rofex 20,Ciclo Nova,Independiente
+1103,Ciclo Nova Renta Fija,Renta Fija,RF USD Linked,Ciclo Nova,Independiente
+1104,Ciclo Nova Renta Fija Dolar,Renta Fija,RF USD GL Inc ARG,Ciclo Nova,Independiente
+1105,Argenfunds Liquidez,Money Market,MM ARS Clásico,Argenfunds,Independiente
+1106,Adcap Ahorro Pesos,Money Market,MM ARS Clásico,Adcap,Independiente
+1107,Schroder Renta Performance,Renta Fija,RF ARS CER,Schroder,Independiente
+1113,Transatlantica Liquidez Pesos,Money Market,MM ARS Dinámico,Mariva,Bancaria
+1116,Fundcorp Liquidez,Money Market,MM ARS Clásico,CMF,Bancaria
+1117,MEGAQM Estrategia 2,Renta Fija,RF MULT Disc,MegaQM,Bancaria
+1118,Axis Capital I,Renta Fija,RF MULT Disc,Axis,Independiente
+1119,Balanz Performance I,Renta Mixta,RM y Otros ARS,Balanz,Independiente
+1120,Balanz Lecaps,Renta Fija,RF ARS Lecap,Balanz,Independiente
+1121,Balanz Performance III,Renta Fija,RF MULT Corp,Balanz,Independiente
+1122,Balanz Performance IV,Renta Fija,RF MULT Disc,Balanz,Independiente
+1123,Balanz Performance V,Renta Fija,RF USD Linked,Balanz,Independiente
+1124,Fima Infraestructura I,Destino Esp.,INFRA,Galicia,Bancaria
+1125,Consultatio Infraestructura,Destino Esp.,INFRA,Consultatio,Independiente
+1126,Champaquí Ahorro Pesos,T+1,T+1,Bancor,Bancaria
+1128,Champaquí Ahorro Mixto,Renta Mixta,RM y Otros ARS,Bancor,Bancaria
+1129,Champaquí Cobertura,Renta Fija,RF ARS CER,Bancor,Bancaria
+1130,Champaqui Estrategico,Renta Fija,RF USD Linked,Bancor,Bancaria
+1133,Allaria Capital,Renta Fija,RF MULT Disc,Allaria,Independiente
+1134,Allaria Unicred Abierto Pymes,Destino Esp.,PYME,Allaria,Independiente
+1135,Adcap Cobertura,Renta Fija,RF ARS CER,Adcap,Independiente
+1137,Optimum Abierto Pymes,Destino Esp.,PYME,SAM Arg,Bancaria
+1138,BM Smart Money Market,Money Market,MM ARS Clásico,Bull Market,Independiente
+1139,Champaquí Fondo Inmediato,Money Market,MM ARS Clásico,Bancor,Bancaria
+1140,Champaquí Abierto Pymes,Destino Esp.,PYME,Bancor,Bancaria
+1142,Ciclo Nova Ahorro,Money Market,MM ARS Clásico,Ciclo Nova,Independiente
+1143,Compass Renta Plus II,Renta Fija,RF MULT Disc,Investis,Independiente
+1145,Galileo Blend,Renta Mixta,RM y Otros ARS,Delta,Independiente
+1146,Galileo Multimercado IV,Renta Mixta,RM y Otros ARS,Delta,Independiente
+1147,Galileo Multi Strategy,Renta Fija,RF USD corp loc,Delta,Independiente
+1148,First Renta Mixta III,Renta Fija,RF MULT Disc,First Cap Mkts,Independiente
+1149,First Renta Mixta IV,Renta Fija,RF MULT Disc,First Cap Mkts,Independiente
+1150,First Renta Mixta V,Renta Fija,RF MULT Disc,First Cap Mkts,Independiente
+1151,Pionero Renta Dólares Plus,Renta Fija,RF USD Disc,Macro,Bancaria
+1152,Balanz Capital Money Market,Money Market,MM ARS Clásico,Balanz,Independiente
+1153,Allaria Dinámico,Renta Mixta,RM y Otros ARS,Allaria,Independiente
+1154,First Abierto Pymes II,Destino Esp.,PYME,First Cap Mkts,Independiente
+1155,Balanz Infraestructura,Destino Esp.,INFRA,Balanz,Independiente
+1156,Vinci Compass Liquidez,Money Market,MM ARS Clásico,Investis,Independiente
+1157,Optimum Liquidity,Money Market,MM ARS Clásico,SAM Arg,Bancaria
+1158,Consultatio Zero,Money Market,MM ARS Clásico,Consultatio,Independiente
+1159,Stonex Global IV,Renta Fija,RF MULT Disc,StoneX,Independiente
+1160,Stonex Estrategia IV,Renta Fija,RF USD GL Inc ARG,StoneX,Independiente
+1162,Pionero Gestion,Renta Fija,RF MULT Disc,Macro,Bancaria
+1163,BM Active Renta Fija Argentina,Renta Fija,RF ARS CER,Bull Market,Independiente
+1164,Alpha Infraestructura,Destino Esp.,INFRA,ICBC,Bancaria
+1165,Alpha Renta Capital Dolar,Renta Fija,RF USD Disc,ICBC,Bancaria
+1166,Alpha Latam,Renta Variable,RV Global,ICBC,Bancaria
+1167,Alpha Abierto Pymes,Destino Esp.,PYME,ICBC,Bancaria
+1168,Ciclo Nova Pyme,Destino Esp.,PYME,Ciclo Nova,Independiente
+1169,BM Smart Corto Plazo,Renta Fija,RF ARS Lecap,Bull Market,Independiente
+1171,Novus Liquidez Plus,T+1,T+1,Novus,Independiente
+1172,Novus Estrategia,Renta Fija,RF ARS CER,Novus,Independiente
+1173,Novus Liquidez Fondo de Dinero,Money Market,MM ARS Clásico,Novus,Independiente
+1174,Novus Valor,Renta Fija,RF USD Linked,Novus,Independiente
+1175,Allaria Unicred Empresas,Renta Fija,RF ARS CER,Allaria,Independiente
+1176,Allaria Principal,Renta Fija,RF ARS Disc,Allaria,Independiente
+1177,Allaria Dolar Crecimiento,Renta Fija,RF USD GL Inc ARG,Allaria,Independiente
+1178,Pionero Infraestructura,Destino Esp.,INFRA,Macro,Bancaria
+1179,Consultatio Gestion III,Renta Fija,RF USD GL Ex ARG,Consultatio,Independiente
+1180,Consultatio Gestion IV,Renta Fija,RF MULT Disc,Consultatio,Independiente
+1181,Consultatio Gestion V,Renta Fija,RF MULT Disc,Consultatio,Independiente
+1182,Pionero Renta Balanceado,Renta Fija,RF ARS CER,Macro,Bancaria
+1183,Pionero Capital,T+1,T+1,Macro,Bancaria
+1184,SMR FCI,Renta Mixta,RM y Otros ARS,Consultatio,Independiente
+1185,First Renta Mixta VI,Renta Fija,RF USD Linked,First Cap Mkts,Independiente
+1186,First Renta Mixta VII,Renta Fija,RF MULT Disc,First Cap Mkts,Independiente
+1187,First Renta Mixta VIII,Renta Fija,RF MULT Disc,First Cap Mkts,Independiente
+1188,CYC Dolares Renta Fija,Renta Fija,RF USD Disc,CYC,Independiente
+1189,CYC Pesos Renta Fija,Renta Fija,RF ARS Disc,CYC,Independiente
+1191,Lombard Abierto Pymes,Destino Esp.,PYME,Patagonia,Bancaria
+1192,Fundcorp Capital Abierto Pymes,Destino Esp.,PYME,CMF,Bancaria
+1193,Pellegrini Retorno Total,Renta Fija,RF MULT Disc,Pellegrini,Bancaria
+1194,Pellegrini Renta Fija II,T+1,T+1,Pellegrini,Bancaria
+1195,Consultatio Multimercado I,Renta Fija,RF MULT Disc,Consultatio,Independiente
+1196,Consultatio Multimercado II,Renta Fija,RF MULT Disc,Consultatio,Independiente
+1197,Consultatio Multimercado III,Renta Fija,RF USD corp loc,Consultatio,Independiente
+1198,Consultatio Multimercado IV,Renta Fija,RF MULT Disc,Consultatio,Independiente
+1199,Consultatio Multimercado V,Renta Fija,RF USD Disc,Consultatio,Independiente
+1200,Abierto Pymes Veta,Destino Esp.,PYME,Zofingen Inv.,Independiente
+1201,Ualintec Renta Fija Pesos,Renta Fija,RF MULT Disc,Ualá,Bancaria
+1202,Ualintec Ahorro Pesos,Money Market,MM ARS Clásico,Ualá,Bancaria
+1203,Ualintec Renta Variable Pesos,Renta Variable,RV ARG Rofex 20,Ualá,Bancaria
+1204,Allaria Patrimonio II,Renta Fija,RF USD Linked,Allaria,Independiente
+1205,Allaria Unicred Cobertura,Renta Fija,RF USD Linked,Allaria,Independiente
+1207,Alycbur FCI abierto Pymes,Destino Esp.,PYME,Adcap,Independiente
+1208,Adcap Balanceado XI,Renta Fija,RF ARS Disc,Adcap,Independiente
+1209,MEGAQM Sustentable ASG,Destino Esp.,ASG,MegaQM,Bancaria
+1211,Consultatio ST ASG,Destino Esp.,ASG,Consultatio,Independiente
+1212,Balanz Capital Estrategia I USD,Renta Fija,RF USD CP,Balanz,Independiente
+1213,Balanz Capital Estrategia II USD,Renta Fija,RF USD Disc,Balanz,Independiente
+1214,Julio A. Roca Abierto Pymes,Destino Esp.,PYME,Tutelar,Independiente
+1215,Stonex Balanceado II,Renta Fija,RF MULT Disc,StoneX,Independiente
+1216,Stonex Balanceado III,Renta Mixta,RM y Otros ARS,StoneX,Independiente
+1217,Alamerica Abierto Pymes,Destino Esp.,PYME,Allaria,Independiente
+1218,Quirón Agro Pymes,Destino Esp.,PYME,Quiron,Independiente
+1219,Consultatio Fondo de Dinero,Money Market,MM ARS Clásico,Consultatio,Independiente
+1220,Schroder Renta Global Cuatro,Renta Fija,RF MULT Disc,Schroder,Independiente
+1221,Schroder Renta Global Cinco,Renta Mixta,RM y Otros ARS,Schroder,Independiente
+1223,Abierto Momentum Pymes,Destino Esp.,PYME,Zofingen Inv.,Independiente
+1225,1822 Raices Gestion,Renta Mixta,RM y Otros ARS,Provinfondos,Bancaria
+1226,1822 Raices Ahorro Plus,Renta Fija,RF ARS Lecap,Provinfondos,Bancaria
+1228,Delta Gestion XI,Renta Fija,RF MULT Corp,Delta,Independiente
+1229,Delta Gestion XII,Renta Mixta,RM y Otros ARS,Delta,Independiente
+1230,SBS Retorno Sustentable ASG,Destino Esp.,ASG,SBS,Independiente
+1232,Delta Sustentable ASG,Destino Esp.,ASG,Delta,Independiente
+1233,Quiron Pymes Capital Plus,Destino Esp.,ASG,Quiron,Independiente
+1234,Pionero Desarrollo,Renta Fija,RF MULT Disc,Macro,Bancaria
+1235,Pionero Retorno,Renta Mixta,RM y Otros ARS,Macro,Bancaria
+1238,Allaria Cobertura Dinamica,Renta Fija,RF USD Linked,Allaria,Independiente
+1239,Argenfunds Infraestructura,Destino Esp.,INFRA,Argenfunds,Independiente
+1241,MEGAQM Estrategia 3,Renta Mixta,RM y Otros ARS,MegaQM,Bancaria
+1243,Allaria Patrimonio IV,Renta Fija,RF MULT Disc,Allaria,Independiente
+1244,Allaria Patrimonio V,Renta Fija,RF ARS Disc,Allaria,Independiente
+1245,Adcap Balanceado IV,Renta Fija,RF USD Linked,Adcap,Independiente
+1246,IOL Cash Management,T+1,T+1,Adcap,Independiente
+1247,Adcap Balanceado V,Renta Fija,RF ARS Disc,Adcap,Independiente
+1248,Schroder Liquidez,Money Market,MM ARS Clásico,Schroder,Independiente
+1249,SBS Patrimonio V,Renta Fija,RF MULT Disc,SBS,Independiente
+1250,SBS Patrimonio VI,Renta Fija,RF MULT Disc,SBS,Independiente
+1251,SBS Acciones Brasil,Renta Variable,RV Global,SBS,Independiente
+1252,SBS Renta Mixta III,Renta Fija,RF USD GL Inc ARG,SBS,Independiente
+1253,Adcap S&C Renta Corporativa CP Pymes,Destino Esp.,PYME,Adcap,Independiente
+1254,Balanz Soja,Renta Mixta,RM y Otros ARS,Balanz,Independiente
+1255,Balanz Latam Selection,Renta Variable,RV Global,Balanz,Independiente
+1258,Balanz Equity Selection,Renta Variable,RV ARG Otros,Balanz,Independiente
+1259,Novus Balanceado,Renta Fija,RF MULT Disc,Novus,Independiente
+1260,Novus Renta Balanceado,Renta Mixta,RM y Otros ARS,Novus,Independiente
+1261,Novus Pyme Abierto,Destino Esp.,PYME,Novus,Independiente
+1262,Gainvest Renta Mixta Sustentable ASG,Destino Esp.,ASG,StoneX,Independiente
+1263,Max Gestión Abierto Pyme I,Destino Esp.,PYME,Max Capital,Independiente
+1267,Fima Sustentable ASG,Destino Esp.,ASG,Galicia,Bancaria
+1268,Fima Mix II,Renta Mixta,RM y Otros ARS,Galicia,Bancaria
+1269,Pellegrini Renta Fija III,T+1,T+1,Pellegrini,Bancaria
+1270,1822 Raices Infraestructura,Destino Esp.,INFRA,Provinfondos,Bancaria
+1271,IAM Renta Global,Renta Fija,RF USD Disc,BIND,Bancaria
+1274,Stonex Balanceado IV,Renta Variable,RV Global,StoneX,Independiente
+1275,Gainvest Balanceado V,Renta Fija,RF MULT Disc,StoneX,Independiente
+1276,Adcap Financiamiento 1,Renta Fija,RF ARS Disc,Adcap,Independiente
+1277,ConoSur Visus,Renta Mixta,RM y Otros ARS,Cono Sur,Independiente
+1279,CyC Liquidez,Money Market,MM ARS Clásico,CYC,Independiente
+1281,Max Estratégico I,Renta Mixta,RM y Otros ARS,Max Capital,Independiente
+1282,Max Estratégico II,Renta Fija,RF MULT Disc,Max Capital,Independiente
+1283,Max Estrategico III,Renta Fija,RF USD Disc,Max Capital,Independiente
+1284,Max Estratégico IV,Renta Fija,RF USD GL Inc ARG,Max Capital,Independiente
+1285,Max Abierto PyMEs,Destino Esp.,PYME,Max Capital,Independiente
+1286,Max Renta Fija Dólares,Renta Fija,RF USD corp loc,Max Capital,Independiente
+1287,Max Money Market,Money Market,MM ARS Clásico,Max Capital,Independiente
+1288,Max Ahorro Pesos,T+1,T+1,Max Capital,Independiente
+1289,Max Cobertura,Renta Fija,RF USD Linked,Max Capital,Independiente
+1290,Max Renta Fija,Renta Fija,RF ARS CER,Max Capital,Independiente
+1291,Balanz Performance XI,Renta Fija,RF ARS Disc,Balanz,Independiente
+1292,Balanz Performance XII,Renta Fija,RF MULT Disc,Balanz,Independiente
+1293,Balanz Performance XIII,Renta Fija,RF ARS Disc,Balanz,Independiente
+1294,Balanz Crédito Privado,T+1,T+1,Balanz,Independiente
+1296,Allaria Dinamico II,Renta Fija,RF ARS Disc,Allaria,Independiente
+1297,Allaria Dinámico III,Renta Fija,RF ARS Lecap,Allaria,Independiente
+1298,Allaria Dinámico IV,Renta Mixta,RM y Otros ARS,Allaria,Independiente
+1307,Zofingen Faro Fund,Renta Variable,RV ARG Otros,Zofingen Inv.,Independiente
+1308,Zofingen Multi Strategy II,Renta Fija,RF USD Linked,Zofingen Inv.,Independiente
+1310,Axis Estrategia 1,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1311,Axis Rosental Pymes,Destino Esp.,PYME,Axis,Independiente
+1312,Stonex Global V,Renta Mixta,RM y Otros ARS,StoneX,Independiente
+1313,Stonex Global VI,Renta Mixta,RM y Otros ARS,StoneX,Independiente
+1314,Superfondo Sustentable ASG,Destino Esp.,ASG,Santander,Bancaria
+1315,Ciclo Nova Multiestrategia II,Renta Fija,RF MULT Disc,Ciclo Nova,Independiente
+1316,Ciclo Nova Multiestrategia III,Renta Fija,RF MULT Disc,Ciclo Nova,Independiente
+1317,Ciclo Nova Multiestrategia IV,Renta Mixta,RM y Otros ARS,Ciclo Nova,Independiente
+1318,Ciclo Nova Multiestrategia V,Renta Fija,RF ARS Disc,Ciclo Nova,Independiente
+1319,Champaqui Fondo Inmediato Plus,Money Market,MM ARS Dinámico,Bancor,Bancaria
+1320,Adcap Desarrollo e Infraestructura,Destino Esp.,INFRA,Adcap,Independiente
+1321,Pionero Renta Dolar Estrategia,Renta Fija,RF USD GL Inc ARG,Macro,Bancaria
+1322,Dracma Renta Ahorro,Renta Fija,RF ARS Disc,Dracma,Independiente
+1323,Dracma Insider Renta Pymes,Destino Esp.,PYME,Dracma,Independiente
+1325,Fima Infraestructura II,Destino Esp.,INFRA,Galicia,Bancaria
+1326,Toronto Trust Gestión,Renta Mixta,RM y Otros ARS,Investis,Independiente
+1328,Delta Ahorro Dólares,Renta Fija,RF USD CP,Delta,Independiente
+1332,Optimum Balanced Strategy,Renta Mixta,RM y Otros ARS,Santander,Bancaria
+1334,Pionero Premium,Money Market,MM ARS Clásico,Macro,Bancaria
+1335,Adcap Balanceado XII,Renta Mixta,RM y Otros ARS,Adcap,Independiente
+1336,Adcap Patrimonio IV,Renta Mixta,RM y Otros ARS,Adcap,Independiente
+1337,Alycbur Renta Cobertura,Renta Fija,RF USD Linked,Adcap,Independiente
+1338,Adcap Ahorro Dinámico ,Money Market,MM ARS Dinámico,Adcap,Independiente
+1339,Adcap Balanceado X,Renta Fija,RF ARS Disc,Adcap,Independiente
+1341,ACA Valores Retorno Total,Renta Fija,RF MULT Disc,Schroder,Independiente
+1342,Schroder Patrimonio Dos,Renta Fija,RF MULT Disc,Schroder,Independiente
+1343,Allaria Pyme Selection,Destino Esp.,PYME,Allaria,Independiente
+1344,Compass Renta Mixta II,Renta Variable,RV Global,Investis,Independiente
+1345,Compass Renta Fija V,Renta Fija,RF MULT Disc,Investis,Independiente
+1346,Ciclo Nova Renta Fija Dólar 2,Renta Fija,RF USD Disc,Ciclo Nova,Independiente
+1347,MAF Liquidez,Money Market,MM ARS Dinámico,Mariva,Bancaria
+1348,Argenfunds Inversión Pesos,Renta Fija,RF ARS Disc,Argenfunds,Independiente
+1349,Argenfunds Inversión Dolares,Renta Fija,RF USD Disc,Argenfunds,Independiente
+1350,Argenfunds Gestión Pesos,Renta Fija,RF ARS Disc,Argenfunds,Independiente
+1351,Galileo Multimercado V,Renta Fija,RF MULT Corp,Delta,Independiente
+1352,Galileo Multimercado VI,Renta Fija,RF MULT Disc,Delta,Independiente
+1356,Pionero Patrimonio I,Renta Fija,RF ARS Lecap,Macro,Bancaria
+1357,Pionero Moneda,Renta Fija,RF MULT Disc,Macro,Bancaria
+1358,Pionero Crecimiento,Renta Fija,RF MULT Disc,Macro,Bancaria
+1359,Pionero Recovery,Renta Mixta,RM y Otros ARS,Macro,Bancaria
+1360,Gainvest Global VII,Renta Fija,RF ARS Disc,StoneX,Independiente
+1361,Stonex Global VIII,Renta Mixta,RM y Otros ARS,StoneX,Independiente
+1363,Quiron Money Market,Money Market,MM ARS Clásico,Quiron,Independiente
+1365,GMC Money Market,Money Market,MM ARS Clásico,GMC,Independiente
+1366,Champaquí Renta Futura,Renta Fija,RF ARS Disc,Bancor,Bancaria
+1367,Axis S&C Argentina Absolute Return,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1368,Axis IMSA FCI Pymes,Destino Esp.,PYME,Axis,Independiente
+1369,Axis Brio Valores I,Renta Variable,RV ARG Otros,Axis,Independiente
+1370,Axis Estrategia 6,Renta Fija,RF MULT Disc,Axis,Independiente
+1371,Pionero Multiestrategia Mix,Renta Fija,RF MULT Disc,Macro,Bancaria
+1372,Pionero Soja,Renta Mixta,RM y Otros ARS,Macro,Bancaria
+1373,Novus Gestión,Renta Fija,RF ARS Disc,Novus,Independiente
+1374,Novus Multiestrategia,Renta Mixta,RM y Otros ARS,Novus,Independiente
+1375,Novus Renta Mixta,Renta Mixta,RM y Otros ARS,Novus,Independiente
+1376,Novus Performance,Renta Fija,RF MULT Disc,Novus,Independiente
+1377,Novus Income,Renta Fija,RF MULT Disc,Novus,Independiente
+1378,Novus Renta Fija,Renta Fija,RF ARS Disc,Novus,Independiente
+1379,GMC Retorno Total II,Renta Fija,RF ARS Disc,GMC,Independiente
+1380,Schroder Retorno Total Cuatro,Renta Fija,RF USD CP,Schroder,Independiente
+1381,Argenfunds Financiamiento Pesos,Renta Fija,RF ARS Disc,Argenfunds,Independiente
+1382,Adcap Balanceado III,Renta Fija,RF ARS Disc,Adcap,Independiente
+1384,Adcap Balanceado XXVI,Renta Fija,RF MULT Disc,Adcap,Independiente
+1385,Zofingen Infraestructura,Destino Esp.,INFRA,Zofingen Inv.,Independiente
+1386,Adcap Balanceado XVI,Renta Fija,RF ARS Lecap,Adcap,Independiente
+1387,Adcap Balanceado XVII,Renta Mixta,RM y Otros ARS,Adcap,Independiente
+1388,Adcap Balance Multiactivo,Renta Fija,RF ARS Disc,Adcap,Independiente
+1389,Toronto Trust Balanceado,Renta Fija,RF ARS Disc,Investis,Independiente
+1390,Premier Sustentable ASG,Destino Esp.,ASG,Supervielle,Bancaria
+1391,Max Renta Fija Latam,Renta Fija,RF USD GL Ex ARG,Max Capital,Independiente
+1392,Max Estrategico V,Renta Mixta,RM y Otros ARS,Max Capital,Independiente
+1393,Max Dinamico I,Renta Fija,RF MULT Disc,Max Capital,Independiente
+1394,Max Dinamico II,Renta Fija,RF ARS Lecap,Max Capital,Independiente
+1395,Max Dinamico III,Renta Mixta,RM y Otros ARS,Max Capital,Independiente
+1396,Max Dinamico IV,Renta Fija,RF USD Linked,Max Capital,Independiente
+1397,Max Dinamico V,Renta Fija,RF MULT Disc,Max Capital,Independiente
+1398,Max Multigestión I,Renta Fija,RF USD Linked,Max Capital,Independiente
+1399,Max Multigestión II,Renta Fija,RF MULT Disc,Max Capital,Independiente
+1401,BAVSA Pesos Plus,T+1,T+1,BAVSA,Independiente
+1404,Balanz Desarrollo,Destino Esp.,INFRA,Balanz,Independiente
+1405,Bamba Agronegocios,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1406,Axis Estrategia 8,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1407,Axis Ecopymes FCI Pymes,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1408,Axis Estrategia 10,Renta Fija,RF ARS Disc,Axis,Independiente
+1409,Axis Estrategia 11,Renta Fija,RF ARS Disc,Axis,Independiente
+1410,Axis Estrategia 12,Renta Fija,RF ARS Disc,Axis,Independiente
+1411,Allaria Dólar Dinámico,Renta Fija,RF USD corp loc,Allaria,Independiente
+1412,Stonex Balanceado VI,Renta Fija,RF ARS Disc,StoneX,Independiente
+1413,Stonex Balanceado VII,Renta Mixta,RM y Otros ARS,StoneX,Independiente
+1414,Stonex Balanceado VIII,Renta Fija,RF ARS Disc,StoneX,Independiente
+1415,Pionero Integral,Renta Fija,RF MULT Disc,Macro,Bancaria
+1417,Pionero Abierto,Renta Fija,RF MULT Disc,Macro,Bancaria
+1418,Pionero Oportunidad,Renta Fija,RF MULT Disc,Macro,Bancaria
+1419,Adcap Verde y Sustentable ASG,Destino Esp.,ASG,Adcap,Independiente
+1420,Valiant Renta Fija Balanceado I,Renta Fija,RF MULT Disc,Valiant,Independiente
+1421,Valiant Renta Fija Balanceado II,Renta Fija,RF ARS Disc,Valiant,Independiente
+1422,Adcap ASB Multiactivo,Renta Variable,RV ARG Otros,Adcap,Independiente
+1423,Galileo Multimercado VII,Renta Fija,RF ARS Disc,Delta,Independiente
+1424,Galileo Multimercado VIII,Renta Mixta,RM y Otros ARS,Delta,Independiente
+1425,Galileo Multimercado IX,Renta Mixta,RM y Otros ARS,Delta,Independiente
+1426,Fima Renta Fija Dólares,Renta Fija,RF USD corp loc,Galicia,Bancaria
+1427,Fima Mix Dólares,Renta Fija,RF USD Disc,Galicia,Bancaria
+1429,Allaria Gestion II,Renta Fija,RF ARS Disc,Allaria,Independiente
+1430,Allaria Agro,Renta Mixta,RM y Otros ARS,Allaria,Independiente
+1431,Allaria Gestion IV,Renta Mixta,RM y Otros ARS,Allaria,Independiente
+1432,Allaria Unicred Dólares,Renta Fija,RF USD Disc,Allaria,Independiente
+1434,Galileo Multi Strategy II,Renta Fija,RF USD corp loc,Delta,Independiente
+1435,Allaria Sustentable ASG,Renta Mixta,RM y Otros ARS,Allaria,Independiente
+1436,Cocos Dólares Plus,Renta Fija,RF USD Disc,Cocos,Independiente
+1437,Cocos Ahorro Dólares,Renta Fija,RF USD GL Inc ARG,Cocos,Independiente
+1438,Cocos Ahorro,Money Market,MM ARS Clásico,Cocos,Independiente
+1439,Chaco FCI Money Market,Money Market,MM ARS Clásico,Chaco,Bancaria
+1440,Lombard Dinámico I,Renta Fija,RF ARS Lecap,Patagonia,Bancaria
+1442,Lombard Ahorro Plus II,Renta Fija,RF ARS Disc,Patagonia,Bancaria
+1443,Balanz Capital Estrategia III USD,Renta Fija,RF USD GL Inc ARG,Balanz,Independiente
+1444,Balanz Capital Estrategia IV USD,Renta Fija,RF USD GL Inc ARG,Balanz,Independiente
+1445,Axis Estrategia 15,Renta Fija,RF MULT Disc,Axis,Independiente
+1446,Axis Estrategia 16,Renta Fija,RF MULT Disc,Axis,Independiente
+1447,Axis Estrategia 17,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1448,Axis Estrategia 18,Renta Fija,RF MULT Disc,Axis,Independiente
+1449,Axis Estrategia 19,Renta Fija,RF ARS Disc,Axis,Independiente
+1450,Axis Estrategia 20,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1451,Fundcorp Performance Multiestrategia,Renta Mixta,RM y Otros ARS,CMF,Bancaria
+1452,Fundcorp Performance Balanceado,Renta Fija,RF ARS Disc,CMF,Bancaria
+1453,Axis Estrategia 21,Renta Variable,RV ARG Rofex 20,Axis,Independiente
+1454,Axis Estrategia 22,Renta Fija,RF ARS Disc,Axis,Independiente
+1455,Axis Estrategia 23,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1456,Axis Estrategia 24,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1457,Axis Estrategia 25,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1458,Axis Estrategia 26,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1459,Benedit Multiestrategia,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1462,Toronto Trust Ahorro Dólar,Renta Fija,RF USD CP,Investis,Independiente
+1463,Toronto Trust Renta Dolar,Renta Fija,RF USD corp loc,Investis,Independiente
+1464,Dracma Multiestrategia,Renta Fija,RF MULT Disc,Dracma,Independiente
+1465,Dracma Estrategia Dolar I,Renta Fija,RF USD GL Inc ARG,Dracma,Independiente
+1466,Toronto Trust Estrategico,Renta Fija,RF ARS Disc,Investis,Independiente
+1467,Axis Pesos,Money Market,MM ARS Clásico,Axis,Independiente
+1468,Axis S&C Renta Fija Dólar,Renta Fija,RF USD corp loc,Axis,Independiente
+1469,Axis S&C Renta Fija Dólar Low Volatility,Renta Fija,RF USD Disc,Axis,Independiente
+1470,Axis Estrategia 13,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1471,Axis Multiplo Bursatil Retorno Absoluto,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1472,Quiron Renta Mixta,Renta Variable,RV ARG Otros,Quiron,Independiente
+1473,Ciclo Nova Estructurado,Renta Mixta,RM y Otros ARS,Ciclo Nova,Independiente
+1474,Ciclo Nova Estructurado II,Renta Fija,RF MULT Disc,Ciclo Nova,Independiente
+1475,Ciclo Nova Estructurado III,Renta Fija,RF ARS Disc,Ciclo Nova,Independiente
+1476,Ciclo Nova Estructurado IV,Renta Mixta,RM y Otros ARS,Ciclo Nova,Independiente
+1477,BAVSA Renta Balanceado IV,Destino Esp.,PYME,BAVSA,Independiente
+1478,BAVSA Ahorro Plus,Renta Fija,RF ARS Lecap,BAVSA,Independiente
+1479,BAVSA Ahorro,Money Market,MM ARS Clásico,BAVSA,Independiente
+1480,Axis FCIA Pymes 1,Destino Esp.,PYME,Axis,Independiente
+1481,Axis Producir FCIA Pymes,Destino Esp.,PYME,Axis,Independiente
+1482,IAM Liquidez en Dólares,Money Market,MM USD Clásico,BIND,Bancaria
+1483,IAM Retorno Dólares,Money Market,MM USD Clásico,BIND,Bancaria
+1484,Toronto Trust Infraestructura,Destino Esp.,INFRA,Investis,Independiente
+1485,GMC Dinámico,Destino Esp.,PYME,GMC,Independiente
+1487,Champaqui Renta Variable,Renta Variable,RV ARG Rofex 20,Bancor,Bancaria
+1488,Tandem Pesos Ahorro Plus,Renta Fija,RF ARS Disc,Tandem Capital,Independiente
+1489,Tandem Dólares Retorno Total,Renta Fija,RF USD Disc,Tandem Capital,Independiente
+1490,Champaqui Renta Pesos,T+1,T+1,Bancor,Bancaria
+1491,Champaquí Renta Plus,Renta Fija,RF ARS Lecap,Bancor,Bancaria
+1492,Champaqui Renta Dólar,Renta Fija,RF USD corp loc,Bancor,Bancaria
+1494,Novus Renta Dólar,Renta Fija,RF USD Disc,Novus,Independiente
+1495,Novus Capital,Renta Mixta,RM y Otros USD,Novus,Independiente
+1496,Argentaria BAVSA Global,Renta Mixta,RM y Otros ARS,BAVSA,Independiente
+1505,Argenfunds Renta Fija II,Renta Fija,RF MULT Disc,Argenfunds,Independiente
+1507,Argenfunds Abierto Pymes II,Destino Esp.,PYME,Argenfunds,Independiente
+1508,Dracma Multiestrategia II,Renta Variable,RV ARG Otros,Dracma,Independiente
+1509,Insider Retorno Estratégico,Renta Mixta,RM y Otros ARS,Dracma,Independiente
+1510,Dracma Estrategia Dólar,Renta Fija,RF USD GL Inc ARG,Dracma,Independiente
+1511,Balanz Capital Estrategia V USD,Renta Fija,RF USD corp loc,Balanz,Independiente
+1512,Adcap Divisas I,Renta Fija,RF USD Disc,Adcap,Independiente
+1516,IOL Dólar Ahorro Plus,Renta Fija,RF USD Disc,Adcap,Independiente
+1517,Adcap Balanceado VII,Renta Fija,RF ARS Disc,Adcap,Independiente
+1518,Adcap Balanceado IX,Renta Fija,RF ARS Disc,Adcap,Independiente
+1519,Adcap Financiamiento Megra,T+1,T+1,Adcap,Independiente
+1521,Adcap Balanceado XX,Renta Fija,RF MULT Disc,Adcap,Independiente
+1522,Allaria Dólar Ahorro,Money Market,MM USD Clásico,Allaria,Independiente
+1523,Allaria Dólar Ahorro Plus,Renta Fija,RF USD CP,Allaria,Independiente
+1524,Allaria Dólar Retorno Total,Renta Mixta,RM y Otros USD,Allaria,Independiente
+1526,Balanz Crecimiento FCIA Infraestructura,Destino Esp.,INFRA,Balanz,Independiente
+1527,Ciclo Nova Estratégico,Renta Fija,RF USD corp loc,Ciclo Nova,Independiente
+1528,Schroder Crecimiento,Renta Fija,RF ARS Disc,Schroder,Independiente
+1529,Schroder Crecimiento Dos,Renta Fija,RF ARS Disc,Schroder,Independiente
+1530,Schroder Crecimiento Tres,Renta Fija,RF ARS Lecap,Schroder,Independiente
+1532,1822 Raices Renta en Dolares,Renta Fija,RF USD Disc,Provinfondos,Bancaria
+1534,1822 Raices Renta Fija Internacional,Renta Fija,RF USD GL Ex ARG,Provinfondos,Bancaria
+1537,Apolo Dólares,Renta Fija,RF USD Disc,GMC,Independiente
+1538,MEGAQM Cobertura FCIA Pymes,Destino Esp.,PYME,MegaQM,Bancaria
+1541,SBS Patrimonio VIII,Renta Fija,RF ARS Disc,SBS,Independiente
+1542,SBS Patrimonio IX,Renta Fija,RF MULT Disc,SBS,Independiente
+1543,SBS Patrimonio X,Renta Mixta,RM y Otros ARS,SBS,Independiente
+1544,SBS Renta Mixta V,Renta Fija,RF USD Disc,SBS,Independiente
+1545,BAVSA Global II,Renta Fija,RF ARS CER,BAVSA,Independiente
+1546,BAVSA Global III,Renta Fija,RF MULT Disc,BAVSA,Independiente
+1547,BAVSA Retorno Total,Renta Mixta,RM y Otros ARS,BAVSA,Independiente
+1548,BAVSA Renta Dólares,Renta Fija,RF USD corp loc,BAVSA,Independiente
+1549,Balanz Money Market USD,Money Market,MM USD Clásico,Balanz,Independiente
+1550,Novus Income Dólares,Renta Fija,RF USD Disc,Novus,Independiente
+1551,Novus Ahorro Dólares,Renta Fija,RF USD Disc,Novus,Independiente
+1552,Novus Retorno Total,Renta Mixta,RM y Otros ARS,Novus,Independiente
+1553,Novus Gestión II,T+1,T+1,Novus,Independiente
+1554,Novus Low Volatility,Renta Fija,RF MULT Disc,Novus,Independiente
+1555,Novus Renta Capital,Renta Fija,RF ARS Disc,Novus,Independiente
+1556,Adcap Gestión Estratégica I,Renta Fija,RF ARS Disc,Adcap,Independiente
+1557,Adcap Gestión Estratégica II,Renta Fija,RF MULT Disc,Adcap,Independiente
+1558,Adcap Gestión Estratégica III,Renta Fija,RF MULT Disc,Adcap,Independiente
+1559,Adcap Patrimonio I,Renta Fija,RF USD Disc,Adcap,Independiente
+1561,Allaria Ahorro Dinámico,Money Market,MM ARS Dinámico,Allaria,Independiente
+1562,Ualintec Cobertura,Renta Fija,RF USD Linked,Ualá,Bancaria
+1563,Ualintec Renta Dólares,Renta Fija,RF USD Disc,Ualá,Bancaria
+1564,Ualintec Retorno Total,Renta Mixta,RM y Otros ARS,Ualá,Bancaria
+1565,Ualintec Pesos Plus,Renta Fija,RF ARS Lecap,Ualá,Bancaria
+1566,SBS Liquidez USD,Money Market,MM USD Clásico,SBS,Independiente
+1567,Delta Dólares,Money Market,MM USD Clásico,Delta,Independiente
+1568,Pionero Ahorro Dólar Plus,Renta Mixta,RM y Otros USD,Macro,Bancaria
+1569,Pionero Inversión Dólar,Renta Fija,RF USD GL Inc ARG,Macro,Bancaria
+1570,Pionero Money Market Dólar,Money Market,MM USD Clásico,Macro,Bancaria
+1571,BAVSA Ahorro Dólar,Money Market,MM USD Clásico,BAVSA,Independiente
+1573,Parakeet Capital Plus,Renta Variable,RV ARG Rofex 20,Parakeet,Independiente
+1574,Parakeet Renta Pesos,T+1,T+1,Parakeet,Independiente
+1575,Parakeet Pesos,Money Market,MM ARS Clásico,Parakeet,Independiente
+1576,Champaquí Fondo Liquidez Dólar,Money Market,MM USD Clásico,Bancor,Bancaria
+1577,Zofingen Pesos Ya,Money Market,MM ARS Clásico,Zofingen Inv.,Independiente
+1578,Toronto Trust Money Market Dólar,Money Market,MM USD Clásico,Investis,Independiente
+1579,Wise Capital Corporate Treasury,Renta Mixta,RM y Otros ARS,Wise,Independiente
+1580,Wise Capital Equity,Renta Mixta,RM y Otros ARS,Wise,Independiente
+1581,Wise Capital Global Markets,Renta Fija,RF USD GL Inc ARG,Wise,Independiente
+1582,Wise Capital Money Markets,Money Market,MM ARS Clásico,Wise,Independiente
+1583,Wise Capital Multistrategy,Renta Mixta,RM y Otros ARS,Wise,Independiente
+1584,Wise Capital Saving,T+1,T+1,Wise,Independiente
+1585,Parakeet Income,Renta Fija,RF USD corp loc,Parakeet,Independiente
+1586,Parakeet Global,Renta Fija,RF USD GL Inc ARG,Parakeet,Independiente
+1587,Bull Market Ahorro Dólares,Renta Fija,RF USD corp loc,Bull Market,Independiente
+1588,Bull Market Ahorro Pesos,Renta Fija,RF MULT Disc,Bull Market,Independiente
+1589,Fundcorp Crecimiento,Renta Mixta,RM y Otros ARS,CMF,Bancaria
+1591,Desarrollo Arg III Infra,Destino Esp.,INFRA,Investis,Independiente
+1593,Valiant Renta Fija Balanceado 3,Renta Fija,RF MULT Disc,Valiant,Independiente
+1594,Valiant Renta Fija Balanceado IV,Renta Fija,RF ARS Disc,Valiant,Independiente
+1595,Fima Premium Dólares,Money Market,MM USD Clásico,Galicia,Bancaria
+1596,Pellegrini Money Market USD,Money Market,MM USD Clásico,Pellegrini,Bancaria
+1597,IAM Dinámico FCI Abierto Pymes,Destino Esp.,PYME,BIND,Bancaria
+1598,Balanz Capital Estrategia VI USD,Renta Fija,RF USD GL Inc ARG,Balanz,Independiente
+1603,Allaria Equity Selection,Renta Variable,RV Global,Allaria,Independiente
+1604,Allaria Dólar Gestión,Renta Fija,RF USD Disc,Allaria,Independiente
+1605,Allaria Dólar Performance,Renta Fija,RF USD GL Inc ARG,Allaria,Independiente
+1606,Allaria Gestión Dinámica,Renta Fija,RF MULT Disc,Allaria,Independiente
+1607,Allaria Gestión V,Renta Mixta,RM y Otros ARS,Allaria,Independiente
+1608,Allaria Performance,Renta Mixta,RM y Otros ARS,Allaria,Independiente
+1610,Cocos Acciones,Renta Variable,RV ARG Rofex 20,Cocos,Independiente
+1611,Cocos Pesos Plus,Renta Fija,RF ARS Disc,Cocos,Independiente
+1612,Cocos Medalla,Renta Mixta,RM y Otros ARS,Cocos,Independiente
+1613,Superfondo Ahorro en Dólares,Money Market,MM USD Clásico,Santander,Bancaria
+1619,Max Acciones Argentinas,Renta Variable,RV ARG Merval,Max Capital,Independiente
+1621,Argenfunds Liquidez Dólares,Renta Fija,RF USD Disc,Argenfunds,Independiente
+1622,Ciclo Nova Corto Plazo Dólar,Money Market,MM USD Clásico,Ciclo Nova,Independiente
+1623,Avantia Multiestrategia,Renta Fija,RF ARS Disc,Axis,Independiente
+1624,Axis Estrategia 28,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1625,Axis Estrategia 29,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1626,Bursátil X Retorno Absoluto,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1627,Axis Estrategia 31,Renta Fija,RF ARS Disc,Axis,Independiente
+1628,Axis Estrategia Dólar 3,Renta Fija,RF USD Disc,Axis,Independiente
+1629,Transatlantica Estrategia Dólar,Renta Fija,RF USD Disc,Axis,Independiente
+1630,Axis Abierto Pymes 3,Destino Esp.,PYME,Axis,Independiente
+1631,Axis Gestión 1,Destino Esp.,PYME,Axis,Independiente
+1632,Axis Abierto Pymes 5,Destino Esp.,PYME,Axis,Independiente
+1633,Parakeet Premium,Renta Mixta,RM y Otros ARS,Parakeet,Independiente
+1634,Parakeet MM Investments Fund,Renta Mixta,RM y Otros USD,Parakeet,Independiente
+1635,Parakeet Multimercado,Renta Mixta,RM y Otros ARS,Parakeet,Independiente
+1636,Parakeet Dinámico,Renta Mixta,RM y Otros ARS,Parakeet,Independiente
+1637,Parakeet Latam,Renta Fija,RF USD GL Ex ARG,Parakeet,Independiente
+1638,Parakeet Abierto Pymes,Destino Esp.,PYME,Parakeet,Independiente
+1639,Chaco FCI Renta Fija Dólares,Renta Fija,RF USD corp loc,Chaco,Bancaria
+1640,Ciclo Nova Balanceado,Renta Mixta,RM y Otros ARS,Ciclo Nova,Independiente
+1643,CMA Estrategia Pesos,Renta Fija,RF ARS Disc,Capital Markets,Independiente
+1644,CMA Dólar Dinamico,Renta Fija,RF USD GL Inc ARG,Capital Markets,Independiente
+1645,Max Money Market Dólares,Money Market,MM USD Clásico,Max Capital,Independiente
+1646,CYC Dólares Liquidez,Money Market,MM USD Clásico,CYC,Independiente
+1647,Pionero Dólar Dinámico,Renta Fija,RF USD Disc,Macro,Bancaria
+1648,Pionero Dólar Gestión,Renta Fija,RF USD Disc,Macro,Bancaria
+1649,Pionero Dólar Mix,Renta Fija,RF USD Disc,Macro,Bancaria
+1650,MP Ahorro,T+1,T+1,Mercado Pago,Independiente
+1651,MEGAQM Gestión Dólares 2,Renta Fija,RF USD Disc,MegaQM,Bancaria
+1657,IOL Portafolio Potenciado,Renta Mixta,RM y Otros ARS,Adcap,Independiente
+1660,Crecer Ahorro,Renta Fija,RF ARS Disc,Ciudad,Bancaria
+1661,Crecer Acciones,Renta Variable,RV ARG Merval,Ciudad,Bancaria
+1662,Crecer Renta Plus,Renta Fija,RF ARS Disc,Ciudad,Bancaria
+1663,Crecer Renta Dólares,Renta Fija,RF USD Disc,Ciudad,Bancaria
+1664,Crecer Liquidez,Money Market,MM ARS Clásico,Ciudad,Bancaria
+1665,Crecer Capital Dolares,Renta Fija,RF USD corp loc,Ciudad,Bancaria
+1666,Stonex Performance,Renta Fija,RF USD Disc,StoneX,Independiente
+1667,Stonex Performance II,Renta Fija,RF USD Disc,StoneX,Independiente
+1668,Stonex Dólares Premium,Money Market,MM USD Clásico,StoneX,Independiente
+1671,ConoSur Liquidez,Money Market,MM ARS Clásico,Cono Sur,Independiente
+1672,ConoSur Ahorro,T+1,T+1,Cono Sur,Independiente
+1673,ConoSur Financiamiento,Renta Fija,RF MULT Disc,Cono Sur,Independiente
+1674,ConoSur Renta Fija Corporativa,Renta Fija,RF USD corp loc,Cono Sur,Independiente
+1678,FBA Money Market Dólar,Money Market,MM USD Clásico,BBVA,Bancaria
+1680,Balanz Renta Fija Global,Renta Fija,RF USD GL Ex ARG,Balanz,Independiente
+1681,Balanz Renta Variable Global,Renta Variable,RV Global,Balanz,Independiente
+1682,Compass Renta Mixta Dólares II,Renta Fija,RF USD Disc,Investis,Independiente
+1683,Novus Renta Variable,Renta Variable,RV ARG Merval,Novus,Independiente
+1689,Axis Estrategia 32,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1690,Axis Estrategia 33,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1692,Axis Estrategia Dólar 5,Renta Fija,RF USD Disc,Axis,Independiente
+1693,Axis Estrategia Dólar 6,Renta Fija,RF USD Disc,Axis,Independiente
+1694,Schroder Liquidez Dólares,Money Market,MM USD Clásico,Schroder,Independiente
+1695,Compass Renta Mixta Dólares III,Renta Mixta,RM y Otros USD,Investis,Independiente
+1696,BAVSA Renta Balanceado V,Renta Fija,RF MULT Disc,BAVSA,Independiente
+1697,BAVSA Estrategia Dolar,Renta Mixta,RM y Otros ARS,BAVSA,Independiente
+1698,Premier Corto Plazo en Dólares,Money Market,MM USD Clásico,Supervielle,Bancaria
+1699,Compass Renta Mixta III,Renta Fija,RF ARS Lecap,Investis,Independiente
+1700,Compass Renta Mixta IV,Renta Fija,RF MULT Disc,Investis,Independiente
+1701,Pellegrini Liquidez Pesos,Money Market,MM ARS Clásico,Pellegrini,Bancaria
+1702,Max Retorno Total,Renta Fija,RF MULT Disc,Max Capital,Independiente
+1705,BAVSA Multiestrategia I,Renta Mixta,RM y Otros ARS,BAVSA,Independiente
+1707,Consultatio Estrategia I,Renta Variable,RV Global,Consultatio,Independiente
+1708,Consultatio Estrategia II,Renta Fija,RF USD GL Ex ARG,Consultatio,Independiente
+1709,Consultatio Estrategia III,Renta Mixta,RM y Otros ARS,Consultatio,Independiente
+1710,Consultatio Estrategia IV,Renta Fija,RF USD Disc,Consultatio,Independiente
+1711,Consultatio Estrategia V,Renta Fija,RF USD Disc,Consultatio,Independiente
+1712,Parakeet Dinámico II,Renta Mixta,RM y Otros ARS,Parakeet,Independiente
+1713,Parakeet Dinámico III,Renta Mixta,RM y Otros ARS,Parakeet,Independiente
+1714,Parakeet Cobalto Estrategia,Renta Fija,RF ARS Disc,Parakeet,Independiente
+1715,Parakeet Blend,Renta Mixta,RM y Otros ARS,Parakeet,Independiente
+1716,Parakeet Multimercado III,Renta Mixta,RM y Otros ARS,Parakeet,Independiente
+1722,Alpha Renta Fija Corporativa Dólar,Renta Fija,RF USD corp loc,ICBC,Bancaria
+1723,Alpha Dólar,Money Market,MM USD Clásico,ICBC,Bancaria
+1724,Valiant Money Market Dolares,Money Market,MM USD Clásico,Valiant,Independiente
+1727,Cocos Crecimiento,Renta Fija,RF MULT Disc,Cocos,Independiente
+1734,Cocos Premium Equity,Renta Variable,RV ARG Merval,Cocos,Independiente
+1735,Cocos Renta Dólar,Renta Mixta,RM y Otros USD,Cocos,Independiente
+1736,Ciclo Nova Estratégico II,Renta Mixta,RM y Otros ARS,Ciclo Nova,Independiente
+1738,Numancia Pesos II,Renta Fija,RF MULT Disc,Zofingen Inv.,Independiente
+1739,Numancia Pesos III,Renta Fija,RF MULT Disc,Zofingen Inv.,Independiente
+1741,Parakeet Dólar Estructurado,Renta Fija,RF USD Disc,Parakeet,Independiente
+1742,GMC Retorno Total III,Renta Mixta,RM y Otros ARS,GMC,Independiente
+1743,GMC Retorno Total IV,Renta Mixta,RM y Otros ARS,GMC,Independiente
+1744,Wise Capital Focus I,Renta Mixta,RM y Otros ARS,Wise,Independiente
+1745,Wise Capital Legacy,Renta Mixta,RM y Otros ARS,Wise,Independiente
+1748,Lombard Liquidez Dolares,Money Market,MM USD Clásico,Patagonia,Bancaria
+1749,Mabra BAVSA Renta Dólar,Renta Fija,RF USD Disc,BAVSA,Independiente
+1750,BAVSA Renta Balanceado VI,Renta Fija,RF MULT Disc,BAVSA,Independiente
+1751,Argentaria BAVSA Renta Fija Dólares,Renta Fija,RF USD Disc,BAVSA,Independiente
+1752,Mabra BAVSA Pesos Plus,Renta Fija,RF ARS Disc,BAVSA,Independiente
+1753,Max Retorno Total Pesos II,Renta Fija,RF ARS Disc,Max Capital,Independiente
+1754,Max Retorno Total Pesos III,Renta Fija,RF MULT Disc,Max Capital,Independiente
+1755,Max Retorno Total Pesos IV,Renta Fija,RF ARS Disc,Max Capital,Independiente
+1756,Consultatio Multimercado VI,Renta Fija,RF MULT Disc,Consultatio,Independiente
+1757,Consultatio Multimercado VII,Renta Fija,RF MULT Disc,Consultatio,Independiente
+1758,Consultatio Multimercado VIII,Renta Fija,RF MULT Disc,Consultatio,Independiente
+1766,Axis Rosental USD Strategic Income,Renta Fija,RF USD Disc,Axis,Independiente
+1772,Parakeet Balanced Fund II,Renta Mixta,RM y Otros USD,Parakeet,Independiente
+1773,FBA Money Market Pesos Plus,Money Market,MM ARS Clásico,BBVA,Bancaria
+1776,Novus Dólar MM,Money Market,MM USD Clásico,Novus,Independiente
+1780,BAVSA Renta Balanceado III,Renta Fija,RF ARS Disc,BAVSA,Independiente
+1781,BAVSA Deuda Privada Argentina USD,Renta Fija,RF USD Disc,BAVSA,Independiente
+1782,Bell BAVSA Renta Plus,Renta Fija,RF ARS Disc,BAVSA,Independiente
+1784,Wise Capital Focus II,Renta Mixta,RM y Otros ARS,Wise,Independiente
+1785,Bull Market Renta Fija Plus,Renta Fija,RF ARS Disc,Bull Market,Independiente
+1786,Bull Market Estrategia,Renta Fija,RF ARS Disc,Bull Market,Independiente
+1787,Bull Market Renta Fija Dólar,Renta Fija,RF USD Disc,Bull Market,Independiente
+1788,Bull Market Abierto Pymes,Destino Esp.,PYME,Bull Market,Independiente
+1789,Compass Renta Mixta V,Renta Fija,RF MULT Disc,Investis,Independiente
+1790,Compass Renta Mixta VI,Renta Mixta,RM y Otros ARS,Investis,Independiente
+1791,Compass Renta Mixta VII,Renta Mixta,RM y Otros ARS,Investis,Independiente
+1792,Bull Market Ahorro Balanceado II,Renta Fija,RF MULT Disc,Bull Market,Independiente
+1793,Valiant Renta Fija Balanceado V,Renta Fija,RF MULT Disc,Valiant,Independiente
+1794,Valiant Renta Fija Balanceado VI,Renta Fija,RF ARS Lecap,Valiant,Independiente
+1795,Numancia Pesos IV,Renta Fija,RF MULT Disc,Zofingen Inv.,Independiente
+1796,Numancia Pesos V,Renta Fija,RF ARS Disc,Zofingen Inv.,Independiente
+1802,MP Empresas Argentinas,Renta Variable,RV ARG Rofex 20,Mercado Pago,Independiente
+1809,Ciclo Nova Retorno Total II,Renta Mixta,RM y Otros ARS,Ciclo Nova,Independiente
+1810,Bull Market Ahorro Balanceado III,Renta Fija,RF ARS Disc,Bull Market,Independiente
+1813,Ciclo Nova Retorno Total III,Renta Fija,RF ARS Disc,Ciclo Nova,Independiente
+1817,FBA Renta Fija Dólar Latam I,Renta Fija,RF USD GL Ex ARG,BBVA,Bancaria
+1818,FBA Acciones Globales Dólar I,Renta Variable,RV Global,BBVA,Bancaria
+1819,FBA Renta Mixta Dólar I,Renta Fija,RF USD Disc,BBVA,Bancaria
+1820,Superfondo Renta Balance II,Renta Fija,RF MULT Disc,Santander,Bancaria
+1821,Superfondo Renta Balance III,Renta Mixta,RM y Otros ARS,Santander,Bancaria
+1826,Parakeet Global Opportunities Fund,Renta Variable,RV Global,Parakeet,Independiente
+1827,Tandem Balanceado I,Renta Mixta,RM y Otros ARS,Tandem Capital,Independiente
+1828,Tandem Renta Pesos,Renta Fija,RF ARS Disc,Tandem Capital,Independiente
+1829,Allaria Calificado,Renta Fija,RF USD Linked,Allaria,Independiente
+1830,Tandem Balanceado II,Renta Mixta,RM y Otros ARS,Tandem Capital,Independiente
+1831,Allaria Calificado II,Renta Mixta,RM y Otros ARS,Allaria,Independiente
+1832,Consultatio Multimercado IX,Renta Fija,RF USD Disc,Consultatio,Independiente
+1833,Consultatio Multimercado X,Renta Fija,RF USD Disc,Consultatio,Independiente
+1834,Pionero Horizonte,Renta Fija,RF MULT Disc,Macro,Bancaria
+1843,Axis Gestión 2,Renta Fija,RF MULT Disc,Axis,Independiente
+1844,Axis Gestión 3,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1845,Axis Gestión 4,Renta Mixta,RM y Otros ARS,Axis,Independiente
+1847,Parakeet Gestion Activa,Renta Fija,RF MULT Disc,Parakeet,Independiente
+1848,Parakeet Global Opportunities Fund II,Renta Variable,RV Global,Parakeet,Independiente
+1849,Pionero Internacional,Renta Fija,RF USD GL Ex ARG,Macro,Bancaria
+1850,Tandem Crecimiento I,Renta Mixta,RM y Otros ARS,Tandem Capital,Independiente
+1851,Tandem Global,Renta Fija,RF USD Disc,Tandem Capital,Independiente
+1852,Crecer Liquidez Dolares,Money Market,MM USD Clásico,Ciudad,Bancaria
+1853,Chimpay Agresivo,Renta Variable,RV ARG Merval,Chimpay,Independiente
+1854,Chimpay Pesos Conservador,Renta Fija,RF ARS Disc,Chimpay,Independiente
+1855,Chimpay Pesos Moderado,Renta Mixta,RM y Otros ARS,Chimpay,Independiente
+1856,Chimpay Retorno Total,Renta Mixta,RM y Otros ARS,Chimpay,Independiente
+1857,Quiron Money Market USD,Money Market,MM USD Clásico,Quiron,Independiente
+1862,BAVSA Renta Balanceado VII,Renta Mixta,RM y Otros ARS,BAVSA,Independiente
+1863,Argenfunds Financiamiento Pesos II,Destino Esp.,INFRA,Argenfunds,Independiente
+1864,FBA Renta Fija Dolar II,Renta Fija,RF USD Disc,BBVA,Bancaria
+1865,FBA Renta Mixta II,Renta Mixta,RM y Otros ARS,BBVA,Bancaria
+1866,FBA Renta Mixta III,Renta Mixta,RM y Otros ARS,BBVA,Bancaria
+1867,Tango Money Market,Money Market,MM ARS Clásico,Tango,Independiente
+1868,Tango Performance I,Renta Fija,RF ARS Disc,Tango,Independiente
+1870,Mills M1000 Balanceado Pesos,Renta Mixta,RM y Otros ARS,Mills Capital,Independiente
+1872,Mills Renta Fija Crecimiento Pesos,Renta Fija,RF ARS Disc,Mills Capital,Independiente
+1873,Mills Renta Fija Pesos,Renta Fija,RF ARS Disc,Mills Capital,Independiente
+1874,Mills Renta Fija Dólares,Renta Fija,RF USD Disc,Mills Capital,Independiente
+1875,Allaria Dólar Renta Internacional,Renta Fija,RF USD GL Ex ARG,Allaria,Independiente
+1888,Argenfunds Estrategia III,Renta Fija,RF USD Disc,Argenfunds,Independiente
+1890,GMC Retorno Total V,Renta Fija,RF MULT Disc,GMC,Independiente
+1891,GMC Retorno Total VI,Renta Mixta,RM y Otros ARS,GMC,Independiente
+1894,Wise Capital Foreign Equity,Renta Mixta,RM y Otros ARS,Wise,Independiente
+1898,Pellegrini Renta Dólares II,Renta Fija,RF USD Disc,Pellegrini,Bancaria
+1899,Pellegrini Renta Dólares III,Renta Fija,RF USD Disc,Pellegrini,Bancaria
+1900,Pampa BAVSA Pesos Plus,Renta Mixta,RM y Otros ARS,BAVSA,Independiente
+1901,BAVSA Renta Balanceado IX,Renta Mixta,RM y Otros ARS,BAVSA,Independiente
+1902,BAVSA Renta Balanceado Dólares IV,Renta Fija,RF USD Disc,BAVSA,Independiente
+1906,Wise Capital Dollar Money Market,Money Market,MM USD Clásico,Wise,Independiente
+1907,MAF Cash Dolares I,Money Market,MM USD Clásico,Mariva,Bancaria
+1908,Dracma Renta Fija,Renta Fija,RF ARS Disc,Dracma,Independiente
+1909,Puente Liquidez Pesos,Money Market,MM ARS Clásico,Puente,Independiente
+1910,DXA Multicobertura,Renta Fija,RF MULT Disc,Dracma,Independiente
+1911,DXA Retorno Total,Renta Mixta,RM y Otros ARS,Dracma,Independiente
+1912,Fundcorp Long Performance Plus II,Renta Fija,RF USD Disc,CMF,Bancaria
+1913,Cocos Dólar Money Market,Money Market,MM USD Clásico,Cocos,Independiente
+1916,Tandem Global II,Renta Mixta,RM y Otros USD,Tandem Capital,Independiente
+1917,Argenfunds Calificado I,Renta Fija,RF MULT Disc,Argenfunds,Independiente
+1919,Toronto Trust Dinamico,Renta Fija,RF MULT Disc,Investis,Independiente
+1920,1822 Raices Ahorro Dólares,Money Market,MM USD Clásico,Provinfondos,Bancaria
+1922,Bull Market Liquidez Dólar,Money Market,MM USD Clásico,Bull Market,Independiente
+1923,Tango Ahorro USD,Renta Fija,RF USD corp loc,Tango,Independiente
+1924,Tango Ahorro Plus,T+1,T+1,Tango,Independiente
+1925,Argenfunds Calificado II,Renta Mixta,RM y Otros ARS,Argenfunds,Independiente
+1926,Argenfunds Calificado III,Renta Variable,RV Global,Argenfunds,Independiente
+1928,Parakeet Gestion Activa II,Renta Fija,RF MULT Disc,Parakeet,Independiente
+1929,Parakeet Cobalto Advanced Strategy Fund,Renta Fija,RF USD Disc,Parakeet,Independiente
+1930,Tandem Global III,Renta Fija,RF USD Disc,Tandem Capital,Independiente
+1931,Tandem Global IV,Renta Fija,RF USD Disc,Tandem Capital,Independiente
+1932,GMC Renta Fija Dolares,Renta Fija,RF USD Disc,GMC,Independiente
+1935,BAVSA Renta Balanceado X,Renta Fija,RF ARS Disc,BAVSA,Independiente
+1936,BAVSA Renta Balanceado XI,Renta Fija,RF ARS Disc,BAVSA,Independiente
+1937,BAVSA Cobertura,Renta Fija,RF ARS Disc,BAVSA,Independiente
+1941,Ciclo Nova Retorno Total IV,Renta Mixta,RM y Otros ARS,Ciclo Nova,Independiente
+1945,Allaria Selection II Abierto Pymes,Destino Esp.,PYME,Allaria,Independiente
+1946,Puente Retorno Pesos,Renta Fija,RF ARS Disc,Puente,Independiente
+1947,Puente Acciones Argentinas,Renta Variable,RV ARG Merval,Puente,Independiente
+1948,Puente Ahorro Pesos,T+1,T+1,Puente,Independiente
+1949,Puente Liquidez Dólares,Money Market,MM USD Clásico,Puente,Independiente
+1950,Puente Renta Fija Dolares,Renta Fija,RF USD Disc,Puente,Independiente
+1952,Max Retorno Total Pesos V,Renta Mixta,RM y Otros ARS,Max Capital,Independiente
+1953,Max Retorno Total Pesos VI,Renta Mixta,RM y Otros ARS,Max Capital,Independiente
+1954,Max Retorno Total Pesos VII,Renta Mixta,RM y Otros ARS,Max Capital,Independiente
+1958,Adcap Patrimonio II,Renta Fija,RF USD Disc,Adcap,Independiente
+1959,Adcap Patrimonio III,Renta Fija,RF USD Disc,Adcap,Independiente
+1960,Blacktoro Pesos,Money Market,MM ARS Clásico,BlackToro,Independiente
+1962,Blacktoro Gestión Calificado I,Renta Fija,RF ARS Disc,BlackToro,Independiente
+1963,Pionero Horizonte II,Renta Mixta,RM y Otros ARS,Macro,Bancaria
+1970,BAVSA Fiel,Renta Fija,RF ARS Disc,BAVSA,Independiente
+1971,BAVSA Abierto Pymes Deuda Argentina,Destino Esp.,PYME,BAVSA,Independiente
+1973,ConoSur Financiamiento II,Renta Fija,RF MULT Disc,Cono Sur,Independiente
+1974,Special Situations Fund,Renta Mixta,RM y Otros ARS,CMF,Bancaria
+1975,Vinci Compass Renta Mixta Dólares IV,Renta Fija,RF USD GL Inc ARG,Investis,Independiente
+1976,Blacktoro Cobertura,Renta Fija,RF USD Linked,BlackToro,Independiente
+1977,Blacktoro Total Return,Renta Fija,RF ARS Disc,BlackToro,Independiente
+1978,Fundcorp Renta Pesos,Renta Fija,RF MULT Disc,CMF,Bancaria
+1979,Parakeet Gestion Activa III,Renta Mixta,RM y Otros ARS,Parakeet,Independiente
+1982,BAVSA Credito Productivo I,Renta Fija,RF MULT Disc,BAVSA,Independiente
+1983,Ciclo Nova Ahorro II,Money Market,MM ARS Clásico,Ciclo Nova,Independiente
+1984,GMC Multiestrategia,Renta Mixta,RM y Otros ARS,GMC,Independiente
+1985,GMC Multiestrategia II,Renta Mixta,RM y Otros ARS,GMC,Independiente
+1986,Quiron Pesos Estrategia,Renta Fija,RF ARS Disc,Quiron,Independiente
+1987,Puente Renta Fija Pesos I,Renta Fija,RF ARS Disc,Puente,Independiente
+1988,Puente Renta Fija Pesos II,Renta Fija,RF ARS Disc,Puente,Independiente
+1989,Puente Renta Fija Pesos III,Renta Fija,RF ARS Disc,Puente,Independiente
+1990,SBS Desarrollo Infraestructura II,Destino Esp.,INFRA,SBS,Independiente
+1992,Allaria Dólar Performance II,Renta Fija,RF USD Disc,Allaria,Independiente
+1993,Puente Renta Fija Pesos IV,Renta Fija,RF ARS Disc,Puente,Independiente
+1997,Chimpay Ahorro en Dólares,Renta Fija,RF USD Disc,Chimpay,Independiente
+2008,Unico Liquidez Pesos,Money Market,MM ARS Clásico,Comafi,Bancaria
+2019,Tango Multiestrategia,Renta Fija,RF ARS Disc,Tango,Independiente
+2022,Quiron Plus,Renta Fija,RF ARS Disc,Quiron,Independiente
+2027,Conosur Financiamiento III,Renta Fija,RF ARS Disc,Cono Sur,Independiente
+2028,BAVSA MG Alfa Renta Dolares Balanceado,Renta Mixta,RM y Otros USD,BAVSA,Independiente
+2035,gForce MSCI MERVAL FCIA ETF,Renta Variable,RV ARG Merval,Galicia,Bancaria

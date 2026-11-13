@@ -35,8 +35,9 @@ def guardar(df, rel):
 
 NUM = ["vcp", "ccp", "patrimonio", "fx", "fx_planilla", "patrimonio_ars", "flujo_ars", "hon_sg", "hon_sd", "minimo_inversion", "plazo_liq",
        "comision_ingreso", "comision_rescate", "comision_transferencia", "gastos_gestion", "var_mes", "var_anio", "var_12m"]
-ENT = ["codigo_cafci", "codigo_cnv"]
-TXT = ["fondo_clase", "fondo", "gerente", "clasificacion_cafci", "categoria_1816", "moneda", "moneda_fondo", "horizonte",
+ENT = ["codigo_cafci", "codigo_cnv", "cuota_referencia"]
+TXT = ["fondo_clase", "fondo", "gerente", "clasificacion_cafci", "categoria_1816", "subcategoria_1816", "gerente_1816",
+       "tipo_gerente", "fondo_1816", "moneda", "moneda_fondo", "horizonte",
        "decreto_596", "ley_27743", "tipo_dinero", "calificado", "region", "depositaria", "calificacion", "hon_exito", "indice_mm",
        "repatriacion", "tipo_escision", "id_cafci_padre", "id_cnv_padre"]
 
@@ -58,7 +59,9 @@ def main():
         M.append(d)
     M = pd.concat(M, ignore_index=True)
     M["Codigo_CNV"] = pd.to_numeric(M.Codigo_CNV, errors="coerce").astype("Int64")
-    for c in ["Categoria", "Subcategoria", "Fondo", "Gerente", "Fecha"]: M[c] = M[c].astype("string")
+    for c in ["Categoria", "Subcategoria", "Fondo", "Gerente", "Fecha", "Tipo_Gerente", "Sociedad_Gerente", "Fondo_CAFCI",
+              "Clasificacion_CAFCI"]:
+        M[c] = M.get(c, pd.Series(index=M.index, dtype="string")).astype("string")
     guardar(M, "fondos_mensual.parquet")
     # detalle diario por mes + catalogos
     ult = []
@@ -69,22 +72,27 @@ def main():
         ult.append(d.sort_values("fecha").drop_duplicates("codigo_cafci", keep="last"))
     C = pd.concat(ult).sort_values("fecha").drop_duplicates("codigo_cafci", keep="last")
     clases = C[["codigo_cafci", "codigo_cnv", "fondo_clase", "fondo", "gerente", "depositaria", "moneda", "moneda_fondo", "region", "horizonte",
-                "clasificacion_cafci", "categoria_1816", "calificacion", "minimo_inversion", "calificado", "plazo_liq", "hon_sg", "hon_sd",
+                "clasificacion_cafci", "categoria_1816", "subcategoria_1816", "gerente_1816", "tipo_gerente", "fondo_1816",
+                "cuota_referencia", "calificacion", "minimo_inversion", "calificado", "plazo_liq", "hon_sg", "hon_sd",
                 "hon_exito", "comision_ingreso", "comision_rescate", "comision_transferencia", "gastos_gestion", "tipo_dinero",
                 "ley_27743", "decreto_596", "id_cafci_padre", "id_cnv_padre", "tipo_escision", "fecha"]].rename(
         columns={"codigo_cnv": "Codigo_CNV", "fecha": "ultimo_dato"})
     guardar(clases.sort_values(["Codigo_CNV", "codigo_cafci"]), "clases.parquet")
     fondos = clases.groupby("Codigo_CNV").agg(fondo=("fondo", "first"), gerente=("gerente", "first"),
-                                              categoria=("categoria_1816", "first"), clasificacion_cafci=("clasificacion_cafci", "first"),
+                                              categoria=("categoria_1816", "first"), subcategoria=("subcategoria_1816", "first"),
+                                              gerente_1816=("gerente_1816", "first"), tipo_gerente=("tipo_gerente", "first"),
+                                              fondo_1816=("fondo_1816", "first"), clasificacion_cafci=("clasificacion_cafci", "first"),
                                               moneda_fondo=("moneda_fondo", "first"), clases=("codigo_cafci", "count"),
                                               ultimo_dato=("ultimo_dato", "max")).reset_index()
     guardar(fondos, "fondos.parquet")
     if os.path.exists(os.path.join(PROC, "dolar.csv")):
         dl = pd.read_csv(os.path.join(PROC, "dolar.csv")); dl["fecha"] = pd.to_datetime(dl.fecha).dt.date
         guardar(dl, "dolar.parquet")
+    if os.path.exists(os.path.join(PROC, "rendimientos.csv")):
+        guardar(pd.read_csv(os.path.join(PROC, "rendimientos.csv")), "rendimientos.parquet")
     archivos = sorted(os.path.relpath(p, OUT).replace(os.sep, "/") for p in glob.glob(os.path.join(OUT, "**", "*.parquet"), recursive=True))
     cat = {"base_url": URL, "fondos_mensual": URL + "fondos_mensual.parquet", "fondos": URL + "fondos.parquet",
-           "clases": URL + "clases.parquet", "dolar": URL + "dolar.parquet",
+           "clases": URL + "clases.parquet", "dolar": URL + "dolar.parquet", "rendimientos": URL + "rendimientos.parquet",
            "clases_diario": [URL + a for a in archivos if a.startswith("clases_diario/")]}
     nuevo = json.dumps(cat, ensure_ascii=False, indent=1)
     p = os.path.join(OUT, "catalogo.json")
