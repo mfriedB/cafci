@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Informe de Gestión FCI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600&display=swap">
+<style>
+:root{
+  /* Réplica del Power BI "Informe de Gestión FCI": banda Balanz arriba, segmentadores a la izquierda/arriba, visuales con título en banda azul */
+  --navy:#13306a; --navy-2:#1d2a6b; --band:#173f7f; --blue:#3e8bd8; --blue-2:#1f6fe0; --sky:#9cc6f2;
+  --ink:#1b2333; --muted:#6a7487; --line:#d9dfea; --panel:#ffffff; --bg:#eef1f6; --ok:#13a454; --bad:#d23b3b; --warn:#e9b10a;
+  --f-body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif; --f-cond:"Barlow Condensed","Barlow",Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px}
+.top{position:sticky;top:0;z-index:20;background:linear-gradient(100deg,#141a52 0%,#1e2470 45%,#30287f 100%);color:#fff;
+  display:flex;align-items:center;gap:18px;padding:10px 18px;min-height:56px;overflow:hidden}
+.top::after{content:"";position:absolute;right:-40px;top:-30px;width:460px;height:140px;opacity:.35;pointer-events:none;
+  background:linear-gradient(135deg,transparent 48%,#8f9ad8 49%,transparent 50%),linear-gradient(45deg,transparent 48%,#8f9ad8 49%,transparent 50%);
+  background-size:120px 120px}
+.brand{font:700 26px/1 var(--f-body);letter-spacing:.5px}
+.brand small{display:block;font:500 12px var(--f-body);opacity:.8;letter-spacing:0;margin-top:3px}
+.meta{margin-left:auto;font-size:12px;opacity:.85;text-align:right;position:relative;z-index:1}
+nav.groups{display:flex;flex-wrap:wrap;gap:6px;padding:10px 18px 0;background:var(--bg)}
+nav.groups button{font:600 13px var(--f-body);border:1px solid var(--line);background:#fff;color:var(--navy);padding:7px 12px;border-radius:4px;cursor:pointer}
+nav.groups button[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+nav.pages{display:flex;flex-wrap:wrap;gap:4px;padding:8px 18px;border-bottom:1px solid var(--line);background:var(--bg)}
+nav.pages button{font:500 12.5px var(--f-body);border:0;background:transparent;color:var(--muted);padding:5px 9px;border-radius:3px;cursor:pointer}
+nav.pages button[aria-pressed="true"]{background:#dfe6f3;color:var(--navy);font-weight:600}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--blue-2);outline-offset:1px}
+main{padding:14px 18px 40px}
+.page{display:grid;grid-template-columns:200px minmax(0,1fr);gap:14px;align-items:start}
+.page.full{grid-template-columns:minmax(0,1fr)}
+.side{display:flex;flex-direction:column;gap:12px;position:sticky;top:76px}
+.content{display:flex;flex-direction:column;gap:12px;min-width:0}
+.row{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+.row.r2{grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr))}
+.row.r1{grid-template-columns:minmax(0,1fr)}
+.vis{background:var(--panel);border:1px solid #c9d3e6;min-width:0;display:flex;flex-direction:column}
+.vis>h3{margin:0;background:var(--band);color:#fff;font:500 14px/1.2 var(--f-body);text-align:center;padding:6px 10px;text-wrap:balance}
+.vis>.b{padding:8px;flex:1;min-width:0}
+.chart{width:100%;height:320px}
+.chart.tall{height:440px}.chart.xtall{height:560px}.chart.short{height:240px}
+.slicer{background:#fff;border:1px solid #c9d3e6}
+.slicer>h4{margin:0;background:var(--band);color:#fff;font:600 12.5px var(--f-body);padding:5px 8px}
+.slicer .opts{max-height:260px;overflow:auto;padding:4px 6px}
+.slicer label{display:flex;gap:6px;align-items:center;font-size:12.5px;padding:2px 0;cursor:pointer}
+.slicer input[type=search]{width:calc(100% - 12px);margin:6px;padding:5px 7px;border:1px solid var(--line);font:inherit;font-size:12.5px}
+.slicer .acts{display:flex;gap:8px;padding:4px 8px 6px;font-size:11.5px}
+.slicer .acts button{border:0;background:none;color:var(--blue-2);cursor:pointer;padding:0;font:inherit}
+.btnbar{display:flex;flex-wrap:wrap;gap:0;background:var(--navy);padding:4px;border-radius:2px}
+.btnbar button{flex:1 1 110px;font:500 12.5px var(--f-body);border:1px solid #2a3c7c;background:#fff;color:var(--ink);padding:7px 6px;cursor:pointer;margin:1px}
+.btnbar button[aria-pressed="true"]{background:#0c1430;color:#fff}
+.cards{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));padding:4px}
+.kpi{border:1px solid var(--line);padding:8px 6px;text-align:center}
+.kpi .v{font:600 22px/1.15 var(--f-body);font-variant-numeric:tabular-nums}
+.kpi .v.big{font-size:30px}
+.kpi .l{font-size:11.5px;color:var(--muted);margin-top:3px}
+.pos{color:var(--ok)}.neg{color:var(--bad)}
+table.t{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+table.t th{background:var(--navy);color:#fff;font-weight:600;padding:5px 7px;text-align:right;position:sticky;top:0;cursor:pointer;white-space:nowrap}
+table.t th.l,table.t td.l{text-align:left}
+table.t td{padding:4px 7px;text-align:right;border-bottom:1px solid #edf0f6;white-space:nowrap}
+table.t tr:nth-child(even) td{background:#f5f8fd}
+table.t tr.tot td{font-weight:700;border-top:2px solid var(--navy);background:#fff}
+table.t tr.hl td{background:#dbe8fb;font-weight:600}
+.tw{overflow:auto;max-height:560px}
+.note{font-size:12px;color:var(--muted);margin:2px 2px 0}
+.empty{padding:30px;text-align:center;color:var(--muted)}
+.load{padding:60px;text-align:center;color:var(--muted);font-size:15px}
+.sm{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr))}
+.sm .cell{border:1px solid var(--line);background:#fff}
+.sm .cell h5{margin:0;padding:5px 8px;font:600 13px var(--f-body);color:var(--navy)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);padding:0 4px 4px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+@media (max-width:760px){.page{grid-template-columns:minmax(0,1fr)}.side{position:static;flex-direction:row;flex-wrap:wrap}.side>*{flex:1 1 180px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">BALANZ<small>Informe de Gestión FCI</small></div>
+  <div class="meta" id="meta">Cargando datos…</div>
+</header>
+<nav class="groups" id="groups" aria-label="Secciones"></nav>
+<nav class="pages" id="pages" aria-label="Páginas"></nav>
+<main id="main"><div class="load">Cargando la base CAFCI/CNV…</div></main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.1/echarts.min.js"></script>
+<script src="model.js"></script>
+<script src="ui.js"></script>
+<script src="pages_aum.js"></script>
+<script src="pages_flujo.js"></script>
+<script src="pages_call.js"></script>
+<script src="pages_internos.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
