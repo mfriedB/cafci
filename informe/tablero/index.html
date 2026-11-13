@@ -78,6 +78,24 @@ table.t tr.hl td{background:#dbe8fb;font-weight:600}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
 @media (max-width:760px){.page{grid-template-columns:minmax(0,1fr)}.side{position:static;flex-direction:row;flex-wrap:wrap}.side>*{flex:1 1 180px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* Aviso de fondos a clasificar */
+.alerta{display:flex;align-items:center;gap:12px;background:#fff6d6;border:1px solid var(--warn);border-left:6px solid var(--warn);border-radius:6px;padding:10px 14px;margin:0 0 12px;color:var(--ink);font-size:14px}
+.alerta b{font-weight:700}
+.alerta button{margin-left:auto;background:var(--navy);color:#fff;border:0;border-radius:4px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
+.ovl{position:fixed;inset:0;background:rgba(15,25,50,.55);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px}
+.pop{background:#fff;border-radius:8px;max-width:820px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.3)}
+.pop h2{margin:0;padding:14px 18px;background:var(--band);color:#fff;font:600 18px var(--f-cond);border-radius:8px 8px 0 0}
+.pop .bd{padding:14px 18px;overflow:auto;font-size:13px;color:var(--ink)}
+.pop .bd p{margin:0 0 10px}
+.pop table{width:100%;border-collapse:collapse;font-size:12.5px}
+.pop th{text-align:left;background:var(--bg);padding:6px;border-bottom:1px solid var(--line)}
+.pop td{padding:6px;border-bottom:1px solid var(--line);vertical-align:top}
+.pop td.n{text-align:right;white-space:nowrap}
+.pop .tag{display:inline-block;background:var(--warn);color:#1b2333;border-radius:3px;padding:0 5px;font-size:11px;font-weight:700;margin-left:4px}
+.pop .ft{padding:12px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end}
+.pop .ft button{background:var(--navy);color:#fff;border:0;border-radius:4px;padding:8px 16px;font:inherit;cursor:pointer}
+code{background:var(--bg);padding:0 4px;border-radius:3px}
 </style>
 </head>
 <body>
