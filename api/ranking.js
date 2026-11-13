@@ -5,7 +5,7 @@ module.exports = manejar(async (req, res) => {
   const { meta, filas } = await mensual(q.mes);
   const g = new Map(); let total = 0;
   for (const f of filas) {
-    if (!contiene(f.Categoria, q.categoria)) continue;
+    if (!contiene(f.Categoria, q.categoria) || !contiene(f.Subcategoria, q.subcategoria) || !contiene(f.Tipo_Gerente, q.tipo_gerente)) continue;
     const k = por === "fondo" ? `${f.Fondo}|${f.Gerente}|${f.Codigo_CNV}` : f.Gerente;
     g.set(k, (g.get(k) || 0) + (f[met] || 0)); total += f[met] || 0;
   }
