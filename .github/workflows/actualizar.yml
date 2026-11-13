@@ -58,6 +58,8 @@ jobs:
         run: python -u scripts/rendimientos.py
       - name: Tablero Ranking Fondos Balanz
         run: python -u scripts/dashboard_balanz.py
+      - name: Informe de Gestion (industria ARS y USD)
+        run: python -u scripts/informe_gestion.py
       - name: Cuotapartistas (serie CAFCI y estimacion por fondo)
         continue-on-error: true
         run: python -u scripts/cuotapartistas.py
