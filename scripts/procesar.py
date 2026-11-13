@@ -191,9 +191,9 @@ def main():
     cnv = pd.to_numeric(D.codigo_cnv, errors="coerce")
     for c, t in [("categoria_1816", "Tipo_1816"), ("subcategoria_1816", "Subtipo_1816"), ("gerente_1816", "Gerente_1816"),
                  ("tipo_gerente", "Tipo_Gerente_1816"), ("fondo_1816", "Fondo_1816")]:
-        D[c] = cnv.map(tax[t]).astype(object)
-    D["fondo_1816"] = D.fondo_1816.where(D.fondo_1816.notna(), D.fondo)
-    D.loc[~univ | D.categoria_1816.isin(["En liq/Resc especie"]), "categoria_1816"] = None     # fuera del universo
+        D[c] = cnv.map(tax[t]).astype("category")          # category: pocas categorias, poca memoria
+    D["fondo_1816"] = D.fondo_1816.astype(object).where(D.fondo_1816.notna(), D.fondo).astype("category")
+    D["categoria_1816"] = D.categoria_1816.where(univ & ~D.categoria_1816.isin(["En liq/Resc especie"]))   # fuera del universo
     ref = D.sort_values("fecha").drop_duplicates("codigo_cafci", keep="last")[["codigo_cafci", "codigo_cnv", "patrimonio"]].rename(columns={"codigo_cnv": "Codigo_CNV"})
     ref = taxonomia.referencia(ref.assign(codigo_cafci=lambda x: pd.to_numeric(x.codigo_cafci), Codigo_CNV=lambda x: pd.to_numeric(x.Codigo_CNV)))
     D["cuota_referencia"] = pd.to_numeric(D.codigo_cafci).map(ref.set_index("codigo_cafci").referencia).fillna(0).astype(int)
