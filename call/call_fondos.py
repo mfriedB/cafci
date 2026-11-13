@@ -6,6 +6,9 @@ mapeo/ y scripts/taxonomia.py), asi que no hace falta ningun archivo local.
 
 Uso:  python call_fondos.py --pptx "Call de Fondos -13.11.2026.pptx" --salida "Call de Fondos -20.11.2026.pptx"
       (sin --pptx solo genera los graficos en la carpeta graficos/)
+      python call_fondos.py --auto CARPETA
+      (toma la "Call de Fondos -DD.MM.AAAA.pptx" mas nueva de CARPETA como modelo y guarda en la misma carpeta la del
+       viernes siguiente; si ya existe, la actualiza. Es lo que corre la tarea programada semanal)
 """
 import argparse, io, json, os, re, sys, urllib.request
 from datetime import date
@@ -289,7 +292,21 @@ def actualizar_pptx(ruta, salida, imgs, corte, info4, cajas9):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pptx"); ap.add_argument("--salida"); ap.add_argument("--graficos", default=os.path.join(AQUI, "graficos"))
+    ap.add_argument("--auto", help="carpeta con las Call de Fondos -DD.MM.AAAA.pptx")
     a = ap.parse_args()
+    if a.auto:
+        from datetime import datetime, timedelta
+        decks = []
+        for n in os.listdir(a.auto):
+            m = re.match(r"Call de Fondos -(\d{2})\.(\d{2})\.(\d{4})\.pptx$", n)
+            if m: decks.append((datetime(int(m[3]), int(m[2]), int(m[1])).date(), n))
+        if not decks: sys.exit("No hay ninguna 'Call de Fondos -DD.MM.AAAA.pptx' en " + a.auto)
+        hoy = date.today()
+        viernes = hoy + timedelta(days=(4 - hoy.weekday()) % 7)
+        destino = f"Call de Fondos -{viernes:%d.%m.%Y}.pptx"
+        modelo = max(decks)[1]
+        a.pptx = os.path.join(a.auto, modelo); a.salida = os.path.join(a.auto, destino)
+        print("modelo:", modelo, "-> salida:", destino)
     os.makedirs(a.graficos, exist_ok=True)
     D, idx = cargar()
     corte = pd.Timestamp(D[D.mes == D.mes.max()].Fecha.iloc[0]).date()
