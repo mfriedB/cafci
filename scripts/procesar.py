@@ -236,7 +236,12 @@ def main():
         if str(m) in proteger: continue
         g[keep].sort_values(["fecha", "codigo_cafci"]).to_csv(os.path.join(PROC, "clases_diario", f"{m}.csv.gz"), index=False, compression={"method": "gzip", "mtime": 0})
 
-    U = D[(D.decreto_596 != "S") & D.categoria_1816.notna()].copy()
+    U = D[(D.decreto_596 != "S") & D.categoria_1816.notna()][["fecha", "mes", "codigo_cafci", "codigo_cnv", "fondo", "gerente",
+          "categoria_1816", "clasificacion_cafci", "patrimonio_ars", "flujo_ars", "hon_sg", "hon_sd"]].copy()
+    del D; import gc; gc.collect()
+    # ultimo dato de cada fondo en cada mes (para nombre, gerente y categoria del mes) - tabla chica, se calcula una vez
+    ULT = U.sort_values(["fecha", "patrimonio_ars"]).drop_duplicates(["codigo_cnv", "mes"], keep="last")[
+        ["codigo_cnv", "mes", "fondo", "gerente", "categoria_1816", "clasificacion_cafci"]]
     fechas = sorted(U.fecha.unique())
     # foto diaria por dia calendario: cada clase con su ultimo dato disponible (hasta 7 dias de antiguedad)
     cal_all = pd.date_range(pd.Timestamp(fechas[0]), pd.Timestamp(fechas[-1]), freq="D")
@@ -271,7 +276,7 @@ def main():
         a = a.fillna(0.0)
         a["Rendimiento"] = a.AUM_Final - a.AUM_Inicial - a.Susc_Netas
         f0 = ini
-        meta = U[U.fecha <= f1].sort_values(["fecha", "patrimonio_ars"]).drop_duplicates("codigo_cnv", keep="last").set_index("codigo_cnv")
+        meta = ULT[ULT.mes <= m].drop_duplicates("codigo_cnv", keep="last").set_index("codigo_cnv")
         a = a.join(meta[["fondo", "gerente", "categoria_1816", "clasificacion_cafci"]])
         out = pd.DataFrame({
             "Fecha": f1.isoformat(),
