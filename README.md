@@ -13,8 +13,9 @@ Base: `https://raw.githubusercontent.com/mfriedB/cafci/main/procesado/`
 |---|---|
 | `index.json` | meses disponibles, archivo de cada mes, si es parcial y cuántas planillas tiene |
 | `fondos_cafci_AAAA-MM-DD.csv` | un mes por fondo: AUM promedio / inicial / final, suscripciones netas, rendimiento, facturación gerente y depositaria, `Codigo_CNV` (millones de $) |
-| `clases_diario/AAAA-MM.csv.gz` | detalle diario por clase: VCP, cuotapartes, patrimonio, patrimonio en $, flujo del día, honorarios, tipo de cambio |
-| `dolar.csv` | dólar MEP de cierre diario y BCRA Com. A3500 |
+| `clases_diario/AAAA-MM.csv.gz` | detalle diario por clase: VCP, cuotapartes, patrimonio, patrimonio en $, flujo del día, honorarios, comisiones de ingreso/rescate/transferencia, gastos de gestión, honorario de éxito, calificación de riesgo, mínimo de inversión, plazo de liquidación, inversor calificado, depositaria, variación de cuotaparte mes/año/12 meses, tipo de cambio |
+| `parquet/` | lo mismo en Parquet para consultas SQL por HTTP (ver `parquet/catalogo.json`) |
+| `dolar.csv` | dólar MEP y CCL de cierre (venta), promedio MEP-CCL y BCRA Com. A3500 |
 | `cuotapartistas_tipo.csv` | cuentas y montos por tipo de fondo y tipo de inversor (Informe Mensual CAFCI) |
 | `cuotapartistas_estimados_AAAA-MM.csv` | estimación de cuentas por fondo (no es dato oficial) |
 | `manifest.csv` | planillas descargadas: link a la CNV, recepción y hash |
@@ -23,7 +24,7 @@ Base: `https://raw.githubusercontent.com/mfriedB/cafci/main/procesado/`
 - Flujo diario = variación de cuotapartes × valor de cuotaparte (en $).
 - AUM promedio = numeral por día calendario / días del mes. Rendimiento = AUM final − AUM inicial − suscripciones netas.
 - Facturación = honorario % anual × patrimonio diario / 365.
-- Clases en dólares a pesos con el **dólar MEP de cierre del día**.
+- Clases en dólares a pesos con el **promedio de dólar MEP y CCL del día** (es el tipo de cambio que usa 1816: validado día por día, desvío 0,3%). Con `"tipo_cambio": "mep"` en `config.json` se usa solo el MEP.
 - Se excluyen fondos cerrados y Decreto 596. Cada fondo toma el dato de su propia fecha (los que publican con
   atraso se toman de la planilla siguiente); días sin planilla se completan con la columna "día anterior".
 - Se descartan datos puntuales erróneos de la planilla (saltos de un día) y flujos imposibles.
