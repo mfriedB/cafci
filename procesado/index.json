@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-13T18:05:18+00:00",
+ "actualizado": "2026-11-13T18:57:17+00:00",
  "fuente": "Planilla Diaria CAFCI archivada por la CNV",
  "fechas_planilla": [
   "2019-12-27",
@@ -1676,7 +1676,7 @@
    "desde": "2019-12-31",
    "hasta": "2020-01-31",
    "parcial": false,
-   "fondos": 576,
+   "fondos": 571,
    "planillas": 22
   },
   {
@@ -1685,7 +1685,7 @@
    "desde": "2020-01-31",
    "hasta": "2020-02-29",
    "parcial": false,
-   "fondos": 576,
+   "fondos": 571,
    "planillas": 18
   },
   {
@@ -1694,7 +1694,7 @@
    "desde": "2020-02-29",
    "hasta": "2020-03-31",
    "parcial": false,
-   "fondos": 573,
+   "fondos": 568,
    "planillas": 19
   },
   {
@@ -1703,7 +1703,7 @@
    "desde": "2020-03-31",
    "hasta": "2020-04-30",
    "parcial": false,
-   "fondos": 572,
+   "fondos": 568,
    "planillas": 20
   },
   {
@@ -1712,7 +1712,7 @@
    "desde": "2020-04-30",
    "hasta": "2020-05-31",
    "parcial": false,
-   "fondos": 574,
+   "fondos": 570,
    "planillas": 19
   },
   {
@@ -1721,7 +1721,7 @@
    "desde": "2020-05-31",
    "hasta": "2020-06-30",
    "parcial": false,
-   "fondos": 568,
+   "fondos": 564,
    "planillas": 21
   },
   {
@@ -1730,7 +1730,7 @@
    "desde": "2020-06-30",
    "hasta": "2020-07-31",
    "parcial": false,
-   "fondos": 566,
+   "fondos": 562,
    "planillas": 21
   },
   {
@@ -1739,7 +1739,7 @@
    "desde": "2020-07-31",
    "hasta": "2020-08-31",
    "parcial": false,
-   "fondos": 568,
+   "fondos": 564,
    "planillas": 20
   },
   {
@@ -1748,7 +1748,7 @@
    "desde": "2020-08-31",
    "hasta": "2020-09-30",
    "parcial": false,
-   "fondos": 573,
+   "fondos": 569,
    "planillas": 22
   },
   {
@@ -1757,7 +1757,7 @@
    "desde": "2020-09-30",
    "hasta": "2020-10-31",
    "parcial": false,
-   "fondos": 579,
+   "fondos": 575,
    "planillas": 21
   },
   {
@@ -1766,7 +1766,7 @@
    "desde": "2020-10-31",
    "hasta": "2020-11-30",
    "parcial": false,
-   "fondos": 578,
+   "fondos": 574,
    "planillas": 19
   },
   {
@@ -1775,7 +1775,7 @@
    "desde": "2020-11-30",
    "hasta": "2020-12-31",
    "parcial": false,
-   "fondos": 581,
+   "fondos": 577,
    "planillas": 18
   },
   {
@@ -1784,7 +1784,7 @@
    "desde": "2020-12-31",
    "hasta": "2021-01-31",
    "parcial": false,
-   "fondos": 582,
+   "fondos": 578,
    "planillas": 20
   },
   {
@@ -1793,7 +1793,7 @@
    "desde": "2021-01-31",
    "hasta": "2021-02-28",
    "parcial": false,
-   "fondos": 585,
+   "fondos": 581,
    "planillas": 18
   },
   {
@@ -1802,7 +1802,7 @@
    "desde": "2021-02-28",
    "hasta": "2021-03-31",
    "parcial": false,
-   "fondos": 590,
+   "fondos": 586,
    "planillas": 22
   },
   {
@@ -1811,7 +1811,7 @@
    "desde": "2021-03-31",
    "hasta": "2021-04-30",
    "parcial": false,
-   "fondos": 591,
+   "fondos": 587,
    "planillas": 20
   },
   {
@@ -1820,7 +1820,7 @@
    "desde": "2021-04-30",
    "hasta": "2021-05-31",
    "parcial": false,
-   "fondos": 599,
+   "fondos": 595,
    "planillas": 19
   },
   {
@@ -1829,7 +1829,7 @@
    "desde": "2021-05-31",
    "hasta": "2021-06-30",
    "parcial": false,
-   "fondos": 600,
+   "fondos": 596,
    "planillas": 21
   },
   {
@@ -1838,7 +1838,7 @@
    "desde": "2021-06-30",
    "hasta": "2021-07-31",
    "parcial": false,
-   "fondos": 604,
+   "fondos": 600,
    "planillas": 21
   },
   {
@@ -1847,7 +1847,7 @@
    "desde": "2021-07-31",
    "hasta": "2021-08-31",
    "parcial": false,
-   "fondos": 612,
+   "fondos": 609,
    "planillas": 21
   },
   {
@@ -1856,7 +1856,7 @@
    "desde": "2021-08-31",
    "hasta": "2021-09-30",
    "parcial": false,
-   "fondos": 618,
+   "fondos": 615,
    "planillas": 22
   },
   {
@@ -1865,7 +1865,7 @@
    "desde": "2021-09-30",
    "hasta": "2021-10-31",
    "parcial": false,
-   "fondos": 627,
+   "fondos": 624,
    "planillas": 19
   },
   {
@@ -1874,7 +1874,7 @@
    "desde": "2021-10-31",
    "hasta": "2021-11-30",
    "parcial": false,
-   "fondos": 631,
+   "fondos": 628,
    "planillas": 21
   },
   {
@@ -1883,7 +1883,7 @@
    "desde": "2021-11-30",
    "hasta": "2021-12-31",
    "parcial": false,
-   "fondos": 641,
+   "fondos": 638,
    "planillas": 20
   },
   {
@@ -1892,7 +1892,7 @@
    "desde": "2021-12-31",
    "hasta": "2022-01-31",
    "parcial": false,
-   "fondos": 647,
+   "fondos": 644,
    "planillas": 21
   },
   {
@@ -1901,7 +1901,7 @@
    "desde": "2022-01-31",
    "hasta": "2022-02-28",
    "parcial": false,
-   "fondos": 654,
+   "fondos": 651,
    "planillas": 19
   },
   {
@@ -1910,7 +1910,7 @@
    "desde": "2022-02-28",
    "hasta": "2022-03-31",
    "parcial": false,
-   "fondos": 654,
+   "fondos": 651,
    "planillas": 21
   },
   {
@@ -1919,7 +1919,7 @@
    "desde": "2022-03-31",
    "hasta": "2022-04-30",
    "parcial": false,
-   "fondos": 654,
+   "fondos": 651,
    "planillas": 19
   },
   {
@@ -1928,7 +1928,7 @@
    "desde": "2022-04-30",
    "hasta": "2022-05-31",
    "parcial": false,
-   "fondos": 657,
+   "fondos": 654,
    "planillas": 20
   },
   {
@@ -1937,7 +1937,7 @@
    "desde": "2022-05-31",
    "hasta": "2022-06-30",
    "parcial": false,
-   "fondos": 664,
+   "fondos": 661,
    "planillas": 20
   },
   {
@@ -1946,7 +1946,7 @@
    "desde": "2022-06-30",
    "hasta": "2022-07-31",
    "parcial": false,
-   "fondos": 667,
+   "fondos": 664,
    "planillas": 21
   },
   {
@@ -1955,7 +1955,7 @@
    "desde": "2022-07-31",
    "hasta": "2022-08-31",
    "parcial": false,
-   "fondos": 679,
+   "fondos": 676,
    "planillas": 22
   },
   {
@@ -1964,7 +1964,7 @@
    "desde": "2022-08-31",
    "hasta": "2022-09-30",
    "parcial": false,
-   "fondos": 687,
+   "fondos": 684,
    "planillas": 21
   },
   {
@@ -1973,7 +1973,7 @@
    "desde": "2022-09-30",
    "hasta": "2022-10-31",
    "parcial": false,
-   "fondos": 688,
+   "fondos": 685,
    "planillas": 19
   },
   {
@@ -1982,7 +1982,7 @@
    "desde": "2022-10-31",
    "hasta": "2022-11-30",
    "parcial": false,
-   "fondos": 690,
+   "fondos": 687,
    "planillas": 21
   },
   {
@@ -1991,7 +1991,7 @@
    "desde": "2022-11-30",
    "hasta": "2022-12-31",
    "parcial": false,
-   "fondos": 691,
+   "fondos": 688,
    "planillas": 20
   },
   {
@@ -2000,7 +2000,7 @@
    "desde": "2022-12-31",
    "hasta": "2023-01-31",
    "parcial": false,
-   "fondos": 706,
+   "fondos": 703,
    "planillas": 22
   },
   {
@@ -2009,7 +2009,7 @@
    "desde": "2023-01-31",
    "hasta": "2023-02-28",
    "parcial": false,
-   "fondos": 709,
+   "fondos": 706,
    "planillas": 18
   },
   {
@@ -2018,7 +2018,7 @@
    "desde": "2023-02-28",
    "hasta": "2023-03-31",
    "parcial": false,
-   "fondos": 714,
+   "fondos": 711,
    "planillas": 22
   },
   {
@@ -2027,7 +2027,7 @@
    "desde": "2023-03-31",
    "hasta": "2023-04-30",
    "parcial": false,
-   "fondos": 720,
+   "fondos": 717,
    "planillas": 18
   },
   {
@@ -2036,7 +2036,7 @@
    "desde": "2023-04-30",
    "hasta": "2023-05-31",
    "parcial": false,
-   "fondos": 728,
+   "fondos": 725,
    "planillas": 20
   },
   {
@@ -2045,7 +2045,7 @@
    "desde": "2023-05-31",
    "hasta": "2023-06-30",
    "parcial": false,
-   "fondos": 735,
+   "fondos": 732,
    "planillas": 20
   },
   {
@@ -2054,7 +2054,7 @@
    "desde": "2023-06-30",
    "hasta": "2023-07-31",
    "parcial": false,
-   "fondos": 741,
+   "fondos": 738,
    "planillas": 21
   },
   {
@@ -2063,7 +2063,7 @@
    "desde": "2023-07-31",
    "hasta": "2023-08-31",
    "parcial": false,
-   "fondos": 746,
+   "fondos": 743,
    "planillas": 22
   },
   {
@@ -2072,7 +2072,7 @@
    "desde": "2023-08-31",
    "hasta": "2023-09-30",
    "parcial": false,
-   "fondos": 752,
+   "fondos": 749,
    "planillas": 21
   },
   {
@@ -2081,7 +2081,7 @@
    "desde": "2023-09-30",
    "hasta": "2023-10-31",
    "parcial": false,
-   "fondos": 760,
+   "fondos": 757,
    "planillas": 20
   },
   {
@@ -2090,7 +2090,7 @@
    "desde": "2023-10-31",
    "hasta": "2023-11-30",
    "parcial": false,
-   "fondos": 766,
+   "fondos": 763,
    "planillas": 20
   },
   {
@@ -2099,7 +2099,7 @@
    "desde": "2023-11-30",
    "hasta": "2023-12-31",
    "parcial": false,
-   "fondos": 771,
+   "fondos": 768,
    "planillas": 19
   },
   {
@@ -2108,7 +2108,7 @@
    "desde": "2023-12-31",
    "hasta": "2024-01-31",
    "parcial": false,
-   "fondos": 778,
+   "fondos": 775,
    "planillas": 22
   },
   {
@@ -2117,7 +2117,7 @@
    "desde": "2024-01-31",
    "hasta": "2024-02-29",
    "parcial": false,
-   "fondos": 787,
+   "fondos": 784,
    "planillas": 19
   },
   {
@@ -2126,7 +2126,7 @@
    "desde": "2024-02-29",
    "hasta": "2024-03-31",
    "parcial": false,
-   "fondos": 794,
+   "fondos": 791,
    "planillas": 19
   },
   {
@@ -2135,7 +2135,7 @@
    "desde": "2024-03-31",
    "hasta": "2024-04-30",
    "parcial": false,
-   "fondos": 807,
+   "fondos": 804,
    "planillas": 20
   },
   {
@@ -2144,7 +2144,7 @@
    "desde": "2024-04-30",
    "hasta": "2024-05-31",
    "parcial": false,
-   "fondos": 815,
+   "fondos": 812,
    "planillas": 22
   },
   {
@@ -2153,7 +2153,7 @@
    "desde": "2024-05-31",
    "hasta": "2024-06-30",
    "parcial": false,
-   "fondos": 828,
+   "fondos": 825,
    "planillas": 17
   },
   {
@@ -2162,7 +2162,7 @@
    "desde": "2024-06-30",
    "hasta": "2024-07-31",
    "parcial": false,
-   "fondos": 838,
+   "fondos": 836,
    "planillas": 22
   },
   {
@@ -2171,7 +2171,7 @@
    "desde": "2024-07-31",
    "hasta": "2024-08-31",
    "parcial": false,
-   "fondos": 856,
+   "fondos": 854,
    "planillas": 22
   },
   {
@@ -2180,7 +2180,7 @@
    "desde": "2024-08-31",
    "hasta": "2024-09-30",
    "parcial": false,
-   "fondos": 875,
+   "fondos": 873,
    "planillas": 21
   },
   {
@@ -2189,7 +2189,7 @@
    "desde": "2024-09-30",
    "hasta": "2024-10-31",
    "parcial": false,
-   "fondos": 877,
+   "fondos": 875,
    "planillas": 22
   },
   {
@@ -2198,7 +2198,7 @@
    "desde": "2024-10-31",
    "hasta": "2024-11-30",
    "parcial": false,
-   "fondos": 891,
+   "fondos": 889,
    "planillas": 19
   },
   {
@@ -2207,7 +2207,7 @@
    "desde": "2024-11-30",
    "hasta": "2024-12-31",
    "parcial": false,
-   "fondos": 898,
+   "fondos": 896,
    "planillas": 19
   },
   {
@@ -2216,7 +2216,7 @@
    "desde": "2024-12-31",
    "hasta": "2025-01-31",
    "parcial": false,
-   "fondos": 913,
+   "fondos": 911,
    "planillas": 22
   },
   {
@@ -2225,7 +2225,7 @@
    "desde": "2025-01-31",
    "hasta": "2025-02-28",
    "parcial": false,
-   "fondos": 919,
+   "fondos": 917,
    "planillas": 20
   },
   {
@@ -2234,7 +2234,7 @@
    "desde": "2025-02-28",
    "hasta": "2025-03-31",
    "parcial": false,
-   "fondos": 929,
+   "fondos": 927,
    "planillas": 18
   },
   {
@@ -2243,7 +2243,7 @@
    "desde": "2025-03-31",
    "hasta": "2025-04-30",
    "parcial": false,
-   "fondos": 941,
+   "fondos": 939,
    "planillas": 19
   },
   {
@@ -2252,7 +2252,7 @@
    "desde": "2025-04-30",
    "hasta": "2025-05-31",
    "parcial": false,
-   "fondos": 952,
+   "fondos": 950,
    "planillas": 20
   },
   {
@@ -2261,7 +2261,7 @@
    "desde": "2025-05-31",
    "hasta": "2025-06-30",
    "parcial": false,
-   "fondos": 958,
+   "fondos": 956,
    "planillas": 19
   },
   {
@@ -2270,7 +2270,7 @@
    "desde": "2025-06-30",
    "hasta": "2025-07-31",
    "parcial": false,
-   "fondos": 973,
+   "fondos": 972,
    "planillas": 22
   },
   {
@@ -2279,7 +2279,7 @@
    "desde": "2025-07-31",
    "hasta": "2025-08-31",
    "parcial": false,
-   "fondos": 982,
+   "fondos": 981,
    "planillas": 20
   },
   {
@@ -2288,7 +2288,7 @@
    "desde": "2025-08-31",
    "hasta": "2025-09-30",
    "parcial": false,
-   "fondos": 997,
+   "fondos": 996,
    "planillas": 22
   },
   {
@@ -2297,7 +2297,7 @@
    "desde": "2025-09-30",
    "hasta": "2025-10-31",
    "parcial": false,
-   "fondos": 1007,
+   "fondos": 1006,
    "planillas": 22
   },
   {
@@ -2306,7 +2306,7 @@
    "desde": "2025-10-31",
    "hasta": "2025-11-30",
    "parcial": false,
-   "fondos": 1016,
+   "fondos": 1015,
    "planillas": 17
   },
   {
@@ -2315,7 +2315,7 @@
    "desde": "2025-11-30",
    "hasta": "2025-12-31",
    "parcial": false,
-   "fondos": 1020,
+   "fondos": 1019,
    "planillas": 19
   },
   {
@@ -2324,7 +2324,7 @@
    "desde": "2025-12-31",
    "hasta": "2026-01-31",
    "parcial": false,
-   "fondos": 1026,
+   "fondos": 1025,
    "planillas": 21
   },
   {
@@ -2333,7 +2333,7 @@
    "desde": "2026-01-31",
    "hasta": "2026-02-28",
    "parcial": false,
-   "fondos": 1039,
+   "fondos": 1038,
    "planillas": 18
   },
   {
@@ -2342,7 +2342,7 @@
    "desde": "2026-02-28",
    "hasta": "2026-03-31",
    "parcial": false,
-   "fondos": 1045,
+   "fondos": 1044,
    "planillas": 20
   },
   {
@@ -2351,7 +2351,7 @@
    "desde": "2026-03-31",
    "hasta": "2026-04-30",
    "parcial": false,
-   "fondos": 1057,
+   "fondos": 1056,
    "planillas": 20
   },
   {
@@ -2360,7 +2360,7 @@
    "desde": "2026-04-30",
    "hasta": "2026-05-31",
    "parcial": false,
-   "fondos": 1080,
+   "fondos": 1079,
    "planillas": 19
   },
   {
@@ -2369,7 +2369,7 @@
    "desde": "2026-05-31",
    "hasta": "2026-06-30",
    "parcial": false,
-   "fondos": 1095,
+   "fondos": 1094,
    "planillas": 21
   },
   {
@@ -2378,7 +2378,7 @@
    "desde": "2026-06-30",
    "hasta": "2026-07-31",
    "parcial": false,
-   "fondos": 1112,
+   "fondos": 1111,
    "planillas": 21
   },
   {
@@ -2387,7 +2387,7 @@
    "desde": "2026-07-31",
    "hasta": "2026-08-31",
    "parcial": false,
-   "fondos": 1137,
+   "fondos": 1136,
    "planillas": 20
   },
   {
@@ -2396,7 +2396,7 @@
    "desde": "2026-08-31",
    "hasta": "2026-09-30",
    "parcial": false,
-   "fondos": 1144,
+   "fondos": 1143,
    "planillas": 22
   },
   {
@@ -2405,7 +2405,7 @@
    "desde": "2026-09-30",
    "hasta": "2026-10-31",
    "parcial": false,
-   "fondos": 1147,
+   "fondos": 1146,
    "planillas": 21
   },
   {
@@ -2414,7 +2414,7 @@
    "desde": "2026-10-31",
    "hasta": "2026-11-12",
    "parcial": true,
-   "fondos": 1149,
+   "fondos": 1148,
    "planillas": 6
   }
  ]

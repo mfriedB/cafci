@@ -4,6 +4,7 @@
  "fondos": "https://raw.githubusercontent.com/mfriedB/cafci/main/procesado/parquet/fondos.parquet",
  "clases": "https://raw.githubusercontent.com/mfriedB/cafci/main/procesado/parquet/clases.parquet",
  "dolar": "https://raw.githubusercontent.com/mfriedB/cafci/main/procesado/parquet/dolar.parquet",
+ "rendimientos": "https://raw.githubusercontent.com/mfriedB/cafci/main/procesado/parquet/rendimientos.parquet",
  "clases_diario": [
   "https://raw.githubusercontent.com/mfriedB/cafci/main/procesado/parquet/clases_diario/2019-12.parquet",
   "https://raw.githubusercontent.com/mfriedB/cafci/main/procesado/parquet/clases_diario/2020-01.parquet",
