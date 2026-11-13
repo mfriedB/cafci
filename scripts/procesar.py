@@ -133,6 +133,8 @@ def categoria_1816(r):
 def nombre_fondo(s):
     return re.sub(r"\s*-\s*Clase\s+[A-Z0-9]+.*$", "", str(s)).strip()
 
+SOLO_LEER = "--solo-leer" in __import__("sys").argv
+
 def main():
     files = sorted(glob.glob(os.path.join(RAW, "*_Planilla_Diaria_A.xlsx")))
     dfs = []
@@ -146,15 +148,22 @@ def main():
                 fp, df = leer(f); df.to_pickle(pk); print("leido", os.path.basename(f), fp, len(df))
             except Exception as e:
                 print("NO SE PUDO LEER", os.path.basename(f), repr(e)); continue
+        if SOLO_LEER: continue
+        for c in df.columns:                     # textos en formato arrow: ocupan mucha menos memoria (historial completo)
+            if df[c].dtype == object and c not in ("fecha", "fecha_dato", "fecha_ant"): df[c] = df[c].astype("string[pyarrow]")
         dfs.append(df)
-    D = pd.concat(dfs, ignore_index=True)
+    if SOLO_LEER:
+        print("planillas leidas y cacheadas:", len(files)); return
+    D = pd.concat(dfs, ignore_index=True); del dfs
     # Panel por FECHA DEL DATO (como 1816): si un fondo informa con rezago, su dato del dia t aparece en la
     # planilla de t+1; se toma esa version (la de la planilla mas nueva que lo contenga).
     D = D.rename(columns={"fecha": "planilla"})
     D["prio"] = 1
     # Dias sin planilla propia (ej. 30/06/2026): se reconstruyen con las columnas "dia anterior" de la planilla
     # siguiente (valor de cuotaparte, cuotapartes y patrimonio a la fecha del encabezado). Prioridad menor.
-    A = D[(D.fecha_dato == D.planilla) & D.fecha_ant.notna()].copy()
+    A = D[(D.fecha_dato == D.planilla) & D.fecha_ant.notna()]
+    ya = pd.MultiIndex.from_arrays([D.codigo_cafci, D.fecha_dato])
+    A = A[~pd.MultiIndex.from_arrays([A.codigo_cafci, A.fecha_ant]).isin(ya)].copy()     # solo dias que faltan
     A["fecha_dato"] = A.fecha_ant
     for a, b in [("vcp", "vcp_ant"), ("ccp", "ccp_ant"), ("patrimonio", "patrimonio_ant")]: A[a] = A[b]
     A[["vcp_ant", "ccp_ant", "patrimonio_ant", "vcp_reexp_ars"]] = None

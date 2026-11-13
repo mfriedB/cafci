@@ -45,6 +45,13 @@ jobs:
       - name: Dolar MEP y BCRA A3500
         continue-on-error: true
         run: python -u scripts/dolar.py
+      - name: Leer planillas nuevas (cache de lectura)
+        run: python -u scripts/procesar.py --solo-leer
+      - name: Guardar planillas y lecturas (cache)
+        uses: actions/cache/save@v4
+        with:
+          path: raw
+          key: planillas-${{ github.run_id }}-leidas
       - name: Procesar (formato 1816)
         run: python -u scripts/procesar.py
       - name: Cuotapartistas (serie CAFCI y estimacion por fondo)
@@ -53,7 +60,7 @@ jobs:
       - name: Parquet (consultas SQL por HTTP)
         run: python -u scripts/parquet.py
       - name: Guardar planillas originales (cache)
-        if: always()
+        if: failure()
         uses: actions/cache/save@v4
         with:
           path: raw
