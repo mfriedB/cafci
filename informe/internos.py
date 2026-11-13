@@ -50,7 +50,8 @@ for _s in ["Agro", "Brasil", "Chile", "Consumo", "Energía", "Financiera", "Mexi
 
 
 def leer(carpeta, patron="*.xlsx"):
-    fs = [f for f in sorted(glob.glob(os.path.join(carpeta, patron))) if not os.path.basename(f).startswith("~$")]
+    # orden por fecha de modificacion: ante el mismo mes en dos archivos, gana el mas nuevo (ej. la bajada automatica del Power BI)
+    fs = sorted([f for f in glob.glob(os.path.join(carpeta, patron)) if not os.path.basename(f).startswith("~$")], key=os.path.getmtime)
     return pd.concat([pd.read_excel(f).assign(**{"Source.Name": os.path.basename(f)}) for f in fs], ignore_index=True) if fs else pd.DataFrame()
 
 
@@ -65,7 +66,8 @@ def comisiones(base, carpeta, col):
     d["u"] = d["Unidad Negocio"].map(limpio)
     d["k"] = d.u.map(UNIDAD).fillna(d.u) if col == "unidad" else d.u.map(FONDO_CORR).fillna(d.u)
     # si el mismo mes viene en dos archivos, vale el ultimo archivo leido (mas nuevo)
-    d = d.sort_values("Source.Name").drop_duplicates(["FechaFinMes", "u"], keep="last")
+    d["_o"] = range(len(d))
+    d = d.sort_values("_o").drop_duplicates(["FechaFinMes", "u"], keep="last")
     g = d.groupby(["FechaFinMes", "k"], as_index=False).ComisionYTM.sum()
     return [{"mes": r.FechaFinMes, col: r.k, "comisiones": round(float(r.ComisionYTM), 2)} for r in g.itertuples()]
 
@@ -139,8 +141,10 @@ def cuotapartistas(base):
 def serie(base):
     d = leer(os.path.join(base, "Serie Facturación"))
     if d.empty: return []
-    d["Fecha"] = pd.to_datetime(d.Fecha).dt.date.astype(str)
-    d = d.drop_duplicates("Fecha", keep="last").sort_values("Fecha")
+    d["Fecha"] = pd.to_datetime(d.Fecha)
+    d["_m"] = d.Fecha.dt.to_period("M")
+    d = d.drop_duplicates("_m", keep="last").sort_values("Fecha")   # un valor por mes; gana el archivo mas nuevo
+    d["Fecha"] = d.Fecha.dt.date.astype(str)
     return [{"fecha": r.Fecha, "facturacion": float(r.Facturación)} for r in d.itertuples()]
 
 
