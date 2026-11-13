@@ -1,0 +1,72 @@
+// Consultas DAX para el Informe de Gestión FCI – Comité Ejecutivo.
+// Modelo: "DS Fondos - AM - Comisiones - Volumen - CuotaPartes" (Tableros.pbix\Reporte Fondos Interno.pbix, conexión en vivo).
+// Se corren en la vista de consultas DAX de Power BI Desktop, una por pestaña. Resultado: "Copiar > Toda la tabla",
+// pegar en el Bloc de notas y guardar como UTF-8 con el nombre indicado en
+//   C:\Users\mfried\OneDrive - BALANZ\FCI - PBI - Fondos\PBI - Mati\Claude outputs\informe_comite\dax\
+// Las consultas toman siempre los últimos meses disponibles: no hay que cambiar fechas.
+
+// ===== 1) dax_mes_unidad.txt =====
+EVALUATE
+SUMMARIZECOLUMNS (
+    Calendario[Fecha Mes],
+    UnidadNegocio[unidad],
+    "aum_orig", [AUM USD (Suma) Original],
+    "ten", SUM ( Tenencias[tenencia] ),
+    "fact", SUM ( Comisiones[comisiondolarizada] ),
+    "flujo", [Flujo dolarizado]
+)
+ORDER BY Calendario[Fecha Mes]
+
+// ===== 2) dax_mes_unidad_fondo.txt =====
+EVALUATE
+SUMMARIZECOLUMNS (
+    Calendario[Fecha Mes],
+    UnidadNegocio[unidad],
+    AgrupacionFondo[nombre_corto_fdo_ok],
+    FILTER ( VALUES ( Calendario[Fecha Mes] ), Calendario[Fecha Mes] >= EDATE ( TODAY (), -14 ) ),
+    "aum", [AUM USD (Suma) Original],
+    "fact", SUM ( Comisiones[comisiondolarizada] ),
+    "flujo", [Flujo dolarizado]
+)
+ORDER BY Calendario[Fecha Mes]
+
+// ===== 3) dax_clientes.txt =====
+DEFINE
+    VAR desde = EDATE ( TODAY (), -14 )
+    VAR tp =
+        TOPN (
+            60,
+            SUMMARIZECOLUMNS (
+                Cuotapartistas[nombre],
+                FILTER ( VALUES ( Calendario[Fecha Mes] ), Calendario[Fecha Mes] >= desde ),
+                "f", SUM ( Comisiones[comisiondolarizada] )
+            ),
+            [f], DESC
+        )
+    VAR acdis = FILTER ( ALL ( Cuotapartistas[nombre] ), CONTAINSSTRING ( Cuotapartistas[nombre], "ACDI" ) )
+    VAR nombres = DISTINCT ( UNION ( SELECTCOLUMNS ( tp, "nombre", Cuotapartistas[nombre] ), acdis ) )
+EVALUATE
+SUMMARIZECOLUMNS (
+    Calendario[Fecha Mes],
+    Cuotapartistas[nombre],
+    UnidadNegocio[unidad],
+    TREATAS ( nombres, Cuotapartistas[nombre] ),
+    FILTER ( VALUES ( Calendario[Fecha Mes] ), Calendario[Fecha Mes] >= desde ),
+    "aum", [AUM USD (Suma) Original],
+    "fact", SUM ( Comisiones[comisiondolarizada] ),
+    "flujo", [Flujo dolarizado]
+)
+ORDER BY Calendario[Fecha Mes]
+
+// ===== 4) dax_inversores.txt =====
+EVALUATE
+SUMMARIZECOLUMNS (
+    Calendario[Fecha Mes],
+    Cuotapartistas[Categoria],
+    Cuotapartistas[tipopersona],
+    AgrupacionFondo[nombre_corto_fdo_ok],
+    FILTER ( VALUES ( Calendario[Fecha Mes] ), Calendario[Fecha Mes] >= EDATE ( TODAY (), -14 ) ),
+    "aum", [AUM USD (Suma) Original],
+    "n", DISTINCTCOUNT ( Cuotapartistas[nombre] )
+)
+ORDER BY Calendario[Fecha Mes]
