@@ -1,7 +1,8 @@
 // Consultas DAX para el Informe de Gestión FCI – Comité Ejecutivo.
-// Modelo: "DS Fondos - AM - Comisiones - Volumen - CuotaPartes" (Tableros.pbix\Reporte Fondos Interno.pbix, conexión en vivo).
-// Se corren en la vista de consultas DAX de Power BI Desktop, una por pestaña. Resultado: "Copiar > Toda la tabla",
-// pegar en el Bloc de notas y guardar como UTF-8 con el nombre indicado en
+// Modelo: "DS Fondos - AM - Comisiones - Volumen - CuotaPartes" (área de trabajo SelfService_Fondos).
+// Se corren en la vista de consultas DAX de Power BI en la WEB (área de trabajo SelfService_Fondos > modelo > "…" >
+// "Abrir en la vista de consulta DAX"); ver web_dax.md. También funcionan en Power BI Desktop.
+// Resultado: un .txt por consulta (tab-separado, formato "Copia > Toda la tabla") en
 //   C:\Users\mfried\OneDrive - BALANZ\FCI - PBI - Fondos\PBI - Mati\Claude outputs\informe_comite\dax\
 // Las consultas toman siempre los últimos meses disponibles: no hay que cambiar fechas.
 
@@ -67,6 +68,6 @@ SUMMARIZECOLUMNS (
     AgrupacionFondo[nombre_corto_fdo_ok],
     FILTER ( VALUES ( Calendario[Fecha Mes] ), Calendario[Fecha Mes] >= EDATE ( TODAY (), -14 ) ),
     "aum", [AUM USD (Suma) Original],
-    "n", DISTINCTCOUNT ( Cuotapartistas[nombre] )
+    "n", DISTINCTCOUNT ( Tenencias[numcuotapartista] )
 )
 ORDER BY Calendario[Fecha Mes]
