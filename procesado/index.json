@@ -1,5 +1,5 @@
 {
- "actualizado": "2026-11-13T20:12:03+00:00",
+ "actualizado": "2026-11-14T01:54:08+00:00",
  "fuente": "Planilla Diaria CAFCI archivada por la CNV",
  "fechas_planilla": [
   "2019-12-27",
@@ -1667,7 +1667,8 @@
   "2026-11-04",
   "2026-11-05",
   "2026-11-11",
-  "2026-11-12"
+  "2026-11-12",
+  "2026-11-13"
  ],
  "mensual": [
   {
@@ -2409,13 +2410,13 @@
    "planillas": 21
   },
   {
-   "archivo": "fondos_cafci_2026-11-12.csv",
+   "archivo": "fondos_cafci_2026-11-13.csv",
    "mes": "2026-11",
    "desde": "2026-10-31",
-   "hasta": "2026-11-12",
+   "hasta": "2026-11-13",
    "parcial": true,
    "fondos": 1148,
-   "planillas": 6
+   "planillas": 7
   }
  ]
 }
