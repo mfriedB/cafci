@@ -1,4 +1,4 @@
-"""Actualiza las slides 4 a 9 de la Call de Fondos sin pasar por Power BI ni por 1816.
+"""Actualiza las slides 4 a 10 de la Call de Fondos sin pasar por Power BI ni por 1816.
 
 Datos: base oficial CAFCI/CNV via la API https://cafci.vercel.app/api/fondos (respaldo: rama datos del repo mfriedB/cafci, procesado/).
 El script vigente se baja con: curl -sfL -o call_fondos.py "https://cafci.vercel.app/api/script?nombre=call_fondos.py"
@@ -384,10 +384,87 @@ def slide9(D, out, n=5):
     C.guardar(out)
     return cajas
 
+
+# ---------------------------------------------------------------- slide 10
+# Rendimiento YTD de clases Balanz Money Market + Short Duration ARS (VCP de la planilla diaria CAFCI).
+# La planilla de cada dia trae el VCP del dia habil anterior: YTD = VCP ultima planilla / VCP primera planilla del ano - 1
+# (validado contra 1816 al 11/11/2026: 28,6841 / 26,5887 / 25,0102 / 19,1199 %).
+CLASES_SLIDE10 = [(1115, "Balanz Capital Ahorro B", (98, 0, 242)), (5580, "Balanz Crédito Privado C", (90, 129, 206)),
+                  (3671, "Balanz Lecaps A", (31, 154, 133)), (3357, "Balanz Capital Money Market C", (41, 50, 111))]
+
+def cargar_vcp(anio_, clases):
+    idx = json.loads(leer_url("index.json"))
+    meses = [m["mes"] for m in idx["mensual"] if m["mes"][:4] == anio_]
+    partes = []
+    for m in meses:
+        df = pd.read_csv(io.BytesIO(leer_url(f"clases_diario/{m}.csv.gz")), compression="gzip", usecols=["fecha", "fecha_ant", "codigo_cafci", "vcp"])
+        partes.append(df[df.codigo_cafci.isin(clases) & (df.vcp > 0)])
+    V = pd.concat(partes).drop_duplicates(["fecha", "codigo_cafci"])
+    p = V.pivot(index="fecha", columns="codigo_cafci", values="vcp").sort_index().ffill()
+    fa = V.drop_duplicates("fecha").set_index("fecha").fecha_ant.reindex(p.index)
+    return p, fa
+
+def fecha_vcp(planilla, ant):                       # dia del VCP = dia habil anterior a la planilla
+    d = pd.Timestamp(planilla) - pd.offsets.BDay(1)
+    return d if pd.isna(ant) else max(d, pd.Timestamp(ant))
+
+def slide10(D, out, W=3000, H=1726):
+    k = 1.18                                        # misma escala visual que las slides 5 a 9 (la imagen va mas chica en la slide)
+    p, fa = cargar_vcp(anio(D), [c for c, _, _ in CLASES_SLIDE10])
+    ytd = (p / p.iloc[0] - 1) * 100
+    x_fechas = [pd.Timestamp(f"{int(anio(D)) - 1}-12-31")] + [fecha_vcp(f, fa[f]) for f in p.index[1:]]
+    ytd.index = x_fechas
+    corte = x_fechas[-1]
+    C = Lienzo.__new__(Lienzo); C.W, C.H = W, H
+    C.im = Image.new("RGB", (W * SS, H * SS), "white"); C.d = ImageDraw.Draw(C.im, "RGBA")
+    TIT = (49, 49, 129)
+    hb = round(68 * k)
+    C.rect(0, 0, W, hb, TIT)
+    fd = ImageFont.truetype(asset("fuentes/D-DIN.otf"), 46 * k * SS)
+    C.d.text((W / 2 * SS, hb / 2 * SS), f"Rendimiento YTD {anio(D)}: Money Market + Short Duration ARS", font=fd, fill="white", anchor="mm", stroke_width=SS, stroke_fill="white")
+    for (x0, y0, x1, y1) in [(0, hb, 5, H), (W - 5, hb, W, H), (0, H - 5, W, H)]: C.rect(x0, y0, x1, y1, TIT)
+    PL, PR, PT, PB = 175, 2060, hb + 45, H - 110
+    t0, t1 = x_fechas[0], pd.Timestamp(f"{anio(D)}-12-31") if corte.month == 12 else corte
+    X = lambda t: PL + (pd.Timestamp(t) - t0).days / max((t1 - t0).days, 1) * (PR - PL)
+    vmax = ytd.values.max(); paso = paso_lindo(vmax, 12, (1, 2.5, 5)); top = np.ceil((vmax + paso * 0.15) / paso) * paso   # eje justo sobre el maximo
+    Y = lambda v: PB - v / top * (PB - PT)
+    gris = (205, 205, 205)
+    v = 0
+    while v <= top + 1e-9:                          # grilla horizontal punteada y eje en %
+        xx = PL
+        while xx < PR: C.rect(xx, Y(v) - 1, min(xx + 14, PR), Y(v) + 1.5, (200, 200, 200) if v else (150, 150, 150)); xx += 26
+        C.texto(f"{fmt(v, 1) if paso % 1 else f'{v:.0f}'} %", PL - 22, Y(v) + 13, 31.6, GRIS_LBL, "rs"); v += paso
+    for m in range(1, 13):                          # meses: linea punteada y etiqueta
+        t = pd.Timestamp(f"{anio(D)}-{m:02d}-01")
+        if t > t1: break
+        yy = PT
+        while yy < PB: C.rect(X(t) - 1, yy, X(t) + 1.5, yy + 4, gris); yy += 14
+        C.texto(f"{MESES[m - 1]} {anio(D)}", X(t), PB + 50, 26.9 * k, (92, 88, 88), "ms", bold=False)
+    finales = []
+    for cod, nombre, col in sorted(CLASES_SLIDE10, key=lambda c: ytd[c[0]].iloc[-1]):
+        s = ytd[cod].dropna()
+        C.linea([(X(t), Y(v)) for t, v in s.items()], col, 6 * k)
+        C.circulo(X(s.index[-1]), Y(s.iloc[-1]), 11 * k, col, (255, 255, 255), 3)
+        finales.append([Y(s.iloc[-1]), s.iloc[-1], nombre, col, X(s.index[-1])])
+    finales.sort(key=lambda f: f[0])                 # etiquetas finales sin superposicion (minimo 110 px)
+    pos = [f[0] for f in finales]
+    for _ in range(50):
+        for i in range(1, len(pos)):
+            if pos[i] - pos[i - 1] < 110: d_ = (110 - (pos[i] - pos[i - 1])) / 2; pos[i - 1] -= d_; pos[i] += d_
+    for (y, v, nombre, col, x), yl in zip(finales, pos):
+        xl = PR + 70
+        C.linea([(x + 16, y), (xl - 10, yl)], col, 3)
+        txt = f"{fmt(v)} %"; fs = 32 * k; w = C.ancho(txt, fs)
+        C.d.rounded_rectangle([xl * SS, (yl - 30 * k) * SS, (xl + w + 34) * SS, (yl + 30 * k) * SS], radius=10 * SS, fill=col)
+        C.texto(txt, xl + 17, yl + 13 * k, fs, (255, 255, 255), "ls")
+        C.texto(nombre, xl + w + 52, yl + 11 * k, 26.9 * k, col, "ls")
+    C.guardar(out)
+    return corte
+
 # ---------------------------------------------------------------- PowerPoint
 def fecha_larga(d): return f"{d.day} de {MESES_L[d.month-1]} de {d.year}"
 
-def actualizar_pptx(ruta, salida, imgs, corte, info4, cajas9):
+def actualizar_pptx(ruta, salida, imgs, corte, info4, cajas9, corte10=None):
     from pptx import Presentation
     from pptx.util import Emu
     prs = Presentation(ruta)
@@ -439,6 +516,19 @@ def actualizar_pptx(ruta, salida, imgs, corte, info4, cajas9):
                 sh = s.shapes[-1]; x, y, ww, hh = cajas9[k]; m = 0.012
                 sh.left, sh.top = int(nl + (x - m) * w), int(nt + (y - m) * h)
                 sh.width, sh.height = int((ww + 2 * m) * w), int((hh + 2 * m) * h)
+        if n == 10:
+            for sh in list(s.shapes):                   # porcentajes que antes se escribian a mano sobre el grafico
+                if sh.has_text_frame and re.fullmatch(r"\s*\d+[.,]\d+\s*%\s*", sh.text_frame.text or ""):
+                    sh._element.getparent().remove(sh._element)
+            for sh in s.shapes:
+                if sh.has_text_frame:
+                    for p in sh.text_frame.paragraphs:
+                        if not p.runs: continue
+                        t = "".join(r.text for r in p.runs)
+                        t2 = re.sub(r"(Datos al[\s\xa0])\d{1,2}/\d{1,2}/\d{4}", lambda m: m.group(1) + corte10.strftime("%d/%m/%Y"), t).replace("fuente 1816", "fuente CAFCI / CNV")
+                        if t2 != t:
+                            p.runs[0].text = t2
+                            for r in p.runs[1:]: r.text = ""
     prs.save(salida)
 
 def main():
@@ -464,9 +554,10 @@ def main():
     corte = pd.Timestamp(D[D.mes == D.mes.max()].Fecha.iloc[0]).date()
     g = lambda n: os.path.join(a.graficos, f"slide{n}.png")
     info4 = slide4(D, g(4)); slide5(D, g(5)); slide6(D, g(6)); slide7(D, g(7)); slide8(D, g(8)); cajas9 = slide9(D, g(9))
-    print("corte", corte, "| total AUM prom", round(info4["total"], 2), "bill. | Balanz puesto", info4["puesto_balanz"], "| fondos Balanz en top flujo:", len(cajas9))
+    corte10 = slide10(D, g(10))
+    print("corte", corte, "| total AUM prom", round(info4["total"], 2), "bill. | Balanz puesto", info4["puesto_balanz"], "| fondos Balanz en top flujo:", len(cajas9), "| slide 10 al", corte10.date())
     if a.pptx:
-        actualizar_pptx(a.pptx, a.salida or a.pptx, {n: g(n) for n in range(4, 10)}, corte, info4, cajas9)
+        actualizar_pptx(a.pptx, a.salida or a.pptx, {n: g(n) for n in range(4, 11)}, corte, info4, cajas9, corte10)
         print("presentacion:", a.salida or a.pptx)
 
 if __name__ == "__main__":
