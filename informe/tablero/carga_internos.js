@@ -1,6 +1,6 @@
 /* Datos internos de Balanz cargados a mano desde el tablero (facturación y AUM interno).
    Matías baja los archivos del Power BI (o corre las consultas DAX) y los sube acá; el tablero los procesa en el navegador,
-   los guarda en la base del artifact (colección "cargas", un documento por tipo y mes) y los usa enseguida.
+   los guarda en la base del artifact (colección "cargas", un documento por tipo y mes más el registro de cada archivo) y los usa enseguida.
    La tarea mensual del comité lee la misma colección (db_list "cargas") y convierte los datos con informe/cargas_a_archivos.py.
    Si un mes está en la carga manual y en los archivos de la carpeta, gana la carga manual. */
 (function () {
@@ -163,20 +163,46 @@
     return { tipo, meses: out };
   }
 
-  /* ---- base del artifact ---- */
-  const C = { db: null, docs: [], estado: "cargando" };
+  /* ---- base del artifact ----
+     Colección "cargas":
+     - datos: un documento por tipo y mes (id tipo_AAAA-MM; si no entra en un documento sigue en tipo_AAAA-MM__2, __3...),
+       con tipo, mes, cols, filas, archivo, archivoId, at, parte, partes. Una carga nueva del mismo tipo y mes la reemplaza.
+     - registro de archivos: archivo_<id> con registro: true (sin "mes", así la tarea del comité lo ignora), nombre, tipo,
+       meses guardados, meses que traía, totales y la copia del archivo (CSV en los archivos del tablero).
+     Así queda el histórico: los meses se van acumulando y cada archivo subido queda listado, con su copia, para bajarlo o borrarlo. */
+  const C = { db: null, assets: null, docs: [], regs: [], estado: "cargando" };
   window.CARGAS = C;
   async function conectar() {
     try {
       const db = await (window.claude && claude.use ? claude.use("db") : null);
       if (!db) { C.estado = "sin_db"; return; }
       C.db = db;
+      try { C.assets = await claude.use("assets"); } catch (e) { C.assets = null; }
       const snap = await Promise.race([db.collection("cargas").get(), new Promise((_, mal) => setTimeout(() => mal(new Error("timeout")), 10000))]);
-      C.docs = snap.docs.filter(d => d.exists).map(d => Object.assign({ id: d.id }, d.data()));
+      const todos = snap.docs.filter(d => d.exists).map(d => Object.assign({ id: d.id }, d.data()));
+      C.regs = todos.filter(d => d.registro);
+      C.docs = todos.filter(d => !d.registro && d.tipo && d.mes);
       C.estado = "ok";
       aplicar();
     } catch (e) { console.error(e); C.estado = "error"; C.err = e.message || String(e); }
     finally { if (window.APP && APP.rerender) APP.rerender(); }
+  }
+  /* Cada archivo guarda su propia versión de cada mes (tipo_mes_archivo, partida en __2, __3... si no entra en un documento).
+     Vale la versión del archivo subido más recientemente; si se elimina, vuelve a valer la anterior. */
+  function versiones(tipo) {
+    const g = new Map();
+    for (const d of C.docs) {
+      if (tipo && d.tipo !== tipo) continue;
+      const k = d.tipo + "|" + d.mes + "|" + (d.archivoId || "previo:" + (d.at || "")); const x = g.get(k);
+      if (!x) g.set(k, Object.assign({}, d, { filas: d.filas.slice(), ids: [d.id], _p: d.parte || 1 }));
+      else { x.filas = (d.parte || 1) < x._p ? d.filas.concat(x.filas) : x.filas.concat(d.filas); x.ids.push(d.id); }
+    }
+    return [...g.values()];
+  }
+  function datos(tipo) {
+    const vig = new Map();
+    for (const v of versiones(tipo)) { const k = v.tipo + "|" + v.mes, x = vig.get(k); if (!x || (v.at || "") > (x.at || "")) vig.set(k, v); }
+    return [...vig.values()].sort((a, b) => (a.mes < b.mes ? -1 : 1));
   }
 
   /* ---- mezcla con los datos de la carpeta (data/internos.json): la carga manual gana mes por mes ---- */
@@ -184,9 +210,8 @@
   function aplicar() {
     const I = M.I || (M.I = {});
     if (!base) base = { comisiones: (I.comisiones || []).slice(), comisiones_fondo: (I.comisiones_fondo || []).slice(), serie_facturacion: (I.serie_facturacion || []).slice() };
-    const por = t => C.docs.filter(d => d.tipo === t);
     const mezclar = (lista, tipo, col) => {
-      const docs = por(tipo); if (!docs.length) return lista;
+      const docs = datos(tipo); if (!docs.length) return lista;
       const meses = new Set(docs.map(d => d.mes));
       const out = lista.filter(r => !meses.has(String(r.mes).slice(0, 7)));
       for (const d of docs) { const [y, m] = d.mes.split("-").map(Number);
@@ -195,7 +220,7 @@
     };
     I.comisiones = mezclar(base.comisiones, "com_unidad", "unidad");
     I.comisiones_fondo = mezclar(base.comisiones_fondo, "com_fondo", "fondo");
-    const su = por("com_unidad");
+    const su = datos("com_unidad");
     if (su.length) {
       const meses = new Set(su.map(d => d.mes));
       const se = base.serie_facturacion.filter(r => !meses.has(String(r.fecha).slice(0, 7)));
@@ -203,31 +228,42 @@
       I.serie_facturacion = se.sort((a, b) => a.fecha < b.fecha ? -1 : 1);
     } else I.serie_facturacion = base.serie_facturacion;
     I.manual = {};
-    for (const t of ORDEN) { const docs = por(t); if (docs.length) I.manual[t] = docs; }
+    for (const t of ORDEN) { const docs = datos(t); if (docs.length) I.manual[t] = docs; }
     try { if (window.D && D.build) D.build(); } catch (e) { console.error(e); }
   }
 
   /* ---- página ---- */
   const fmt = (v, d = 0) => (v == null || !isFinite(v) ? "–" : v.toLocaleString("es-AR", { minimumFractionDigits: d, maximumFractionDigits: d }));
   const mesTxt = m => { if (m === "fijo") return "sin mes"; const [y, mm] = m.split("-"); return ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"][+mm - 1] + "-" + y.slice(2); };
+  const rango = ms => (ms.length ? mesTxt(ms[0]) + (ms.length > 1 ? " a " + mesTxt(ms[ms.length - 1]) : "") : "–");
   function total(tipo, filas) {
     const c = { com_unidad: 1, com_fondo: 1, aum_unidad: 1, aum_unidad_fondo: 2, clientes: 2, inversores: 3, terceros: 2, emisiones: 2, cerrados: 2 }[tipo];
     return c == null ? filas.length : filas.reduce((a, r) => a + (+r[c] || 0), 0);
   }
-  const queMide = t => ({ com_unidad: "Facturación USD", com_fondo: "Facturación USD", inversores: "AUM", clientes: "AUM USD (top + ACDIs)",
+  const queMide = t => ({ com_unidad: "Facturación USD", com_fondo: "Facturación USD", inversores: "AUM", clientes: "AUM USD",
     terceros: "AUM ARS", emisiones: "Facturación USD", cerrados: "Facturación USD", exclusiones: "Clientes", textos: "Textos" })[t] || "AUM USD";
+  const nuevoId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  // partes de hasta ~180 KB (límite de 256 KB por documento)
+  function partir(filas) {
+    const out = []; let cur = [], tam = 0;
+    for (const f of filas) { const t = JSON.stringify(f).length + 1; if (cur.length && tam + t > 180000) { out.push(cur); cur = []; tam = 0; } cur.push(f); tam += t; }
+    out.push(cur); return out;
+  }
+  const aCsv = tab => tab.map(r => (r || []).map(v => { if (v instanceof Date) v = v.toISOString().slice(0, 10); const x = v == null ? "" : String(v); return /[";\n]/.test(x) ? '"' + x.replace(/"/g, '""') + '"' : x; }).join(";")).join("\r\n");
 
   let pendientes = [];   // archivos procesados y todavía no guardados
+  let soloUltimo = true;  // de cada archivo se guarda solo su último mes (el histórico se arma mes a mes)
   P.pages.push({ id: "datos-internos", group: "Datos internos", name: "Cargar facturación y AUM interno", render(st, side, content) {
     const w = U.el("div", "ci-wrap"); content.appendChild(w);
     w.innerHTML = `<h2>Cargar datos internos de Balanz</h2>
-      <p class="ci-intro">Subí acá lo que bajes del Power BI. Se procesa en tu navegador, se guarda en el tablero y lo usan el tablero y la presentación del comité.
-      La tarea automática sigue bajándolos sola; si un mes está en las dos fuentes, vale la carga manual.</p>
+      <p class="ci-intro">Subí acá lo que bajes del Power BI o de tus planillas. Se procesa en tu navegador y se guarda en el tablero: cada mes se suma al histórico,
+      y todo lo que no depende de CAFCI se actualiza enseguida. Si un mes ya estaba cargado, vale el archivo más nuevo (el anterior queda guardado en el histórico).</p>
       <details class="ci-ayuda"><summary>Qué bajar y de dónde</summary><ol>
         <li><b>Facturación</b>: Power BI Service › <i>Rporte de Comision por Fondos v2</i> › página <i>Fondos YTD</i>. En la matriz grande: <i>Más opciones › Exportar datos › Datos con diseño actual</i> (.xlsx), una vez con <i>Analisis por = Unidad Negocio</i> y otra con <i>Fondos</i>. También sirven los Excel mensuales de las carpetas (<i>comisiones_fci_*.xlsx</i>, <i>comisiones_fondo_*.xlsx</i>).</li>
         <li><b>AUM interno, clientes e inversores</b>: modelo <i>DS Fondos - AM - Comisiones - Volumen - CuotaPartes</i> (área SelfService_Fondos) › <i>Abrir en la vista de consulta DAX</i>. Corré las 4 consultas de <code>informe/comite/consultas_dax.dax</code> y copiá cada resultado con <i>Copia › Toda la tabla</i>: pegalo abajo o guardalo como .txt.</li>
-        <li><b>Plantillas de Excel</b> (<a href="https://github.com/mfriedB/cafci/tree/main/informe/plantillas" target="_blank" rel="noopener">bajarlas del repo</a>; cada una tiene una hoja de instrucciones): AUM y flujo por área comercial y fondo, clientes, inversores PH/PJ, fondos de terceros, emisiones primarias, fondos fuera de CAFCI, clientes excluidos (Ex Meli) y textos del mes. Las tres primeras reemplazan a las consultas DAX.</li>
-        <li>El tipo de archivo se reconoce solo; si se equivoca, cambialo en la lista antes de guardar.</li></ol></details>
+        <li><b>Plantillas de Excel</b> (<a href="https://github.com/mfriedB/cafci/tree/main/informe/plantillas" target="_blank" rel="noopener">bajarlas del repo</a>; cada una tiene una hoja de instrucciones): AUM y flujo por área comercial y fondo, clientes, inversores PH/PJ, fondos de terceros, emisiones primarias, fondos fuera de CAFCI, clientes excluidos (Ex Meli) y textos del mes.</li>
+        <li>El tipo de archivo se reconoce solo; si se equivoca, cambialo en la lista antes de guardar.</li>
+        <li>Si un archivo trae varios meses (por ejemplo el acumulado del año), se guarda solo el último. Para cargar el histórico de una vez, destildá <i>Guardar solo el último mes de cada archivo</i>.</li></ol></details>
       <div class="ci-zona" tabindex="0"><b>Arrastrá los archivos acá</b> o <label class="ci-btn">elegilos<input type="file" multiple accept=".xlsx,.xls,.xlsm,.txt,.csv,.tsv" hidden></label><div class="ci-sub">.xlsx, .txt, .csv – varios a la vez</div></div>
       <details class="ci-pegar"><summary>Pegar el resultado de una consulta DAX</summary><textarea rows="6" placeholder="Pegá acá lo copiado con Copia › Toda la tabla"></textarea><button class="ci-btn" type="button">Procesar lo pegado</button></details>
       <div class="ci-prev"></div><div class="ci-estado"></div>`;
@@ -239,30 +275,39 @@
       catch (e) { pendientes.push({ archivo: nombre, error: e.message }); }
       dibujarPrev();
     }
-    async function archivos(fs) { for (const f of fs) { try { await agregar(f.name, await leerTabla(f)); } catch (e) { pendientes.push({ archivo: f.name, error: e.message }); dibujarPrev(); } } }
+    async function archivos(fs) { for (const f of fs) { try { await agregar(f.name, await leerTabla(f)); } catch (e) { pendientes.push({ archivo: f.name, error: e.message }); dibujarPrev(); } } inp.value = ""; }
     inp.addEventListener("change", () => archivos([...inp.files]));
     zona.addEventListener("dragover", e => { e.preventDefault(); zona.classList.add("on"); });
     zona.addEventListener("dragleave", () => zona.classList.remove("on"));
     zona.addEventListener("drop", e => { e.preventDefault(); zona.classList.remove("on"); archivos([...e.dataTransfer.files]); });
-    w.querySelector(".ci-pegar button").addEventListener("click", () => { if (ta.value.trim()) { agregar("pegado " + new Date().toLocaleTimeString("es-AR"), textoATabla(ta.value)); ta.value = ""; } });
+    w.querySelector(".ci-pegar button").addEventListener("click", () => { if (ta.value.trim()) { agregar("pegado " + new Date().toLocaleString("es-AR"), textoATabla(ta.value)); ta.value = ""; } });
+
+    const aGuardar = p => { const ms = Object.keys(p.meses).sort(); return soloUltimo && ms.length > 1 ? ms.slice(-1) : ms; };
+    const cargadoDe = (tipo, mes) => datos(tipo).find(d => d.mes === mes);
+    const ultimoCargado = tipo => { const ms = C.docs.filter(d => d.tipo === tipo).map(d => d.mes).filter(m => m !== "fijo").sort(); return ms[ms.length - 1]; };
 
     function dibujarPrev() {
       if (!pendientes.length) { prev.innerHTML = ""; return; }
       const ok = pendientes.filter(p => !p.error);
-      let h = `<h3>Para guardar</h3><table class="ci-t"><thead><tr><th>Archivo</th><th>Tipo</th><th>Meses</th><th class="n">Filas</th><th class="n">Último mes</th><th></th></tr></thead><tbody>`;
+      let h = `<h3>Para guardar</h3><label class="ci-sub"><input type="checkbox" class="ci-ult"${soloUltimo ? " checked" : ""}> Guardar solo el último mes de cada archivo</label>
+        <table class="ci-t"><thead><tr><th>Archivo</th><th>Tipo</th><th>Trae</th><th>Se guarda</th><th class="n">Total del último mes</th><th></th></tr></thead><tbody>`;
       pendientes.forEach((p, i) => {
         if (p.error) { h += `<tr class="err"><td>${esc(p.archivo)}</td><td colspan="4">${esc(p.error)}</td><td><button class="ci-x" data-i="${i}" type="button" aria-label="Quitar">✕</button></td></tr>`; return; }
-        const ms = Object.keys(p.meses).sort(), ult = ms[ms.length - 1], n = ms.reduce((a, m) => a + p.meses[m].length, 0);
+        const ms = Object.keys(p.meses).sort(), ult = ms[ms.length - 1], g = aGuardar(p);
+        const reemp = g.filter(m => cargadoDe(p.tipo, m)), uc = ultimoCargado(p.tipo);
+        const nota = (reemp.length ? `<div class="ci-sub">reemplaza ${reemp.length === 1 ? mesTxt(reemp[0]) : reemp.length + " meses"} ya cargado${reemp.length === 1 ? "" : "s"}</div>` : "")
+          + (uc && ult && ult !== "fijo" && ult < uc ? `<div class="mal">es anterior al último mes cargado (${mesTxt(uc)})</div>` : "");
         h += `<tr><td>${esc(p.archivo)}</td><td><select data-i="${i}">${ORDEN.map(t => `<option value="${t}"${t === p.tipo ? " selected" : ""}>${TIPOS[t].nombre}</option>`).join("")}</select></td>
-          <td>${ms.length ? mesTxt(ms[0]) + (ms.length > 1 ? " a " + mesTxt(ult) : "") : "–"}</td><td class="n">${fmt(n)}</td>
+          <td>${rango(ms)}</td><td>${rango(g)}${nota}</td>
           <td class="n">${ult ? queMide(p.tipo) + " " + mesTxt(ult) + ": " + fmt(total(p.tipo, p.meses[ult])) : ""}</td><td><button class="ci-x" data-i="${i}" type="button" aria-label="Quitar">✕</button></td></tr>`;
       });
       h += `</tbody></table><div class="ci-ctrl">${controles(ok)}</div>
         <button class="ci-btn ci-guardar" type="button"${ok.length && C.db ? "" : " disabled"}>Guardar ${ok.length} archivo${ok.length === 1 ? "" : "s"} en el tablero</button>
         ${C.db ? "" : `<span class="ci-sub"> ${C.estado === "cargando" ? "Conectando con la base del tablero…" : "La base del tablero no está disponible en esta vista: abrilo desde claude.ai con tu usuario."}</span>`}`;
       prev.innerHTML = h;
+      prev.querySelector(".ci-ult").addEventListener("change", e => { soloUltimo = e.target.checked; dibujarPrev(); });
       prev.querySelectorAll("select").forEach(s => s.addEventListener("change", () => { const p = pendientes[+s.dataset.i];
-        try { Object.assign(p, procesar(p.tab, s.value)); } catch (e) { p.error = e.message; } dibujarPrev(); }));
+        try { Object.assign(p, procesar(p.tab, s.value)); delete p.error; } catch (e) { p.error = e.message; } dibujarPrev(); }));
       prev.querySelectorAll(".ci-x").forEach(b => b.addEventListener("click", () => { pendientes.splice(+b.dataset.i, 1); dibujarPrev(); }));
       const g = prev.querySelector(".ci-guardar"); if (g) g.addEventListener("click", guardar);
     }
@@ -276,43 +321,99 @@
     }
     async function guardar() {
       const g = prev.querySelector(".ci-guardar"); g.disabled = true; g.textContent = "Guardando…";
-      const at = new Date().toISOString(); let n = 0, err = null;
-      for (const p of pendientes.filter(p => !p.error).flatMap(p => p.extra ? [p, Object.assign({ archivo: p.archivo }, p.extra)] : [p])) {
-        for (const [mes, filas] of Object.entries(p.meses)) {
-          const id = `${p.tipo}_${mes}`, doc = { tipo: p.tipo, mes, cols: TIPOS[p.tipo].cols, filas, archivo: p.archivo, at };
-          try { await C.db.doc("cargas/" + id).set(doc); n++; const i = C.docs.findIndex(d => d.id === id); const v = Object.assign({ id }, doc); if (i >= 0) C.docs[i] = v; else C.docs.push(v); }
-          catch (e) { err = e; break; }
-        }
-        if (err) break;
+      const at = new Date().toISOString(); let n = 0, err = null, sinCopia = 0;
+      for (const p of pendientes.filter(p => !p.error)) {
+        const archivoId = nuevoId(), meses = aGuardar(p);
+        const grupos = [[p.tipo, p.meses]].concat(p.extra ? [[p.extra.tipo, p.extra.meses]] : []);
+        try {
+          for (const [tipo, mm] of grupos) for (const mes of meses) {
+            if (!mm[mes]) continue;
+            const partes = partir(mm[mes]);
+            for (let k = 0; k < partes.length; k++) {
+              const id = `${tipo}_${mes}_${archivoId}` + (k ? `__${k + 1}` : "");
+              const doc = { tipo, mes, cols: TIPOS[tipo].cols, filas: partes[k], archivo: p.archivo, archivoId, at, parte: k + 1, partes: partes.length };
+              await C.db.doc("cargas/" + id).set(doc); C.docs.push(Object.assign({ id }, doc));
+            }
+            n++;
+          }
+          // copia del archivo (como CSV de su primera hoja) para el histórico
+          let copia = null;
+          if (C.assets && p.tab) {
+            try { const r = await C.assets.upload(new Blob(["\ufeff" + aCsv(p.tab)], { type: "text/csv" }), { type: "text/csv" }); copia = { id: r.id, bytes: r.sizeBytes }; }
+            catch (e) { console.error(e); sinCopia++; }
+          } else sinCopia++;
+          const ult = meses[meses.length - 1];
+          const reg = { registro: true, archivo: p.archivo, archivoId, tipo: p.tipo, extra: p.extra ? p.extra.tipo : null, meses, mesesArchivo: Object.keys(p.meses).sort(),
+            filas: meses.reduce((a, m) => a + (p.meses[m] || []).length, 0), ultimo: ult || null, total: ult ? total(p.tipo, p.meses[ult]) : null, at, copia };
+          await C.db.doc("cargas/archivo_" + archivoId).set(reg); C.regs.push(Object.assign({ id: "archivo_" + archivoId }, reg));
+        } catch (e) { err = e; break; }
       }
       if (err) { g.disabled = false; g.textContent = "Reintentar"; est.insertAdjacentHTML("afterbegin", `<div class="mal">No se pudo guardar: ${esc(err.message || err.code || String(err))}</div>`); return; }
-      pendientes = []; aplicar(); dibujarPrev(); dibujarEstado(`Guardados ${n} meses.`);
+      pendientes = []; aplicar(); dibujarPrev();
+      dibujarEstado(`Guardados ${n} mes${n === 1 ? "" : "es"}.` + (sinCopia ? ` (${sinCopia} archivo${sinCopia === 1 ? "" : "s"} sin copia descargable)` : ""));
     }
+
+    // archivos subidos: los registrados + los de cargas anteriores (sin registro), agrupados por archivo
+    function listaArchivos() {
+      const vig = new Set(datos(null).map(d => d.tipo + "|" + d.mes + "|" + (d.archivoId || "previo:" + (d.at || ""))));
+      const out = C.regs.map(r => Object.assign({}, r, { enUso: r.meses.filter(m => vig.has(r.tipo + "|" + m + "|" + r.archivoId)) }));
+      const viejos = new Map();
+      for (const d of C.docs.filter(d => !d.archivoId)) {
+        const k = d.tipo + "|" + (d.archivo || "") + "|" + (d.at || "").slice(0, 16);
+        const x = viejos.get(k) || { id: null, viejo: true, archivo: d.archivo || "(sin nombre)", tipo: d.tipo, meses: [], at: d.at, enUso: [], docs: [] };
+        if (!x.meses.includes(d.mes)) { x.meses.push(d.mes); if (vig.has(d.tipo + "|" + d.mes + "|previo:" + (d.at || ""))) x.enUso.push(d.mes); } x.docs.push(d); viejos.set(k, x);
+      }
+      for (const x of viejos.values()) { x.meses.sort(); x.enUso.sort(); const u = x.meses[x.meses.length - 1]; x.ultimo = u; x.total = total(x.tipo, versiones(x.tipo).find(d => d.mes === u && !d.archivoId && d.at === x.at)?.filas || []); out.push(x); }
+      return out.sort((a, b) => ((b.at || "") < (a.at || "") ? -1 : 1));
+    }
+    let filtro = "";
     function dibujarEstado(msg) {
-      const docs = C.docs;
-      let h = `<h3>Guardado en el tablero</h3>${msg ? `<div class="bien">${esc(msg)}</div>` : ""}`;
+      let h = `<h3>Histórico cargado</h3>${msg ? `<div class="bien">${esc(msg)}</div>` : ""}`;
       if (C.estado === "cargando") h += `<p class="ci-sub">Leyendo la base del tablero…</p>`;
       else if (!C.db) h += `<p class="ci-sub">La base del tablero no está disponible en esta vista${C.err ? " (" + esc(C.err) + ")" : ""}.</p>`;
-      else if (!docs.length) h += `<p class="ci-sub">Todavía no hay cargas manuales: el tablero usa los archivos de la carpeta (data/internos.json).</p>`;
+      else if (!C.docs.length && !C.regs.length) h += `<p class="ci-sub">Todavía no hay cargas: el tablero usa los archivos de la carpeta (data/internos.json).</p>`;
       else {
-        h += `<table class="ci-t"><thead><tr><th>Tipo</th><th>Meses</th><th class="n">Último mes</th><th>Cargado</th><th></th></tr></thead><tbody>`;
+        // meses acumulados por tipo
+        h += `<table class="ci-t"><thead><tr><th>Tipo</th><th>Meses cargados</th><th class="n">Último mes</th></tr></thead><tbody>`;
         for (const t of ORDEN) {
-          const ds = docs.filter(d => d.tipo === t).sort((a, b) => a.mes < b.mes ? -1 : 1); if (!ds.length) continue;
-          const u = ds[ds.length - 1], at = ds.map(d => d.at).sort().pop();
-          h += `<tr><td>${TIPOS[t].nombre}</td><td>${mesTxt(ds[0].mes)}${ds.length > 1 ? " a " + mesTxt(u.mes) : ""} (${ds.length})</td>
-            <td class="n">${queMide(t)} ${mesTxt(u.mes)}: ${fmt(total(t, u.filas))}</td><td>${new Date(at).toLocaleString("es-AR")}<div class="ci-sub">${esc(u.archivo || "")}</div></td>
-            <td><button class="ci-btn ci-borrar" data-t="${t}" type="button">Borrar</button></td></tr>`;
+          const ds = datos(t); if (!ds.length) continue;
+          const u = ds[ds.length - 1];
+          h += `<tr><td>${TIPOS[t].nombre}</td><td>${rango(ds.map(d => d.mes))} <span class="ci-sub">(${ds.length})</span></td><td class="n">${queMide(t)} ${mesTxt(u.mes)}: ${fmt(total(t, u.filas))}</td></tr>`;
         }
-        h += `</tbody></table><p class="ci-sub">Borrar quita la carga manual de ese tipo y el tablero vuelve a usar los archivos de la carpeta.</p>`;
+        h += `</tbody></table>`;
+        // archivos subidos
+        const lista = listaArchivos(), tipos = [...new Set(lista.map(x => x.tipo))];
+        h += `<h3>Archivos subidos</h3><div class="ci-fil"><label class="ci-sub">Ver <select class="ci-ft"><option value="">todos los tipos</option>${tipos.map(t => `<option value="${t}"${t === filtro ? " selected" : ""}>${TIPOS[t] ? TIPOS[t].nombre : t}</option>`).join("")}</select></label></div>
+          <table class="ci-t"><thead><tr><th>Archivo</th><th>Tipo</th><th>Mes guardado</th><th class="n">Total</th><th>Subido</th><th>Estado</th><th></th></tr></thead><tbody>`;
+        lista.forEach((x, i) => {
+          if (filtro && x.tipo !== filtro) return;
+          const usado = x.enUso.length, estado = usado === x.meses.length ? "en uso" : usado ? `en uso ${usado} de ${x.meses.length}` : "reemplazado";
+          h += `<tr${usado ? "" : ' class="ci-off"'}><td>${esc(x.archivo)}</td><td>${TIPOS[x.tipo] ? TIPOS[x.tipo].nombre : esc(x.tipo)}</td><td>${rango(x.meses)}</td>
+            <td class="n">${x.ultimo ? queMide(x.tipo) + " " + fmt(x.total) : ""}</td><td>${x.at ? new Date(x.at).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" }) : "–"}</td>
+            <td>${estado}</td><td class="ci-acc">${x.copia && x.copia.id ? `<a class="ci-lnk" href="/_blob/${esc(x.copia.id)}" download="${esc(x.archivo.replace(/\.[^.]+$/, "") + ".csv")}" target="_blank" rel="noopener">Bajar</a>` : ""}
+            <button class="ci-btn ci-borrar" data-i="${i}" type="button">Eliminar</button></td></tr>`;
+        });
+        h += `</tbody></table><p class="ci-sub">Eliminar saca el archivo y sus datos: cada mes vuelve a la versión anterior que se haya subido o, si no hay, a los archivos de la carpeta (data/internos.json).
+          Un archivo "reemplazado" no se usa porque después se subió otro del mismo mes; si eliminás el más nuevo, vuelve a usarse el anterior.</p>`;
+        est._lista = lista;
       }
       const fi = M.I.comisiones || [], ult = fi.length ? fi[fi.length - 1].mes : null;
       if (ult) h += `<p class="ci-sub">Facturación que usa hoy el tablero: hasta ${mesTxt(ult.slice(0, 7))}.</p>`;
       est.innerHTML = h;
+      const ft = est.querySelector(".ci-ft"); if (ft) ft.addEventListener("change", () => { filtro = ft.value; dibujarEstado(); });
       est.querySelectorAll(".ci-borrar").forEach(b => b.addEventListener("click", async () => {
-        const t = b.dataset.t; if (b.dataset.ok !== "1") { b.dataset.ok = "1"; b.textContent = "¿Seguro? Borrar"; return; }
-        b.disabled = true;
-        for (const d of C.docs.filter(d => d.tipo === t)) { try { await C.db.doc("cargas/" + d.id).delete(); } catch (e) { console.error(e); } }
-        C.docs = C.docs.filter(d => d.tipo !== t); aplicar(); dibujarEstado("Carga borrada.");
+        const x = est._lista[+b.dataset.i]; if (b.dataset.ok !== "1") { b.dataset.ok = "1"; b.textContent = "¿Seguro?"; return; }
+        b.disabled = true; b.textContent = "Eliminando…";
+        try {
+          const docs = x.viejo ? x.docs : C.docs.filter(d => d.archivoId === x.archivoId);
+          for (const d of docs) await C.db.doc("cargas/" + d.id).delete();
+          const ids = new Set(docs.map(d => d.id)); C.docs = C.docs.filter(d => !ids.has(d.id));
+          if (!x.viejo) {
+            if (x.copia && x.copia.id && C.assets) { try { await C.assets.delete(x.copia.id); } catch (e) { console.error(e); } }
+            await C.db.doc("cargas/" + x.id).delete(); C.regs = C.regs.filter(r => r.id !== x.id);
+          }
+          aplicar(); dibujarEstado(`Eliminado ${x.archivo}.`);
+        } catch (e) { b.disabled = false; b.textContent = "Eliminar"; est.insertAdjacentHTML("afterbegin", `<div class="mal">No se pudo eliminar: ${esc(e.message || e.code || String(e))}</div>`); }
       }));
     }
     dibujarPrev(); dibujarEstado();

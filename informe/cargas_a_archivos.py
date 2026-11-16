@@ -35,8 +35,19 @@ def leer_docs(p):
     out = []
     for x in d:
         x = x.get("data", x) if isinstance(x, dict) and "tipo" not in x else x
-        if isinstance(x, dict) and x.get("tipo") and x.get("mes"): out.append(x)
-    return out
+        if isinstance(x, dict) and x.get("tipo") and x.get("mes") and not x.get("registro"): out.append(x)
+    # cada archivo subido guarda su versión de cada mes, a veces partida en varios documentos (parte 1, 2, ...):
+    # se unen las partes y, por tipo y mes, vale la versión del archivo subido más recientemente
+    unidos = {}
+    for x in sorted(out, key=lambda x: (x["tipo"], x["mes"], x.get("archivoId") or "", x.get("parte") or 1)):
+        k = (x["tipo"], x["mes"], x.get("archivoId") or "previo:" + str(x.get("at") or ""))
+        if k in unidos: unidos[k]["filas"] = list(unidos[k]["filas"]) + list(x["filas"])
+        else: unidos[k] = dict(x)
+    vig = {}
+    for x in unidos.values():
+        k = (x["tipo"], x["mes"])
+        if k not in vig or str(x.get("at") or "") > str(vig[k].get("at") or ""): vig[k] = x
+    return list(vig.values())
 
 
 def fin_mes(m):
