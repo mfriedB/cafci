@@ -81,22 +81,34 @@
     const h = new Date(), d = h.getDate() <= 20 ? new Date(h.getFullYear(), h.getMonth() - 1, 1) : h;
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
   }
-  function cuotapartistas(tab, nombre) {
+  function fechaDeNombre(nombre) {   // fecha completa en el nombre del archivo (AAAA-MM-DD o DD-MM-AAAA), si la tiene
+    const s = String(nombre || ""); let m;
+    if ((m = s.match(/(20\d{2})[-_.](\d{2})[-_.](\d{2})/))) return `${m[1]}-${m[2]}-${m[3]}`;
+    if ((m = s.match(/(\d{1,2})[-_.](\d{1,2})[-_.](20\d{2})/))) return `${m[3]}-${pad(+m[2])}-${pad(+m[1])}`;
+    return null;
+  }
+  // AUM en pesos → USD al dólar oficial vendedor del BCRA de la fecha de la planilla (o del cierre del mes)
+  function tcPara(mes, nombre) {
+    const fn = fechaDeNombre(nombre), [y, m] = mes.split("-").map(Number);
+    const ref = fn && fn.slice(0, 7) === mes ? fn : finMes(y, m);
+    const x = window.M && M.tcAl ? M.tcAl(ref) : null;
+    return x ? { fecha: x[0], valor: x[1], fuente: "BCRA" } : { fecha: null, valor: 1535, fuente: "fijo" };
+  }
+  function cuotapartistas(tab, nombre, mesF) {
     const hn = tab[0].map(c => limpio(c)), ix = n => hn.indexOf(n);
     const falta = ["Fondo", "Tipo Inversor", "Importe", "Moneda", "Cuotapartista"].filter(n => ix(n) < 0);
     if (falta.length) throw new Error("Faltan columnas de cuotapartistas: " + falta.join(", "));
-    const acc = new Map(), inv = new Map();
+    const acc = new Map(), inv = new Map(), mes = mesF || mesDeNombre(nombre), tc = tcPara(mes, nombre);
     for (const r of tab.slice(1)) {
       if (!r || !limpio(r[ix("Fondo")])) continue;
       const f = limpio(r[ix("Fondo")]), t = limpio(r[ix("Tipo Inversor")]), cat = TIPO_INV[t] || t, k = f + "|" + cat, cp = limpio(r[ix("Cuotapartista")]);
-      const imp = num(r[ix("Importe")]), usd = (limpio(r[ix("Moneda")]) !== "$" ? imp : imp / 1535) / 1e6;
+      const imp = num(r[ix("Importe")]), usd = (limpio(r[ix("Moneda")]) !== "$" ? imp : imp / tc.valor) / 1e6;
       const x = acc.get(k) || { f, c: cat, v: 0, n: new Set() }; x.v += usd; x.n.add(cp); acc.set(k, x);
       // también arma "Inversores por tipo y fondo" (la consulta DAX 4 del comité): persona humana (PF) o jurídica (PJ)
       const tp = /personas humanas/i.test(t) ? "PF" : "PJ", ki = cat + "|" + tp + "|" + f;
       const y = inv.get(ki) || { c: cat, tp, f, v: 0, n: new Set() }; y.v += usd * 1e6; y.n.add(cp); inv.set(ki, y);
     }
-    const mes = mesDeNombre(nombre);
-    return { tipo: "cuotapartistas", sinFecha: true, meses: { [mes]: [...acc.values()].map(x => [x.f, x.c, x.v, x.n.size]) },
+    return { tipo: "cuotapartistas", sinFecha: true, tc, meses: { [mes]: [...acc.values()].map(x => [x.f, x.c, x.v, x.n.size]) },
       extra: { tipo: "inversores", meses: { [mes]: [...inv.values()].map(y => [y.c, y.tp, y.f, Math.round(y.v), y.n.size]) } } };
   }
 
@@ -378,7 +390,7 @@
         <li><b>Facturación</b>: Power BI Service › <i>Rporte de Comision por Fondos v2</i> › página <i>Fondos YTD</i>. En la matriz grande: <i>Más opciones › Exportar datos › Datos con diseño actual</i> (.xlsx), una vez con <i>Analisis por = Unidad Negocio</i> y otra con <i>Fondos</i>. También sirven los Excel mensuales de las carpetas (<i>comisiones_fci_*.xlsx</i>, <i>comisiones_fondo_*.xlsx</i>).</li>
         <li><b>AUM interno, clientes e inversores</b>: modelo <i>DS Fondos - AM - Comisiones - Volumen - CuotaPartes</i> (área SelfService_Fondos) › <i>Abrir en la vista de consulta DAX</i>. Corré las 4 consultas de <code>informe/comite/consultas_dax.dax</code> y copiá cada resultado con <i>Copia › Toda la tabla</i>: pegalo abajo o guardalo como .txt.</li>
         <li><b>Plantillas de Excel</b> (<a href="https://github.com/mfriedB/cafci/tree/main/informe/plantillas" target="_blank" rel="noopener">bajarlas del repo</a>; cada una tiene una hoja de instrucciones): AUM y flujo por área comercial y fondo, clientes, inversores PH/PJ, fondos de terceros, emisiones primarias, fondos fuera de CAFCI, clientes excluidos (Ex Meli) y textos del mes.</li>
-        <li><b>Cantidad de cuotapartistas</b> (hoja Tipo de Inversor): el Excel de la carpeta <i>Cantidad de Cuotapartistas</i>. No trae fecha: toma el mes del nombre del archivo si lo tiene (por ejemplo <i>cuotapartistas_2026-10.xlsx</i>) o el último mes cerrado, y lo podés cambiar antes de guardar. También arma la base de inversores (personas humanas y jurídicas) de la presentación del comité, sin correr la consulta DAX.</li>
+        <li><b>Cantidad de cuotapartistas</b> (hoja Tipo de Inversor): el Excel de la carpeta <i>Cantidad de Cuotapartistas</i>. No trae fecha: toma el mes del nombre del archivo si lo tiene (por ejemplo <i>cuotapartistas_2026-10.xlsx</i>) o el último mes cerrado, y lo podés cambiar antes de guardar. El AUM en pesos se pasa a dólares al dólar oficial vendedor del BCRA de esa fecha (cierre del mes, o la fecha del nombre del archivo), que el tablero baja solo todos los días. También arma la base de inversores (personas humanas y jurídicas) de la presentación del comité, sin correr la consulta DAX.</li>
         <li><b>Compra/venta de especies</b> (slides de contrapartes): el mismo Excel que va a la carpeta <i>Compra_Venta_Contrapartes_</i>.</li>
         <li>El tipo de archivo se reconoce solo; si se equivoca, cambialo en la lista antes de guardar.</li>
         <li>Si un archivo trae varios meses (por ejemplo el acumulado del año), se guarda solo el último. Para cargar el histórico de una vez, destildá <i>Guardar solo el último mes de cada archivo</i>.</li></ol></details>
@@ -416,7 +428,9 @@
         const nota = (reemp.length ? `<div class="ci-sub">reemplaza ${reemp.length === 1 ? mesTxt(reemp[0]) : reemp.length + " meses"} ya cargado${reemp.length === 1 ? "" : "s"}</div>` : "")
           + (uc && ult && ult !== "fijo" && ult < uc ? `<div class="mal">es anterior al último mes cargado (${mesTxt(uc)})</div>` : "");
         h += `<tr><td>${esc(p.archivo)}</td><td><select data-i="${i}">${ORDEN.map(t => `<option value="${t}"${t === p.tipo ? " selected" : ""}>${TIPOS[t].nombre}</option>`).join("")}</select></td>
-          <td>${p.sinFecha ? `<input type="month" class="ci-mes" data-i="${i}" value="${ult}" title="El archivo no trae fecha: elegí a qué mes corresponde">` : rango(ms)}</td><td>${rango(g)}${nota}${p.extra ? `<div class="ci-sub">también arma: ${TIPOS[p.extra.tipo].nombre}</div>` : ""}</td>
+          <td>${p.sinFecha ? `<input type="month" class="ci-mes" data-i="${i}" value="${ult}" title="El archivo no trae fecha: elegí a qué mes corresponde">` : rango(ms)}</td><td>${rango(g)}${nota}${p.extra ? `<div class="ci-sub">también arma: ${TIPOS[p.extra.tipo].nombre}</div>` : ""}${p.tc ? (p.tc.fuente === "BCRA"
+            ? `<div class="ci-sub">pesos a USD al dólar oficial vendedor BCRA del ${p.tc.fecha.split("-").reverse().join("/")}: ${fmt(p.tc.valor, 2)}</div>`
+            : `<div class="mal">sin dólar oficial del BCRA para esa fecha: se usa ${fmt(p.tc.valor)}</div>`) : ""}</td>
           <td class="n">${ult ? queMide(p.tipo) + " " + mesTxt(ult) + ": " + fmt(total(p.tipo, p.meses[ult])) : ""}</td><td><button class="ci-x" data-i="${i}" type="button" aria-label="Quitar">✕</button></td></tr>`;
       });
       h += `</tbody></table><div class="ci-ctrl">${controles(ok)}</div>
@@ -427,7 +441,7 @@
       prev.querySelectorAll("select").forEach(s => s.addEventListener("change", () => { const p = pendientes[+s.dataset.i];
         try { Object.assign(p, { sinFecha: false, extra: null }, procesar(p.tab, s.value, p.archivo)); delete p.error; } catch (e) { p.error = e.message; } dibujarPrev(); }));
       prev.querySelectorAll(".ci-mes").forEach(m => m.addEventListener("change", () => { const p = pendientes[+m.dataset.i]; if (!/^\d{4}-\d{2}$/.test(m.value)) return;
-        const mover = mm => ({ [m.value]: Object.values(mm)[0] }); p.meses = mover(p.meses); if (p.extra) p.extra.meses = mover(p.extra.meses); dibujarPrev(); }));
+        try { Object.assign(p, cuotapartistas(p.tab, p.archivo, m.value)); } catch (e) { p.error = e.message; } dibujarPrev(); }));
       prev.querySelectorAll(".ci-x").forEach(b => b.addEventListener("click", () => { pendientes.splice(+b.dataset.i, 1); dibujarPrev(); }));
       const g = prev.querySelector(".ci-guardar"); if (g) g.addEventListener("click", guardar);
     }
@@ -464,7 +478,7 @@
           } else sinCopia++;
           const ult = meses[meses.length - 1];
           const reg = { registro: true, archivo: p.archivo, archivoId, tipo: p.tipo, extra: p.extra ? p.extra.tipo : null, meses, mesesArchivo: Object.keys(p.meses).sort(),
-            filas: meses.reduce((a, m) => a + (p.meses[m] || []).length, 0), ultimo: ult || null, total: ult ? total(p.tipo, p.meses[ult]) : null, at, copia };
+            filas: meses.reduce((a, m) => a + (p.meses[m] || []).length, 0), ultimo: ult || null, total: ult ? total(p.tipo, p.meses[ult]) : null, at, copia, tc: p.tc || null };
           await C.db.doc("cargas/archivo_" + archivoId).set(reg); C.regs.push(Object.assign({ id: "archivo_" + archivoId }, reg));
         } catch (e) { err = e; break; }
       }

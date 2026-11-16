@@ -135,16 +135,36 @@ def contrapartes(base):
     return json.loads(o[cols].to_json(orient="records", force_ascii=False))
 
 
+def tc_oficial_al(fecha):
+    """Dolar oficial vendedor del BCRA (variable 4 de la API de estadisticas) del ultimo dia habil hasta `fecha`; None si falla."""
+    import urllib.request
+    try:
+        f = pd.Timestamp(fecha); url = f"https://api.bcra.gob.ar/estadisticas/v4.0/Monetarias/4?desde={f - pd.Timedelta(days=15):%Y-%m-%d}&hasta={f:%Y-%m-%d}"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (informe-gestion-fci)", "Accept": "application/json"})
+        with urllib.request.urlopen(req, timeout=60) as r: d = json.load(r)
+        xs = sorted((x["fecha"], float(x["valor"])) for res in d.get("results", []) for x in res.get("detalle", []))
+        return xs[-1] if xs else None
+    except Exception as e:
+        print("aviso: sin dolar oficial del BCRA:", e); return None
+
+
 def cuotapartistas(base):
     fs = [f for f in sorted(glob.glob(os.path.join(base, "Cantidad de Cuotapartistas", "*.xlsx"))) if not os.path.basename(f).startswith("~$")]
     if not fs: return {"archivo": None, "filas": []}
     d = pd.read_excel(fs[-1], usecols=lambda c: c in ("Fondo", "Clase", "Tipo Inversor", "Importe", "Moneda", "Cuotapartista"))
     d["tipo"] = d["Tipo Inversor"].map(limpio)
     d["categoria_tipo_inversor"] = d.tipo.map(TIPO_INV).fillna(d.tipo)
-    d["importe_usd_mill"] = d.Importe.where(d.Moneda.map(limpio) != "$", d.Importe / 1535) / 1e6
+    # pesos a dolares al oficial vendedor del BCRA de la fecha de la planilla (fecha del nombre o de modificacion del archivo)
+    import re as _re
+    nm = os.path.basename(fs[-1]); m = _re.search(r"(20\d{2})[-_.](\d{2})[-_.](\d{2})", nm) or _re.search(r"(\d{1,2})[-_.](\d{1,2})[-_.](20\d{2})", nm)
+    fecha = (f"{m.group(1)}-{m.group(2)}-{m.group(3)}" if len(m.group(1)) == 4 else f"{m.group(3)}-{int(m.group(2)):02d}-{int(m.group(1)):02d}") if m \
+        else pd.Timestamp(os.path.getmtime(fs[-1]), unit="s").strftime("%Y-%m-%d")
+    tc = tc_oficial_al(fecha); tcv = tc[1] if tc else 1535
+    d["importe_usd_mill"] = d.Importe.where(d.Moneda.map(limpio) != "$", d.Importe / tcv) / 1e6
     g = d.groupby(["Fondo", "categoria_tipo_inversor"], as_index=False).agg(importe_usd_mill=("importe_usd_mill", "sum"),
                                                                         cuotapartistas=("Cuotapartista", "nunique"))
-    return {"archivo": os.path.basename(fs[-1]), "filas": json.loads(g.to_json(orient="records", force_ascii=False))}
+    return {"archivo": os.path.basename(fs[-1]), "tc": {"fecha": tc[0], "valor": tc[1], "fuente": "BCRA"} if tc else {"valor": 1535, "fuente": "fijo"},
+            "filas": json.loads(g.to_json(orient="records", force_ascii=False))}
 
 
 def serie(base):

@@ -74,6 +74,28 @@ def columnar(df, dic, desde=None, dec=3):
     return out
 
 
+BCRA = "https://api.bcra.gob.ar/estadisticas/v4.0/Monetarias/4"   # tipo de cambio minorista, promedio vendedor (dolar oficial venta)
+
+
+def tc_oficial(desde="2019-01-01"):
+    """Serie diaria del dolar oficial vendedor del BCRA (API publica de estadisticas, variable 4). [[fecha, valor], ...]"""
+    out, ini, hoy = {}, pd.Timestamp(desde), pd.Timestamp.today().normalize()
+    while ini <= hoy:
+        fin = min(ini + pd.Timedelta(days=364), hoy)
+        url = f"{BCRA}?desde={ini:%Y-%m-%d}&hasta={fin:%Y-%m-%d}&limit=1000"
+        for intento in range(3):
+            try:
+                req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (informe-gestion-fci)", "Accept": "application/json"})
+                with urllib.request.urlopen(req, timeout=60) as r: d = json.load(r)
+                break
+            except Exception as e:
+                if intento == 2: raise
+        for res in d.get("results", []):
+            for x in res.get("detalle", []): out[x["fecha"]] = round(float(x["valor"]), 4)
+        ini = fin + pd.Timedelta(days=1)
+    return [[k, out[k]] for k in sorted(out)]
+
+
 def main():
     salida = sys.argv[1]; internos = sys.argv[2] if len(sys.argv) > 2 else None
     os.makedirs(salida, exist_ok=True)
@@ -90,6 +112,12 @@ def main():
             "meses": meses, "fecha_mes": [fecha_mes[m] for m in meses], "dic": listas,
             "ars": columnar(A, dic, dec=2), "usd": columnar(U, dic, desde="2024-12", dec=4), "pendientes": pendientes(A),
             "rend_ytd": rend_ytd(meses)}
+    try:
+        tc = tc_oficial()
+        data["tc_oficial"] = {"fuente": "BCRA, tipo de cambio minorista promedio vendedor (variable 4)", "serie": tc}
+        print("dolar oficial BCRA:", len(tc), "dias, ultimo", tc[-1] if tc else None)
+    except Exception as e:
+        print("aviso: no se pudo bajar el dolar oficial del BCRA:", e)
     json.dump(data, open(os.path.join(salida, "industria.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     I = {}
     if internos and os.path.isdir(internos):
