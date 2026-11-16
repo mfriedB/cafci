@@ -7,7 +7,7 @@ Uso:
   python3 cargas_a_archivos.py CARGAS.json --dax CARPETA_DAX [--internos internos.json]
 - dax: reescribe dax_mes_unidad.txt, dax_mes_unidad_fondo.txt, dax_clientes.txt y dax_inversores.txt reemplazando los
   meses que vinieron en la carga manual (los demás meses del archivo quedan como estaban).
-- internos: reemplaza en comisiones, comisiones_fondo y serie_facturacion los meses cargados a mano.
+- internos: reemplaza en comisiones, comisiones_fondo, serie_facturacion y contrapartes (compra/venta) los meses cargados a mano.
 - extras: guarda en un JSON las plantillas 4 a 8 (fondos de terceros, emisiones primarias, fondos fuera de CAFCI,
   clientes excluidos Ex Meli y textos del mes) para el informe completo.
 Las plantillas 1 a 3 (AUM por area y fondo, clientes, inversores) ya se guardan con el formato de las consultas DAX.
@@ -92,6 +92,13 @@ def main():
                 se = [r for r in I.get("serie_facturacion", []) if str(r["fecha"])[:7] not in meses]
                 se += [{"fecha": fin_mes(d["mes"]), "facturacion": round(sum(float(v) for _, v in d["filas"]))} for d in ds]
                 I["serie_facturacion"] = sorted(se, key=lambda r: r["fecha"])
+        ds = por.get("compraventa")   # compra/venta de especies: reemplaza en contrapartes los meses cargados a mano
+        if ds:
+            meses = {d["mes"] for d in ds}
+            filas = [r for r in I.get("contrapartes", []) if str(r.get("fecha") or "")[:7] not in meses]
+            filas += [dict(zip(d["cols"], f)) for d in ds for f in d["filas"]]
+            I["contrapartes"] = filas
+            print(f"contrapartes: meses de la carga manual {sorted(meses)}")
         json.dump(I, open(a.internos, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"), default=str)
     if a.extras: extras(por, a.extras)
 

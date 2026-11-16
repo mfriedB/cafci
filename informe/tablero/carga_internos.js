@@ -18,6 +18,58 @@
     "IB - Banca de Inversión": "Banca de Inversión", "Wealth Management Uruguay": "WM UY", "Auditoria Interna": "Otros"};
   const FONDO_CORR = {"Institucional (IL)": "Inflation linked", "Retorno Total": "Renta Mixta", "Performance II": "Lecaps", "Performance XIV": "Crédito Privado"};
 
+  /* Compra/venta de especies (carpeta Compra_Venta_Contrapartes_): mismas reglas que internos.py → contrapartes() */
+  const CV_COLS = ["fondo", "op", "tipo_op", "especie", "ticker", "fecha_txt", "fecha", "anio", "trimestre", "categoria", "categoria_pase", "vn",
+    "moneda", "bruto", "gastos", "neto", "agente", "agente_norm", "tipo_especie", "monto_usd_mill"];
+  const TIPO_ESPECIE = {"Acciones": "Acciones", "Acciones ADR": "Acciones", "Acciones CEDEAR": "CEDEARs", "Amortizaciones a Cobrar": "Rentas", "Apertura Colocadora": "Cauciones", "Bono Dual": "Bonos AR$", "Bono Provincial CER": "Bonos AR$", "Bono Soberano CER": "Bonos AR$", "Bono Soberano Dolar Link": "Bonos AR$", "Bono Tasa Fija Provincial": "Bonos U$S", "Bono Tasa Fija Soberano": "Bonos U$S", "Cheque de Pago Diferido": "Cheques", "Cheque de Pago Diferido a Cobrar": "Cheques", "CUENTA CORRIENTE": "Cuentas Corrientes", "CUENTA CORRIENTE REMUNERADA": "Cuentas Corrientes", "Derivado Agropecuario (SOJA)": "ROFEX", "Derivado Dólar Futuro": "ROFEX", "Deudores por Operaciones a Liquidar": "Deudores", "Dividendos en Efectivo a Cobrar": "Dividendos", "ETF": "CEDEARs", "Fideicomiso Financiero": "ONs AR$", "Fideicomiso Financiero Badlar ($)": "ONs AR$", "Fideicomiso Financiero TAMAR": "ONs AR$", "Fondo Común de Inversión": "FCI", "Garantía por Operaciones": "Garantías", "Intereses a Cobrar": "Intereses", "Letra Provincial Tasa Fija": "Bonos AR$", "LETRAS DEL TESORO": "Bonos AR$", "Letras del tesoro TAMAR": "Bonos AR$", "Letras Provinciales TAMAR": "Bonos AR$", "Obligación Negociable Badlar": "ONs AR$", "Obligación Negociable Dólar Linked": "ONs AR$", "Obligación Negociable TAMAR": "ONs AR$", "Obligación Negociable Tasa Fija": "ONs U$S", "Obligaciones Negociables UVA": "ONs AR$", "Obligaciones por Garantía": "Garantías", "Plazo Fijo": "Plazos Fijos", "Provisión de Gastos Varios": "Provisiones", "Renta Fija Soberana Paraguay": "Bonos U$S", "Renta Fija Soberana Uruguay": "Bonos U$S", "Rentas a Cobrar": "Rentas", "Títulos Entregados en Garantía": "Garantías", "Renta Fija Corporativa Agro": "ONs U$S", "Renta Fija Corporativa Brasil": "ONs U$S", "Renta Fija Corporativa Chile": "ONs U$S", "Renta Fija Corporativa Consumo": "ONs U$S", "Renta Fija Corporativa Energía": "ONs U$S", "Renta Fija Corporativa Financiera": "ONs U$S", "Renta Fija Corporativa Mexico": "ONs U$S", "Renta Fija Corporativa Oil y Gas": "ONs U$S", "Renta Fija Corporativa Paraguay": "ONs U$S", "Renta Fija Corporativa Telco": "ONs U$S"};
+  for (const s of ["Agro", "Brasil", "Chile", "Consumo", "Energía", "Financiera", "Mexico", "Oil y Gas", "Paraguay", "Telco"]) TIPO_ESPECIE["Renta Fija Corporativa " + s] = "ONs U$S";
+  function compraventa(tab) {
+    const hn = tab[0].map(c => limpio(c)), ix = n => hn.indexOf(n);
+    const need = ["Fondo", "Operación_Numero", "Tipo_Operación", "Especie", "Tipo de Especie", "Fecha_Concertacion", "Valor Nominal", "Moneda de Concertación", "Bruto_Concertación", "Agente"];
+    const falta = need.filter(n => ix(n) < 0); if (falta.length) throw new Error("Faltan columnas de compra/venta: " + falta.join(", "));
+    const g = (r, n) => (ix(n) < 0 ? null : r[ix(n)]);
+    const txtFecha = v => { if (v instanceof Date && !isNaN(v)) return `${pad(v.getUTCDate())}/${pad(v.getUTCMonth() + 1)}/${v.getUTCFullYear()}`;
+      if (typeof v === "number" && v > 20000 && v < 80000) return txtFecha(new Date(Date.UTC(1899, 11, 30) + v * 864e5)); return limpio(v); };
+    const vistos = new Set(), o = [];
+    for (const r of tab.slice(1)) {
+      if (!r || !limpio(g(r, "Fondo"))) continue;
+      const clave = JSON.stringify(r); if (vistos.has(clave)) continue; vistos.add(clave);   // filas repetidas
+      const tipo = limpio(g(r, "Tipo de Especie")), tu = tipo.toUpperCase(), esp = limpio(g(r, "Especie")).toUpperCase(), f0 = esp.slice(0, 1);
+      let cp;
+      if (esp.includes("B 10032026")) cp = "Bonos U$S"; else if (esp.includes("BF34O")) cp = "Bonos AR$";
+      else if (esp.includes("PDCAR29M") || esp.includes("REPUBLIC CHILE") || esp.includes("REP BRAZIL")) cp = "Bonos U$S";
+      else if (esp.includes("PSSYO") || esp.includes("PS38O")) cp = "ONs AR$"; else if (esp.includes("TLCRO")) cp = "ONS AR$";
+      else if (tu.includes("BONO TASA FIJA SOBERANO") && (f0 === "S" || f0 === "T")) cp = "Bonos AR$";
+      else if (esp.includes("TREASURY BILL")) cp = "Bonos U$S"; else cp = TIPO_ESPECIE[tipo] || tipo;
+      const mon = limpio(g(r, "Moneda de Concertación"));
+      const cat = mon === "$" ? ({ "Bonos U$S": "Bonos U$S en AR$", "ONs U$S": "ONs U$S en AR$" })[cp] || cp : cp;
+      const ft = txtFecha(g(r, "Fecha_Concertacion")), m = ft.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      const fecha = m ? `${m[3]}-${pad(+m[2])}-${pad(+m[1])}` : null;
+      const opv = g(r, "Operación_Numero"), op = opv == null || opv === "" ? null : num(opv);
+      const bruto = num(g(r, "Bruto_Concertación")), pesos = mon.includes("$") && !mon.includes("U");
+      const ag = limpio(g(r, "Agente")), au = ag.toUpperCase();
+      const agn = !ag || ag.toLowerCase() === "nan" ? null : au.startsWith("MAX") ? "Max Capital"
+        : [["ALLARIA", "Allaria"], ["ADCAP", "AdCap"], ["COMAFI", "Banco Comafi"], ["BALANZ", "Balanz"]].find(([k]) => au.includes(k))?.[1] || ag;
+      const tick = limpio(g(r, "Ticker"));
+      o.push({ fondo: limpio(g(r, "Fondo")), op, tipo_op: limpio(g(r, "Tipo_Operación")), especie: limpio(g(r, "Especie")), ticker: tick || null, fecha_txt: ft, fecha,
+        anio: fecha ? +fecha.slice(0, 4) : null, trimestre: fecha ? "Qtr " + Math.ceil(+fecha.slice(5, 7) / 3) : null, categoria: cat, vn: num(g(r, "Valor Nominal")),
+        moneda: mon, bruto, gastos: num(g(r, "Gastos_Concertación")), neto: num(g(r, "Neto_Concertación")), agente: ag, agente_norm: agn, tipo_especie: tipo,
+        monto_usd_mill: (pesos ? bruto / 1400 : bruto) / 1e6, _u: limpio(g(r, "Tipo_Operación")).toUpperCase() });
+    }
+    // Categoría_Pase: hay una operación opuesta (compra/venta) del mismo fondo, especie, VN y agente a menos de 5 números
+    const opu = { COMPRA: "VENTA", VENTA: "COMPRA" }, grp = new Map();
+    for (const x of o) { const k = [x.fondo, x.especie, x.vn, x.agente].join("|"); (grp.get(k) || grp.set(k, []).get(k)).push(x); }
+    const meses = {};
+    for (const x of o) {
+      const t = opu[x._u]; let es = false;
+      if (t && x.op != null) es = grp.get([x.fondo, x.especie, x.vn, x.agente].join("|")).some(y => y._u === t && y.op != null && Math.abs(y.op - x.op) < 5);
+      x.categoria_pase = es ? "Pase" : x.categoria;
+      if (!x.fecha) continue;
+      (meses[x.fecha.slice(0, 7)] = meses[x.fecha.slice(0, 7)] || []).push(CV_COLS.map(c => x[c] === undefined ? null : x[c]));
+    }
+    return { tipo: "compraventa", meses };
+  }
+
   const TIPOS = {
     com_unidad: { nombre: "Facturación por unidad de negocio", cols: ["unidad", "comisiones"], unidad: "USD" },
     com_fondo: { nombre: "Facturación por fondo", cols: ["fondo", "comisiones"], unidad: "USD" },
@@ -29,7 +81,8 @@
     emisiones: { nombre: "Facturación por emisiones primarias", cols: ["emision", "emisor", "fact"], unidad: "USD" },
     cerrados: { nombre: "Fondos fuera de CAFCI (cerrados, FCICC)", cols: ["fondo", "aum", "fact"], unidad: "USD" },
     exclusiones: { nombre: "Clientes excluidos (Ex Meli)", cols: ["cliente", "motivo"], unidad: "" },
-    textos: { nombre: "Textos del mes (acciones, destacados, ratings, follow-ups)", cols: ["seccion", "texto"], unidad: "" }
+    textos: { nombre: "Textos del mes (acciones, destacados, ratings, follow-ups)", cols: ["seccion", "texto"], unidad: "" },
+    compraventa: { nombre: "Compra/venta de especies de los fondos (contrapartes)", cols: CV_COLS, unidad: "USD" }
   };
   /* Plantillas Excel (una hoja, encabezados en la primera fila). Las de AUM, clientes e inversores reemplazan a las
      consultas DAX y se guardan con el mismo formato. Columnas: nombre normalizado → posibles encabezados. */
@@ -123,7 +176,10 @@
         (meses[mes] = meses[mes] || []).push(mapa.map((c, k) => k < nTxt ? limpio(r[idx(c)]) : num(r[idx(c)]))); }
       return { tipo, meses };
     }
-    // 4) plantillas Excel de Claude
+    // 4) compra/venta de especies (Compra_Venta_Contrapartes_)
+    if ((!forzar || forzar === "compraventa") && idx("Operación_Numero") >= 0 && idx("Tipo de Especie") >= 0) return compraventa(tab);
+    if (forzar === "compraventa") return compraventa(tab);
+    // 5) plantillas Excel de Claude
     const hn = (tab[0] || []).map(norm);
     const pos = alias => { for (const a of alias) { const i = hn.indexOf(a); if (i >= 0) return i; } return -1; };
     const cand = PLANT.filter(p => !forzar || p.tipo === forzar || (forzar === "aum_unidad" && p.tipo === "aum_unidad_fondo"))
@@ -227,6 +283,14 @@
       for (const d of su) { const [y, m] = d.mes.split("-").map(Number); se.push({ fecha: finMes(y, m), facturacion: Math.round(d.filas.reduce((a, r) => a + r[1], 0)) }); }
       I.serie_facturacion = se.sort((a, b) => a.fecha < b.fecha ? -1 : 1);
     } else I.serie_facturacion = base.serie_facturacion;
+    const cv = datos("compraventa");
+    if (!base.contrapartes) base.contrapartes = (I.contrapartes || []).slice();
+    if (cv.length) {
+      const meses = new Set(cv.map(d => d.mes));
+      const out = base.contrapartes.filter(r => !meses.has(String(r.fecha || "").slice(0, 7)));
+      for (const d of cv) for (const f of d.filas) out.push(Object.fromEntries(CV_COLS.map((c, k) => [c, f[k]])));
+      I.contrapartes = out;
+    } else I.contrapartes = base.contrapartes;
     I.manual = {};
     for (const t of ORDEN) { const docs = datos(t); if (docs.length) I.manual[t] = docs; }
     try { if (window.D && D.build) D.build(); } catch (e) { console.error(e); }
@@ -237,11 +301,11 @@
   const mesTxt = m => { if (m === "fijo") return "sin mes"; const [y, mm] = m.split("-"); return ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"][+mm - 1] + "-" + y.slice(2); };
   const rango = ms => (ms.length ? mesTxt(ms[0]) + (ms.length > 1 ? " a " + mesTxt(ms[ms.length - 1]) : "") : "–");
   function total(tipo, filas) {
-    const c = { com_unidad: 1, com_fondo: 1, aum_unidad: 1, aum_unidad_fondo: 2, clientes: 2, inversores: 3, terceros: 2, emisiones: 2, cerrados: 2 }[tipo];
+    const c = { com_unidad: 1, com_fondo: 1, aum_unidad: 1, aum_unidad_fondo: 2, clientes: 2, inversores: 3, terceros: 2, emisiones: 2, cerrados: 2, compraventa: 19 }[tipo];
     return c == null ? filas.length : filas.reduce((a, r) => a + (+r[c] || 0), 0);
   }
   const queMide = t => ({ com_unidad: "Facturación USD", com_fondo: "Facturación USD", inversores: "AUM", clientes: "AUM USD",
-    terceros: "AUM ARS", emisiones: "Facturación USD", cerrados: "Facturación USD", exclusiones: "Clientes", textos: "Textos" })[t] || "AUM USD";
+    terceros: "AUM ARS", emisiones: "Facturación USD", cerrados: "Facturación USD", exclusiones: "Clientes", textos: "Textos", compraventa: "Monto USD mill." })[t] || "AUM USD";
   const nuevoId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   // partes de hasta ~180 KB (límite de 256 KB por documento)
   function partir(filas) {
@@ -262,6 +326,7 @@
         <li><b>Facturación</b>: Power BI Service › <i>Rporte de Comision por Fondos v2</i> › página <i>Fondos YTD</i>. En la matriz grande: <i>Más opciones › Exportar datos › Datos con diseño actual</i> (.xlsx), una vez con <i>Analisis por = Unidad Negocio</i> y otra con <i>Fondos</i>. También sirven los Excel mensuales de las carpetas (<i>comisiones_fci_*.xlsx</i>, <i>comisiones_fondo_*.xlsx</i>).</li>
         <li><b>AUM interno, clientes e inversores</b>: modelo <i>DS Fondos - AM - Comisiones - Volumen - CuotaPartes</i> (área SelfService_Fondos) › <i>Abrir en la vista de consulta DAX</i>. Corré las 4 consultas de <code>informe/comite/consultas_dax.dax</code> y copiá cada resultado con <i>Copia › Toda la tabla</i>: pegalo abajo o guardalo como .txt.</li>
         <li><b>Plantillas de Excel</b> (<a href="https://github.com/mfriedB/cafci/tree/main/informe/plantillas" target="_blank" rel="noopener">bajarlas del repo</a>; cada una tiene una hoja de instrucciones): AUM y flujo por área comercial y fondo, clientes, inversores PH/PJ, fondos de terceros, emisiones primarias, fondos fuera de CAFCI, clientes excluidos (Ex Meli) y textos del mes.</li>
+        <li><b>Compra/venta de especies</b> (slides de contrapartes): el mismo Excel que va a la carpeta <i>Compra_Venta_Contrapartes_</i>.</li>
         <li>El tipo de archivo se reconoce solo; si se equivoca, cambialo en la lista antes de guardar.</li>
         <li>Si un archivo trae varios meses (por ejemplo el acumulado del año), se guarda solo el último. Para cargar el histórico de una vez, destildá <i>Guardar solo el último mes de cada archivo</i>.</li></ol></details>
       <div class="ci-zona" tabindex="0"><b>Arrastrá los archivos acá</b> o <label class="ci-btn">elegilos<input type="file" multiple accept=".xlsx,.xls,.xlsm,.txt,.csv,.tsv" hidden></label><div class="ci-sub">.xlsx, .txt, .csv – varios a la vez</div></div>
