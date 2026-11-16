@@ -111,7 +111,7 @@ WHERE Mes >= '2026-01' GROUP BY ALL ORDER BY Mes, aum DESC;
 |---|---|---|
 | **Migración de clase**: una clase deja de informar y el fondo sigue con otras (todo pasa de Clase I a Clase C) | Registra la salida de la clase vieja el mismo día que entra a la nueva, así el traspaso neto da cero (espera 7 días por si es rezago). | Galicia 28/08/2026 (Fima Retorno Total, Fima Infraestructura I y II). 1816 contó la entrada en agosto y la salida en septiembre. |
 | **Fondo que deja de informar** (liquidación, fusión, baja) | Su patrimonio sale como rescate el día hábil siguiente (espera 10 días por si es rezago). | Alpha Recursos Naturales, abril 2026. |
-| **Fondo o clase nueva** | El primer dato cuenta como suscripción inicial completa. Si las primeras planillas traen el código CNV vacío, lo completa con el de la misma clase. | Mills M1000 Balanceado Pesos, 05/05/2026. |
+| **Fondo o clase nueva** | El primer dato cuenta como suscripción inicial completa. Si las primeras planillas traen el código CNV vacío o con otro código, usa el último informado por la clase. | Mills M1000 Balanceado Pesos, 05/05/2026. |
 | **Flujo real de ida y vuelta** (suscripción o rescate grande el último día del mes que vuelve al día siguiente) | No se descarta como error si el dato es coherente (patrimonio = cuotapartes × VCP / 1000) y el VCP no salta. Solo se descartan los saltos incoherentes o los ceros entre dos días con dato. | Delta Pesos 31/07, Unico Liquidez Pesos 30/10. |
 | **Cambio de nombre o de gerente** | Se compara por código CNV, no por nombre; el nombre del mes es el último informado. | Gainvest → Stonex, ST Zero → Consultatio Zero, HF → Fima. |
 
