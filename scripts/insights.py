@@ -88,12 +88,15 @@ def fondos_diario():
     try:
         import pyarrow as pa, pyarrow.parquet as pq
         T2 = T.copy(); T2["fecha"] = pd.to_datetime(T2.fecha).dt.date
+        for c in ["fondo", "gerente", "tipo_gerente", "categoria", "subcategoria", "moneda_fondo", "mes"]:
+            T2[c] = T2[c].astype("string")
+        T2["codigo_cnv"] = pd.to_numeric(T2.codigo_cnv, errors="coerce").astype("Int64")
         tabla = pa.Table.from_pandas(T2, preserve_index=False).replace_schema_metadata(None)
         buf = io.BytesIO(); pq.write_table(tabla, buf, compression="zstd", compression_level=9, row_group_size=200_000)
         os.makedirs(os.path.join(PROC, "parquet"), exist_ok=True)
         _escribir(os.path.join(PROC, "parquet", "fondos_diario.parquet"), buf.getvalue())
-    except ImportError:
-        pass
+    except Exception as e:                # el parquet es un extra: si falla, los indicadores igual se publican
+        print("fondos_diario.parquet: no se pudo escribir", repr(e))
     return pd.concat(F, ignore_index=True), pd.concat(C, ignore_index=True)
 
 
