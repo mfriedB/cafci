@@ -11,7 +11,7 @@ la lista de archivos y su hash, para publicar solo lo que cambió. echarts.min.j
 """
 import hashlib, json, os, shutil, subprocess, sys
 
-CODIGO = ["model.js", "ui.js", "pbi_format.js", "pbi_model.js", "pbi_render.js", "pages_call_slides.js", "pages_call_prop.js", "app.js"]
+CODIGO = ["model.js", "ui.js", "pbi_format.js", "pbi_model.js", "pbi_render.js", "pbi_custom.js", "pages_call_slides.js", "pages_call_prop.js", "app.js"]
 CDN = "https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.1/echarts.min.js"
 
 

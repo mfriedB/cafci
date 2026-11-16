@@ -165,10 +165,10 @@ nav.pbi-tabs button[aria-pressed="true"]{background:#fff;color:#252423;font-weig
 .pv-stage{position:absolute;left:0;top:0;transform-origin:0 0;background:#fff;overflow:hidden;font-family:'Segoe UI','Segoe UI Web (West European)',-apple-system,Arial,sans-serif;color:#252423}
 .pv{position:absolute;box-sizing:border-box;overflow:hidden}
 .pv-in{position:absolute;inset:0;display:flex;flex-direction:column;min-height:0}
-.pv-title{flex:0 0 auto;padding:2px 6px;line-height:1.25;overflow:hidden;font-weight:500}
+.pv-title{flex:0 0 auto;padding:1px 6px;line-height:1.15;overflow:hidden;font-weight:500}
 .pv-body{position:relative;flex:1 1 auto;min-height:0;min-width:0}
 .pv-chart{position:absolute;inset:0}
-.pv-img{width:100%;height:100%;display:block}
+.pv-img{width:100%;height:100%;display:block;padding:4px 10px;box-sizing:border-box}
 .pv-text{padding:4px 6px;overflow:hidden}
 .pv-text p{margin:0;line-height:1.3;font-size:13.33px}
 .pv-shape{position:absolute;inset:0}
@@ -179,8 +179,8 @@ nav.pbi-tabs button[aria-pressed="true"]{background:#fff;color:#252423;font-weig
 .pv-tv{line-height:1.15;white-space:nowrap;font-variant-numeric:tabular-nums}
 .pv-tl{line-height:1.2;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pv-slicer{display:flex;flex-direction:column;padding:2px 4px;overflow:hidden}
-.pv-sh{font-weight:600;padding:2px 2px 4px;border-bottom:1px solid #e1dfdd;margin-bottom:4px}
-.pv-dd{all:unset;box-sizing:border-box;display:block;width:100%;border:1px solid #c8c6c4;border-radius:2px;padding:4px 22px 4px 6px;background:#fff;color:#252423;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
+.pv-sh{font-weight:400;padding:2px 4px 4px;margin-bottom:2px}
+.pv-dd{all:unset;box-sizing:border-box;display:block;width:100%;border:1px solid #c8c6c4;border-radius:2px;padding:4px 22px 4px 6px;background:#fff;color:#605E5C;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
 .pv-dd::after{content:"";position:absolute;right:8px;top:50%;width:6px;height:6px;border-right:1.5px solid #605e5c;border-bottom:1.5px solid #605e5c;transform:translateY(-70%) rotate(45deg)}
 .pv-list,.pv-ls{overflow:auto;flex:1 1 auto;min-height:0}
 .pv-it,.pv-lt{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:6px;width:100%;padding:3px 4px;cursor:pointer;color:#252423;white-space:nowrap}
@@ -201,8 +201,8 @@ nav.pbi-tabs button[aria-pressed="true"]{background:#fff;color:#252423;font-weig
 .pv-ts{position:absolute;inset:4px;width:calc(100% - 8px);height:calc(100% - 8px);box-sizing:border-box;border:0;padding:4px 8px;font:inherit;font-size:12px;background:#fff}
 .pv-tw{position:absolute;inset:0;overflow:auto}
 .pv-t{border-collapse:collapse;width:auto;min-width:0;font-variant-numeric:tabular-nums;font-family:'Segoe UI',Arial,sans-serif}
-.pv-t th{position:sticky;top:0;padding:4px 10px;white-space:nowrap;z-index:1;font-family:'Segoe UI Semibold','Segoe UI',Arial,sans-serif}
-.pv-t td{padding:1px 8px;line-height:1.3;white-space:nowrap}
+.pv-t th{position:sticky;top:0;padding:4px 12px;white-space:nowrap;z-index:1;font-family:'Segoe UI Semibold','Segoe UI',Arial,sans-serif}
+.pv-t td{padding:1px 12px;line-height:1.3;white-space:nowrap}
 .pv-t td.rh{text-align:left}
 .pv-t tr.pv-tot td{font-weight:700;border-top:1px solid #252423;background:#fff}
 .pv-sm{position:absolute;inset:0;display:grid;gap:4px}
@@ -226,6 +226,7 @@ nav.pbi-tabs button[aria-pressed="true"]{background:#fff;color:#252423;font-weig
 <script src="pbi_format.js"></script>
 <script src="pbi_model.js"></script>
 <script src="pbi_render.js"></script>
+<script src="pbi_custom.js"></script>
 <script>window.P = { pages: [] };</script>
 <script src="pages_call_slides.js"></script>
 <script src="pages_call_prop.js"></script>

@@ -68,6 +68,8 @@
     return undefined;
   }
   R.fmtOf = fmtOf;
+  R.container = (...a) => container(...a);
+  R.visualCtx = (...a) => visualCtx(...a);
   const isDateCol = fd => fd && (fd.k === "C") && /^(Fecha|Mes_Año_Fecha|AñoMes \(Texto\)|Date|FechaFinMes|AnoMesCorto)$/.test(fd.p);
   function fmtCat(fd, val) {
     if (val == null) return "(En blanco)";
@@ -211,6 +213,7 @@
     return out;
   }
   R.query = query;
+  R.track = c => charts.push(c);
   function sortRows(v, rows, groups, vals, gi) {
     const sd = (v.sort || [])[0];
     const cmpK = (a, b) => (a == null ? -1 : b == null ? 1 : typeof a === "number" ? a - b : String(a).localeCompare(String(b), "es", { numeric: true }));
@@ -416,7 +419,7 @@
     const head = O(v, "header", "show", true) !== false ? (O(v, "header", "text") || slicerTitle(v)) : null;
     const { body } = container(v, env.host, C(v, "title", "show", false) ? slicerTitle(v) : null);
     body.classList.add("pv-slicer");
-    if (head) { const h = el("div", "pv-sh", head); h.style.color = O(v, "header", "fontColor", TH.foreground || "#252423"); h.style.fontSize = px(O(v, "header", "textSize", 10)) + "px"; body.appendChild(h); }
+    if (head) { const h = el("div", "pv-sh", head); h.style.fontSize = px(O(v, "header", "textSize", 10)) + "px"; h.style.color = O(v, "header", "fontColor", TH.foreground || "#252423"); h.style.fontSize = px(O(v, "header", "textSize", 10)) + "px"; body.appendChild(h); }
     const vals = slicerValues(v), f = slicerFmt(v), cur = env.st.sl[v.id];
     const single = O(v, "selection", "singleSelect", false) || O(v, "selection", "strictSingleSelect", false);
     if (/Dropdown/i.test(mode)) {
@@ -690,7 +693,7 @@
         name: s.name, type: s.type, data: s.data, yAxisIndex: horizontal ? undefined : s.axis, xAxisIndex: horizontal ? s.axis : undefined,
         stack: isBar && stacked ? "a" : undefined, itemStyle: { color: s.color },
         data: isBar && pos === "top" ? s.data.map(x => (x != null && x < 0 ? { value: x, label: { position: horizontal ? "left" : "bottom" } } : x)) : s.data,
-        barCategoryGap: (ax("innerPadding", 20)) + "%", barGap: "0%", barMaxWidth: horizontal ? undefined : undefined,
+        barCategoryGap: (ax("innerPadding", 20)) + "%", barGap: "0%", barMaxWidth: horizontal ? 46 : 80,
         label: { show: !!showSer, position: pos, fontSize: lo.fontSize, color: lo.color || (/inside/i.test(pos) ? "#FFFFFF" : TH.foregroundNeutralSecondary || "#605E5C"), fontWeight: lo.bold ? "bold" : "normal",
           fontFamily: lo.family, backgroundColor: lo.bg || "transparent", padding: lo.bg ? [1, 3] : 0,
           formatter: p => { if (p.value == null) return ""; if (!isBar && every > 1 && p.dataIndex % every !== (cats.length - 1) % every) return ""; return fmt(p.value); } },
@@ -1043,9 +1046,15 @@
     stage.style.width = page.w + "px"; stage.style.height = page.h + "px";
     host.appendChild(stage);
     const env = { page, st, host: stage, rerender };
+    const cambios = (window.PBI_CUSTOM || []).filter(c => c.hoja === page.name);
     page.visuals.forEach((v, i) => {
       if (v.hidden) return;
-      const fn = VIS[v.type];
+      const cb = cambios.find(c => c.id === v.id);
+      if (cb && cb.texto != null && v.text) {   // cuadro de texto con otro texto, mismo formato
+        const r0 = ((v.text[0] || {}).runs || [])[0] || {};
+        v = Object.assign({}, v, { text: [{ runs: [{ t: cb.texto, st: r0.st }], align: (v.text[0] || {}).align }] });
+      }
+      const fn = cb && cb.dibujar ? (vv, e) => cb.dibujar(vv, e, R) : VIS[v.type];
       const before = stage.childElementCount;
       try {
         if (fn) fn(v, env);
