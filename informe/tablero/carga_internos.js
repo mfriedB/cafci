@@ -88,6 +88,18 @@
     return { tipo: "cuotapartistas", meses: { [mes]: [...acc.values()].map(x => [x.f, x.c, x.v, x.n.size]) } };
   }
 
+  // Pase: compra y venta opuestas del mismo fondo, especie, VN y agente con números de operación a menos de 5
+  function marcarPases(filas) {
+    const opu = { COMPRA: "VENTA", VENTA: "COMPRA" }, grp = new Map(), U = x => limpio(x.tipo_op).toUpperCase();
+    for (const x of filas) { const k = [x.fondo, x.especie, x.vn, x.agente].join("|"); (grp.get(k) || grp.set(k, []).get(k)).push(x); }
+    for (const x of filas) {
+      const t = opu[U(x)];
+      const es = !!t && x.op != null && grp.get([x.fondo, x.especie, x.vn, x.agente].join("|")).some(y => U(y) === t && y.op != null && Math.abs(y.op - x.op) < 5);
+      x.categoria_pase = es ? "Pase" : x.categoria;
+    }
+    return filas;
+  }
+
   const TIPOS = {
     com_unidad: { nombre: "Facturación por unidad de negocio", cols: ["unidad", "comisiones"], unidad: "USD" },
     com_fondo: { nombre: "Facturación por fondo", cols: ["fondo", "comisiones"], unidad: "USD" },
@@ -311,6 +323,7 @@
       const meses = new Set(cv.map(d => d.mes));
       const out = base.contrapartes.filter(r => !meses.has(String(r.fecha || "").slice(0, 7)));
       for (const d of cv) for (const f of d.filas) out.push(Object.fromEntries(CV_COLS.map((c, k) => [c, f[k]])));
+      marcarPases(out);   // los pases se recalculan sobre todo el histórico (una punta puede venir en otro archivo)
       I.contrapartes = out;
     } else I.contrapartes = base.contrapartes;
     const cq = datos("cuotapartistas");
