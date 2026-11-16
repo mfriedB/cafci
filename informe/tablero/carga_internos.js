@@ -24,8 +24,30 @@
     aum_unidad: { nombre: "AUM interno por unidad (DAX 1)", cols: ["unidad", "aum_orig", "ten", "fact", "flujo"], unidad: "USD" },
     aum_unidad_fondo: { nombre: "AUM interno por unidad y fondo (DAX 2)", cols: ["unidad", "fondo", "aum", "fact", "flujo"], unidad: "USD" },
     clientes: { nombre: "Clientes: top facturación y ACDIs (DAX 3)", cols: ["nombre", "unidad", "aum", "fact", "flujo"], unidad: "USD" },
-    inversores: { nombre: "Inversores por tipo y fondo (DAX 4)", cols: ["categoria", "tipopersona", "fondo", "aum", "n"], unidad: "" }
+    inversores: { nombre: "Inversores por tipo y fondo (DAX 4)", cols: ["categoria", "tipopersona", "fondo", "aum", "n"], unidad: "" },
+    terceros: { nombre: "Fondos de terceros colocados vía Balanz", cols: ["fondo", "gerente", "aum_ars"], unidad: "ARS" },
+    emisiones: { nombre: "Facturación por emisiones primarias", cols: ["emision", "emisor", "fact"], unidad: "USD" },
+    cerrados: { nombre: "Fondos fuera de CAFCI (cerrados, FCICC)", cols: ["fondo", "aum", "fact"], unidad: "USD" },
+    exclusiones: { nombre: "Clientes excluidos (Ex Meli)", cols: ["cliente", "motivo"], unidad: "" },
+    textos: { nombre: "Textos del mes (acciones, destacados, ratings, follow-ups)", cols: ["seccion", "texto"], unidad: "" }
   };
+  /* Plantillas Excel (una hoja, encabezados en la primera fila). Las de AUM, clientes e inversores reemplazan a las
+     consultas DAX y se guardan con el mismo formato. Columnas: nombre normalizado → posibles encabezados. */
+  const PLANT = [
+    { id: "p_aum", tipo: "aum_unidad_fondo", req: { mes: ["mes", "fecha"], area: ["areacomercial", "area", "unidaddenegocio", "unidad"], fondo: ["fondo"], aum: ["aumusd", "aum"] },
+      opc: { flujo: ["flujousd", "flujo"], fact: ["facturacionusd", "facturacion"] }, fila: r => [r.area, r.fondo, r.aum, r.fact, r.flujo] },
+    { id: "p_cli", tipo: "clientes", req: { mes: ["mes", "fecha"], cliente: ["cliente", "cuotapartista", "nombre"], area: ["areacomercial", "area", "unidaddenegocio", "unidad"] },
+      opc: { aum: ["aumusd", "aum"], fact: ["facturacionusd", "facturacion"], flujo: ["flujousd", "flujo"] }, fila: r => [r.cliente, r.area, r.aum, r.fact, r.flujo] },
+    { id: "p_inv", tipo: "inversores", req: { mes: ["mes", "fecha"], fondo: ["fondo"], tp: ["tipopersona", "phpj", "tipo"], n: ["cantidad", "cuotapartistas", "n"] },
+      opc: { cat: ["categoria", "tipoinversor"], aum: ["aum", "aumusd", "monto"] }, fila: r => [r.cat || "", r.tp, r.fondo, r.aum, r.n] },
+    { id: "p_ter", tipo: "terceros", req: { mes: ["mes", "fecha"], fondo: ["fondo"], aum: ["aumars", "aum", "monto"] }, opc: { ger: ["gerente", "sociedadgerente"] }, fila: r => [r.fondo, r.ger || "", r.aum] },
+    { id: "p_emi", tipo: "emisiones", req: { mes: ["mes", "fecha"], emision: ["emision", "instrumento", "especie"], fact: ["facturacionusd", "facturacion"] }, opc: { emisor: ["emisor"] }, fila: r => [r.emision, r.emisor || "", r.fact] },
+    { id: "p_cer", tipo: "cerrados", req: { mes: ["mes", "fecha"], fondo: ["fondo"], fact: ["facturacionusd", "facturacion"] }, opc: { aum: ["aumusd", "aum"] }, fila: r => [r.fondo, r.aum, r.fact] },
+    { id: "p_exc", tipo: "exclusiones", req: { cliente: ["cliente", "cuotapartista", "nombre"] }, opc: { motivo: ["motivo", "comentario"] }, sinMes: true, fila: r => [r.cliente, r.motivo || ""] },
+    { id: "p_txt", tipo: "textos", req: { mes: ["mes", "fecha"], seccion: ["seccion", "slide", "tema"], texto: ["texto", "comentario"] }, fila: r => [r.seccion, r.texto] }
+  ];
+  const TXT = new Set(["area", "fondo", "cliente", "cat", "tp", "ger", "emision", "emisor", "motivo", "seccion", "texto"]);
+  const norm = s => limpio(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
   const ORDEN = Object.keys(TIPOS);
   const MESES_EN = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12,
     ene: 1, abr: 4, ago: 8, dic: 12 };
@@ -101,8 +123,35 @@
         (meses[mes] = meses[mes] || []).push(mapa.map((c, k) => k < nTxt ? limpio(r[idx(c)]) : num(r[idx(c)]))); }
       return { tipo, meses };
     }
+    // 4) plantillas Excel de Claude
+    const hn = (tab[0] || []).map(norm);
+    const pos = alias => { for (const a of alias) { const i = hn.indexOf(a); if (i >= 0) return i; } return -1; };
+    const cand = PLANT.filter(p => !forzar || p.tipo === forzar || (forzar === "aum_unidad" && p.tipo === "aum_unidad_fondo"))
+      .map(p => ({ p, ix: Object.fromEntries([...Object.entries(p.req), ...Object.entries(p.opc || {})].map(([k, al]) => [k, pos(al)])) }))
+      .filter(c => Object.keys(c.p.req).every(k => c.ix[k] >= 0))
+      .sort((a, b) => Object.values(b.ix).filter(i => i >= 0).length - Object.values(a.ix).filter(i => i >= 0).length);
+    if (cand.length) {
+      const { p, ix } = cand[0], meses = {};
+      for (const r of tab.slice(1)) {
+        const o = {}; for (const [k, i] of Object.entries(ix)) o[k] = i < 0 ? (TXT.has(k) ? "" : 0) : (TXT.has(k) ? limpio(r[i]) : num(r[i]));
+        const mes = p.sinMes ? "fijo" : aMes(r[ix.mes]); if (!mes) continue;
+        if (Object.keys(p.req).filter(k => k !== "mes").every(k => o[k] === "" || o[k] == null)) continue;
+        (meses[mes] = meses[mes] || []).push(p.fila(o));
+      }
+      if (p.tipo === "aum_unidad_fondo") return { tipo: "aum_unidad_fondo", meses, extra: aUnidad(meses) };
+      return { tipo: p.tipo, meses };
+    }
     throw new Error("No reconozco el archivo. Formatos aceptados: la matriz exportada del Power BI de comisiones (Datos con diseño actual), "
       + "los Excel mensuales de comisiones (FechaFinMes, Unidad Negocio, ComisionYTM) o el resultado de las consultas DAX.");
+  }
+  function aUnidad(meses) {      // la plantilla de AUM por área y fondo también arma el total por área (DAX 1)
+    const out = {};
+    for (const [mes, filas] of Object.entries(meses)) {
+      const acc = new Map();
+      for (const [a, , aum, fact, flujo] of filas) { const x = acc.get(a) || [0, 0, 0]; x[0] += aum; x[1] += fact; x[2] += flujo; acc.set(a, x); }
+      out[mes] = [...acc.entries()].map(([a, x]) => [a, x[0], x[0], x[1], x[2]]);
+    }
+    return { tipo: "aum_unidad", meses: out };
   }
   function finCom(tipo, meses) {        // aplica equivalencias y suma por unidad o fondo corregido
     const out = {};
@@ -160,12 +209,13 @@
 
   /* ---- página ---- */
   const fmt = (v, d = 0) => (v == null || !isFinite(v) ? "–" : v.toLocaleString("es-AR", { minimumFractionDigits: d, maximumFractionDigits: d }));
-  const mesTxt = m => { const [y, mm] = m.split("-"); return ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"][+mm - 1] + "-" + y.slice(2); };
+  const mesTxt = m => { if (m === "fijo") return "sin mes"; const [y, mm] = m.split("-"); return ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"][+mm - 1] + "-" + y.slice(2); };
   function total(tipo, filas) {
-    const c = { com_unidad: 1, com_fondo: 1, aum_unidad: 1, aum_unidad_fondo: 2, clientes: 2, inversores: 3 }[tipo];
-    return filas.reduce((a, r) => a + (+r[c] || 0), 0);
+    const c = { com_unidad: 1, com_fondo: 1, aum_unidad: 1, aum_unidad_fondo: 2, clientes: 2, inversores: 3, terceros: 2, emisiones: 2, cerrados: 2 }[tipo];
+    return c == null ? filas.length : filas.reduce((a, r) => a + (+r[c] || 0), 0);
   }
-  const queMide = t => t.startsWith("com_") ? "Facturación USD" : t === "inversores" ? "AUM" : t === "clientes" ? "AUM USD (top + ACDIs)" : "AUM USD";
+  const queMide = t => ({ com_unidad: "Facturación USD", com_fondo: "Facturación USD", inversores: "AUM", clientes: "AUM USD (top + ACDIs)",
+    terceros: "AUM ARS", emisiones: "Facturación USD", cerrados: "Facturación USD", exclusiones: "Clientes", textos: "Textos" })[t] || "AUM USD";
 
   let pendientes = [];   // archivos procesados y todavía no guardados
   P.pages.push({ id: "datos-internos", group: "Datos internos", name: "Cargar facturación y AUM interno", render(st, side, content) {
@@ -176,6 +226,7 @@
       <details class="ci-ayuda"><summary>Qué bajar y de dónde</summary><ol>
         <li><b>Facturación</b>: Power BI Service › <i>Rporte de Comision por Fondos v2</i> › página <i>Fondos YTD</i>. En la matriz grande: <i>Más opciones › Exportar datos › Datos con diseño actual</i> (.xlsx), una vez con <i>Analisis por = Unidad Negocio</i> y otra con <i>Fondos</i>. También sirven los Excel mensuales de las carpetas (<i>comisiones_fci_*.xlsx</i>, <i>comisiones_fondo_*.xlsx</i>).</li>
         <li><b>AUM interno, clientes e inversores</b>: modelo <i>DS Fondos - AM - Comisiones - Volumen - CuotaPartes</i> (área SelfService_Fondos) › <i>Abrir en la vista de consulta DAX</i>. Corré las 4 consultas de <code>informe/comite/consultas_dax.dax</code> y copiá cada resultado con <i>Copia › Toda la tabla</i>: pegalo abajo o guardalo como .txt.</li>
+        <li><b>Plantillas de Excel</b> (<a href="https://github.com/mfriedB/cafci/tree/main/informe/plantillas" target="_blank" rel="noopener">bajarlas del repo</a>; cada una tiene una hoja de instrucciones): AUM y flujo por área comercial y fondo, clientes, inversores PH/PJ, fondos de terceros, emisiones primarias, fondos fuera de CAFCI, clientes excluidos (Ex Meli) y textos del mes. Las tres primeras reemplazan a las consultas DAX.</li>
         <li>El tipo de archivo se reconoce solo; si se equivoca, cambialo en la lista antes de guardar.</li></ol></details>
       <div class="ci-zona" tabindex="0"><b>Arrastrá los archivos acá</b> o <label class="ci-btn">elegilos<input type="file" multiple accept=".xlsx,.xls,.xlsm,.txt,.csv,.tsv" hidden></label><div class="ci-sub">.xlsx, .txt, .csv – varios a la vez</div></div>
       <details class="ci-pegar"><summary>Pegar el resultado de una consulta DAX</summary><textarea rows="6" placeholder="Pegá acá lo copiado con Copia › Toda la tabla"></textarea><button class="ci-btn" type="button">Procesar lo pegado</button></details>
@@ -226,7 +277,7 @@
     async function guardar() {
       const g = prev.querySelector(".ci-guardar"); g.disabled = true; g.textContent = "Guardando…";
       const at = new Date().toISOString(); let n = 0, err = null;
-      for (const p of pendientes.filter(p => !p.error)) {
+      for (const p of pendientes.filter(p => !p.error).flatMap(p => p.extra ? [p, Object.assign({ archivo: p.archivo }, p.extra)] : [p])) {
         for (const [mes, filas] of Object.entries(p.meses)) {
           const id = `${p.tipo}_${mes}`, doc = { tipo: p.tipo, mes, cols: TIPOS[p.tipo].cols, filas, archivo: p.archivo, at };
           try { await C.db.doc("cargas/" + id).set(doc); n++; const i = C.docs.findIndex(d => d.id === id); const v = Object.assign({ id }, doc); if (i >= 0) C.docs[i] = v; else C.docs.push(v); }

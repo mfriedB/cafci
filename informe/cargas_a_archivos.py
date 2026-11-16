@@ -8,6 +8,9 @@ Uso:
 - dax: reescribe dax_mes_unidad.txt, dax_mes_unidad_fondo.txt, dax_clientes.txt y dax_inversores.txt reemplazando los
   meses que vinieron en la carga manual (los demás meses del archivo quedan como estaban).
 - internos: reemplaza en comisiones, comisiones_fondo y serie_facturacion los meses cargados a mano.
+- extras: guarda en un JSON las plantillas 4 a 8 (fondos de terceros, emisiones primarias, fondos fuera de CAFCI,
+  clientes excluidos Ex Meli y textos del mes) para el informe completo.
+Las plantillas 1 a 3 (AUM por area y fondo, clientes, inversores) ya se guardan con el formato de las consultas DAX.
 Imprime qué meses tomó de la carga manual.
 """
 import argparse, calendar, json, os
@@ -42,6 +45,7 @@ def fin_mes(m):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("cargas"); ap.add_argument("--dax"); ap.add_argument("--internos")
+    ap.add_argument("--extras", help="JSON con terceros, emisiones, cerrados, exclusiones y textos (plantillas 4 a 8)")
     a = ap.parse_args()
     docs = leer_docs(a.cargas)
     por = {}
@@ -78,6 +82,16 @@ def main():
                 se += [{"fecha": fin_mes(d["mes"]), "facturacion": round(sum(float(v) for _, v in d["filas"]))} for d in ds]
                 I["serie_facturacion"] = sorted(se, key=lambda r: r["fecha"])
         json.dump(I, open(a.internos, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"), default=str)
+    if a.extras: extras(por, a.extras)
+
+
+def extras(por, path):
+    out = {}
+    for tipo in ("terceros", "emisiones", "cerrados", "exclusiones", "textos"):
+        ds = sorted(por.get(tipo, []), key=lambda d: d["mes"])
+        if ds: out[tipo] = [{"mes": d["mes"], "cols": d.get("cols"), "filas": d["filas"]} for d in ds]
+    json.dump(out, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+    print("extras:", {k: [d["mes"] for d in v] for k, v in out.items()})
 
 
 if __name__ == "__main__":
