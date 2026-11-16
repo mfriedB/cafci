@@ -22,7 +22,7 @@
     const pct = x => (x == null ? "" : F.num(x, "0.0 %;-0.0 %;0.0 %"));
     const monto = x => F.num(x, "\\$\\ #,0;-\\$\\ #,0;\\$\\ #,0", { units: 0, prec: 1 });
     const d = document.createElement("div"); d.className = "pv-chart"; body.appendChild(d);
-    const ch = echarts.init(d, null, { renderer: "canvas" }); R.track(ch);
+    const ch = echarts.init(d, null, { renderer: R.CMP ? "svg" : "canvas" }); R.track(ch);
     const lbl = { show: true, position: "inside", color: "#FFFFFF", fontWeight: "bold", fontSize: 12, formatter: p => pct(p.value) };
     ch.setOption({
       animation: false, textStyle: { fontFamily: "'Segoe UI', Arial, sans-serif" },

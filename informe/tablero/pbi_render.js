@@ -2,6 +2,8 @@
 (function () {
   const R = {};
   window.R = R;
+  // ?cmp: modo comparacion con el PDF del Power BI (selecciones guardadas tal cual y graficos en SVG para medir textos)
+  try { R.CMP = new URLSearchParams(location.search).has("cmp"); } catch (e) { R.CMP = false; }
   const PT = 4 / 3;                       // el Power BI expresa los tamaños de letra en puntos
   const FONT = "'Segoe UI', 'Segoe UI Web (West European)', -apple-system, 'Helvetica Neue', Arial, sans-serif";
   const FONT_SB = "'Segoe UI Semibold', 'Segoe UI', 'Segoe UI Web (West European)', -apple-system, Arial, sans-serif";
@@ -128,7 +130,7 @@
     if (f.pred.vals) {
       let s = [...f.pred.vals];
       const isMonth = /Mes_Año_Fecha|AñoMes \(Texto\)|^Fecha$/.test(fd.p);
-      if (isMonth && s.length) {
+      if (isMonth && s.length && !R.CMP) {
         const tbl = fd.t === "Calendario" ? "CSV_1816" : fd.t;
         const last = D.lastMk[tbl] != null ? D.lastMk[tbl] : D.lastMk.CSV_1816;
         const mks = s.map(x => D.mkOf(String(x))).sort((a, b) => a - b);
@@ -237,7 +239,7 @@
 
   /* ---------- contenedor del visual (fondo, borde, titulo) ---------- */
   function container(v, host, defTitle) {
-    const box = el("div", "pv");
+    const box = el("div", "pv"); box.dataset.t = v.type; box.dataset.id = v.id;
     Object.assign(box.style, { left: v.x + "px", top: v.y + "px", width: v.w + "px", height: v.h + "px" });
     const bgShow = C(v, "background", "show", !/^(textbox|image|shape|group)$/.test(v.type) || !!C(v, "background", "color"));
     const bgCol = C(v, "background", "color", TH.background || "#FFFFFF");
@@ -255,7 +257,7 @@
     if (showT) {
       const txt = C(v, "title", "text", defTitle || "");
       title = el("div", "pv-title", txt);
-      const fs = C(v, "title", "fontSize", 12);
+      const fs = C(v, "title", "fontSize", 14);
       Object.assign(title.style, {
         color: C(v, "title", "fontColor", TH.foreground || "#252423"),
         textAlign: C(v, "title", "alignment", "left"), fontStyle: C(v, "title", "italic", false) ? "italic" : "normal",
@@ -293,7 +295,7 @@
 
   function echart(body, opt) {
     const d = el("div", "pv-chart"); body.appendChild(d);
-    const c = echarts.init(d, null, { renderer: "canvas" });
+    const c = echarts.init(d, null, { renderer: R.CMP ? "svg" : "canvas" });
     opt.animation = false;
     opt.textStyle = Object.assign({ fontFamily: FONT, color: TH.foregroundNeutralSecondary || "#605E5C" }, opt.textStyle || {});
     c.setOption(opt); charts.push(c);
@@ -306,6 +308,8 @@
   const EXT = ["#3599B8", "#DFBFBF", "#4AC5BB", "#5F6B6D", "#FB8281", "#F4D25A", "#7F898A", "#A4DDEE", "#FDAB89", "#B687AC", "#28738A", "#A78F8F", "#168980", "#293537",
     "#BB4A4A", "#B59525", "#475052", "#6A9FB0", "#BD7150", "#7B4F71", "#1B4D5C", "#706060", "#0F5C55", "#1C2325", "#7D3231", "#796419", "#303637", "#476A75", "#7E4B36", "#52354C", "#0D262E", "#544848"];
   function palette() { return TH.dataColors.concat(EXT); }
+  // campos cuyo orden de series en el Power BI no sale de los datos (orden de aparicion en el modelo): se fija aca
+  const SERIES_ORDER = { "CSV_1816.Categoria2": ["Money Market ARS", "Renta Fija", "Money Market USD", "T+1", "Destino Esp.", "Renta Mixta", "Renta Variable"] };
   function seriesColor(v, i, name, meta) {
     const dp = dpColors(v);
     if (name != null && dp.has(String(name))) { const x = dp.get(String(name)); return alpha(x.c, x.tr); }
@@ -426,7 +430,7 @@
     const head = O(v, "header", "show", true) !== false ? (O(v, "header", "text") || slicerTitle(v)) : null;
     const { body } = container(v, env.host, C(v, "title", "show", false) ? slicerTitle(v) : null);
     body.classList.add("pv-slicer");
-    if (head) { const h = el("div", "pv-sh", head); h.style.fontSize = px(O(v, "header", "textSize", 10)) + "px"; h.style.color = O(v, "header", "fontColor", TH.foreground || "#252423"); h.style.fontSize = px(O(v, "header", "textSize", 10)) + "px"; body.appendChild(h); }
+    if (head) { const h = el("div", "pv-sh", head); h.style.fontFamily = fontFam(O(v, "header", "fontFamily"), FONT_SB); h.style.fontSize = px(O(v, "header", "textSize", 10)) + "px"; h.style.color = O(v, "header", "fontColor", TH.foreground || "#252423"); h.style.fontSize = px(O(v, "header", "textSize", 10)) + "px"; body.appendChild(h); }
     const vals = slicerValues(v), f = slicerFmt(v), cur = env.st.sl[v.id];
     const single = O(v, "selection", "singleSelect", false) || O(v, "selection", "strictSingleSelect", false);
     if (/Dropdown/i.test(mode)) {
@@ -434,6 +438,8 @@
       btn.type = "button";
       btn.textContent = cur == null || cur.fn ? "Todas" : cur.size === 1 ? f([...cur][0]) : cur.size ? "Selección múltiple" : "Todas";
       btn.style.fontSize = px(O(v, "items", "textSize", 10)) + "px";
+      btn.style.color = O(v, "items", "fontColor", "#252423");
+      const ib = O(v, "items", "background"); if (typeof ib === "string") btn.style.background = ib;
       btn.addEventListener("click", e => { e.stopPropagation(); dropdown(btn, v, env, vals, f, single); });
       body.appendChild(btn);
     } else listItems(body, v, env, vals, f, single, O(v, "items", "textSize", 10));
@@ -485,7 +491,7 @@
     const icon = O(v, "selectionIcon", "size", 12);
     const n = vals.length + (!single && O(v, "selection", "selectAllCheckboxEnabled", false) ? 1 : 0);
     requestAnimationFrame(() => {
-      const h = rc ? Math.max(fs * 1.5, (body.clientHeight - 4) / rc) : fs * 1.62;
+      const h = rc ? Math.max(fs * 1.5, ((list.clientHeight || body.clientHeight) - 4) / rc) : fs * 1.62;
       list.querySelectorAll(".pv-lt").forEach(b => { b.style.height = h + "px"; });
     });
     if (!single && O(v, "selection", "selectAllCheckboxEnabled", false)) {
@@ -541,7 +547,7 @@
       const on = cur != null && cur.has(x);
       const b = el("button", "pv-bt" + (on ? " on" : cur != null ? " off" : ""), f(x));
       b.type = "button"; b.setAttribute("aria-pressed", String(on));
-      b.style.fontSize = px(O(v, "value", "fontSize", 10)) + "px";
+      b.style.fontSize = px(O(v, "value", "fontSize", 12)) + "px";
       b.addEventListener("click", () => {
         let s = cur ? new Set(cur) : new Set();
         if (single) s = s.has(x) ? new Set() : new Set([x]); else s.has(x) ? s.delete(x) : s.add(x);
@@ -554,10 +560,15 @@
 
   VIS.textSlicer = function (v, env) {
     const { body } = container(v, env.host, null);
-    const inp = el("input", "pv-ts"); inp.type = "search"; inp.placeholder = "Buscar " + slicerTitle(v).toLowerCase();
+    // como el segmentador de texto del Power BI: boton con flecha a la izquierda, "Entrar <campo>" y flecha de aplicar a la derecha
+    const box = el("div", "pv-tsb"), chev = el("span", "pv-tsc"), go = el("button", "pv-tsg");
+    go.type = "button"; go.setAttribute("aria-label", "Aplicar");
+    const inp = el("input", "pv-ts"); inp.type = "search"; inp.placeholder = "Entrar " + slicerTitle(v);
     const cur = env.st.sl[v.id]; inp.value = cur && cur.text != null ? cur.text : "";
-    inp.addEventListener("change", () => setSel(env, v, inp.value ? { text: inp.value } : null));
-    body.appendChild(inp);
+    const apply = () => setSel(env, v, inp.value ? { text: inp.value } : null);
+    inp.addEventListener("change", apply); go.addEventListener("click", apply);
+    if (inp.value) box.classList.add("on");
+    box.append(chev, inp, go); body.appendChild(box);
   };
 
   /* ---- graficos cartesianos (barras, columnas, lineas, combo) ---- */
@@ -592,15 +603,21 @@
     if (ser) {
       let sv = [...new Set(rows.map(r => r.k[1]))].sort((a, b) => String(a).localeCompare(String(b), "es", { numeric: true }));
       const sdm = (v.sort || []).find(x => x.e && (x.e.k === "M" || x.e.k === "X" || x.e.k === "A"));
-      if (!(v.sort || []).some(x => x.e && x.e.p === ser.p)) {   // como el Power BI: series en el orden de la medida (de mayor a menor)
-        const tot = new Map(); for (const r of rows) tot.set(r.k[1], (tot.get(r.k[1]) || 0) + (r.v[0] || 0));
-        const dir = sdm && sdm.dir === "Ascending" ? 1 : -1;
-        sv = sv.sort((a, b) => dir * ((tot.get(a) || 0) - (tot.get(b) || 0)));
+      if (!(v.sort || []).some(x => x.e && x.e.p === ser.p)) {   // como el Power BI: series (leyenda y colores) en orden alfabetico
+        if (sdm && sdm.e && vals.some(f => f.p === sdm.e.p) && !(isLineKind)) {   // salvo que el visual se ordene por la medida
+          const tot = new Map(); for (const r of rows) tot.set(r.k[1], (tot.get(r.k[1]) || 0) + (r.v[0] || 0));
+          const dir = sdm.dir === "Ascending" ? 1 : -1;
+          sv = sv.sort((a, b) => dir * ((tot.get(a) || 0) - (tot.get(b) || 0)));
+        }
+        const fijo = SERIES_ORDER[ser.ref];   // orden (y colores) que el Power BI mostro para este campo
+        if (fijo) { const ix = x => { const i = fijo.indexOf(String(x)); return i < 0 ? 999 : i; }; sv = sv.sort((a, b) => ix(a) - ix(b)); }
       }
-      sv.forEach((s, i) => {   // colores por defecto en el orden de la medida, como el Power BI
+      const dpS = dpColors(v); let ci = 0;
+      sv.forEach((s) => {   // colores de la paleta en el orden de las series; las que tienen color propio no consumen un color
         const data = cats.map(() => null);
         for (const r of rows) if (r.k[1] === s) data[catIdx.get(r.k[0])] = r.v[0];
-        series.push({ name: s == null ? "(En blanco)" : String(fmtCat(ser, s)), raw: s, fd: ys[0], data, color: seriesColor(v, i, s), axis: 0, type: isLineKind ? "line" : "bar", meta: { val: s } });
+        const propio = s != null && dpS.has(String(s));
+        series.push({ name: s == null ? "(En blanco)" : String(fmtCat(ser, s)), raw: s, fd: ys[0], data, color: seriesColor(v, propio ? 0 : ci++, s), axis: 0, type: isLineKind ? "line" : "bar", meta: { val: s } });
       });
     } else {
       const dpc = cat ? dpColors(v, null, null, cat.p) : new Map();
@@ -640,9 +657,15 @@
     const legend = showLegend ? {
       show: true, type: "scroll", icon: isLineKind && lg("legendMarkerRendering", "markerOnly") !== "markerOnly" ? "path://M0,4h14v2H0z" : "circle", itemWidth: 8, itemHeight: 8, itemGap: 6,
       textStyle: { fontSize: px(lg("fontSize", 10)), color: lg("labelColor", TH.foregroundNeutralSecondary || "#605E5C"), fontFamily: FONT, padding: [0, 0, 0, -3] },
-      left: /Center/.test(lpos) ? "center" : /Right/.test(lpos) ? "right" : 4, top: /^Bottom/.test(lpos) ? undefined : 2, bottom: /^Bottom/.test(lpos) ? 2 : undefined,
+      left: /Center/.test(lpos) ? "center" : /Right/.test(lpos) ? "right" : 4, top: /^Bottom/.test(lpos) ? undefined : 8, bottom: /^Bottom/.test(lpos) ? 2 : undefined,
       orient: /^(Left|Right)/.test(lpos) && !/Center$/.test(lpos) ? "vertical" : "horizontal"
     } : { show: false };
+    let legW = 0;   // leyenda vertical a la derecha/izquierda: texto alineado a la izquierda y fuera del area del grafico
+    if (showLegend && legend.orient === "vertical") {
+      Object.assign(legend, { align: "left", itemGap: Math.round(px(lg("fontSize", 10)) * 0.75) });
+      if (/^Right/.test(lpos)) { delete legend.left; legend.right = 4; } else legend.left = 4;
+      legW = Math.max(...series.map(x => R.textW(x.name, px(lg("fontSize", 10))))) + 22;
+    }
     // escalas
     const valFmt = fdx => { const f = fmtOf(fdx); return F.isPct(f); };
     const allVals = series.filter(s => s.axis === 0).flatMap(s => s.data).filter(x => x != null);
@@ -664,14 +687,29 @@
       splitNumber: Math.max(2, Math.min(6, Math.floor(((opts.cellH || v.h) - 70) / 50))),
       // inicio/fin fijos del eje: se respetan salvo que los datos de hoy los superen (el Power BI los guardó con datos más viejos)
       type: "value", show: showVal, scale: isLineKind || series.every(x => x.type === "line"),
-      min: typeof startV === "number" ? (m => Math.min(startV, m.min)) : undefined, max: typeof endV === "number" ? (m => { if (m.max <= endV) return endV; const st = Math.pow(10, Math.floor(Math.log10(Math.abs(m.max)))) / 2; return Math.ceil(m.max / st) * st; }) : undefined,
-      axisLabel: { fontSize: vxFs, color: vx("labelColor", TH.foregroundNeutralSecondary || "#605E5C"), formatter: fmtAxis(series[0] && series[0].fd || vals[0]) },
+      min: typeof startV === "number" ? (m => Math.min(startV, m.min)) : undefined, max: typeof endV === "number" ? (m => { if (m.max <= endV) return endV; if (!showVal) return m.max + (m.max - m.min) * 0.04; const st = Math.pow(10, Math.floor(Math.log10(Math.abs(m.max)))) / 2; return Math.ceil(m.max / st) * st; }) : undefined,
+      axisLabel: { fontSize: vxFs, fontWeight: vx("bold", false) ? "bold" : "normal", color: vx("labelColor", TH.foregroundNeutralSecondary || "#605E5C"), formatter: fmtAxis(series[0] && series[0].fd || vals[0]) },
       splitLine: { show: showVal && vx("gridlineShow", true) !== false, lineStyle: { color: vx("gridlineColor", "#E1DFDD"), type: vx("gridlineStyle", "dotted") === "solid" ? "solid" : vx("gridlineStyle", "dotted") === "dashed" ? "dashed" : "dotted", width: vx("gridlineThickness", 1) } },
       axisLine: { show: false }, axisTick: { show: false }
     };
-    if (!showVal) { valAxis.splitLine = { show: false }; }
-    const y2Axis = y2.length ? { type: "value", scale: true, show: O(v, "valueAxis", "secShow", O(v, "y2Axis", "show", true)) !== false && false, splitLine: { show: false },
-      min: O(v, "y2Axis", "secStart"), max: O(v, "y2Axis", "secEnd", O(v, "valueAxis", "secEnd")), axisLabel: { formatter: fmtAxis(y2[0]) } } : null;
+    if (!showVal) { valAxis.splitLine = { show: false }; valAxis.axisLabel.show = false; }
+    // eje visible en lineas: el Power BI corta la escala apenas arriba del maximo (media marca), no en la marca siguiente
+    if (showVal && isLineKind && typeof endV !== "number" && !opts.yRange) {
+      const ys0 = series.filter(x => x.axis === 0).flatMap(x => x.data).filter(x => x != null);
+      if (ys0.length) {
+        const mx = Math.max(...ys0), mn = valAxis.scale ? Math.min(...ys0) : Math.min(0, ...ys0), n = valAxis.splitNumber;
+        const raw = (mx - mn) / n, mag = Math.pow(10, Math.floor(Math.log10(raw || 1))), st = [1, 2, 2.5, 5, 10].map(k => k * mag).find(k => k >= raw) || 10 * mag;
+        if (mx > 0) { valAxis.interval = st; valAxis.max = Math.ceil(mx / (st / 2) * (1 + 1e-9)) * (st / 2); if (Math.abs(valAxis.max / st - Math.round(valAxis.max / st)) > 1e-6) valAxis.axisLabel.showMaxLabel = false; if (typeof startV !== "number") valAxis.min = Math.floor(mn / st) * st; }
+      }
+    }
+    // eje oculto: el Power BI estira la barra mas larga hasta el borde del area (sin redondear la escala)
+    if (!showVal && !isLineKind && series.some(x => x.type === "bar") && typeof endV !== "number") { valAxis.max = m => Math.max(0, m.max); if (typeof startV !== "number") valAxis.min = m => Math.min(0, m.min); }   // si no, containLabel de echarts reserva lugar para etiquetas ocultas
+    const y2Axis = y2.length ? { type: "value", scale: true, show: false, splitLine: { show: false },
+      min: O(v, "y2Axis", "secStart", O(v, "valueAxis", "secStart")), max: O(v, "y2Axis", "secEnd", O(v, "valueAxis", "secEnd")), axisLabel: { show: false, formatter: fmtAxis(y2[0]) } } : null;
+    if (y2Axis) {   // eje secundario oculto: la linea usa todo el alto, como el Power BI
+      if (typeof y2Axis.min !== "number") y2Axis.min = m => m.min - (m.max - m.min) * 0.06;
+      if (typeof y2Axis.max !== "number") y2Axis.max = m => m.max + (m.max - m.min) * 0.04;
+    }
     const catAxis = {
       type: "category", data: catLabelsAxis, show: showCat, boundaryGap: !isLineKind || series.some(s => s.type === "bar"),
       axisLabel: { fontSize: axFs, color: axColor, fontWeight: ax("bold", false) ? "bold" : "normal", hideOverlap: !horizontal && isLineKind, interval: horizontal || !isLineKind ? 0 : "auto",
@@ -694,6 +732,7 @@
     let endLab = 0;
     const ech = series.map((s, j) => {
       const lo = labelOpts(v, s.meta);
+      if (s.type !== "bar" && cats.length > 36 && lo.fontSize > 12) lo.fontSize = 12;   // lineas muy largas: el Power BI baja las etiquetas a 9 pt
       const showSer = lo.show && propSel(v, "obj", "labels", "showSeries", s.meta, true) !== false;
       const fmt = vfmt(s.fd, lo, s.axis ? null : vmax);
       const isBar = s.type === "bar";
@@ -716,6 +755,11 @@
         data: s.data.map((x, i) => {
           const o2 = {};
           if (isBar && pos === "top" && x != null && x < 0) o2.label = { position: horizontal ? "left" : "bottom" };
+          // lineas con posicion automatica: la serie de abajo lleva la etiqueta debajo del punto, como el Power BI
+          if (!isBar && x != null && /Auto/i.test(lo.pos || "Auto") && series.filter(z => z.type !== "bar").length > 1) {
+            const otros = series.filter(z => z !== s && z.type !== "bar" && z.axis === s.axis).map(z => z.data[i]).filter(y => y != null);
+            if (otros.length && x < Math.min(...otros)) o2.label = { position: "bottom" };
+          }
           if (s.pc && s.pc[i]) o2.itemStyle = { color: s.pc[i] };
           return Object.keys(o2).length ? Object.assign({ value: x }, o2) : x;
         }),
@@ -731,7 +775,7 @@
       if (!isBar && showSer && !marker) { o.symbol = "circle"; o.symbolSize = 1; }
       if (!isBar && O(v, "seriesLabels", "show", false)) {
         const scol = propSel(v, "obj", "seriesLabels", "seriesColor", s.meta);
-        o.__end = { name: s.name, color: typeof scol === "string" ? scol : O(v, "seriesLabels", "seriesMatchColor", true) !== false ? s.color : TH.foreground, bold: propSel(v, "obj", "seriesLabels", "bold", s.meta, false),
+        o.__end = { name: s.name, color: typeof scol === "string" ? scol : O(v, "seriesLabels", "seriesMatchColor", false) === true ? s.color : TH.foregroundNeutralSecondary || "#605E5C", bold: propSel(v, "obj", "seriesLabels", "bold", s.meta, false),
           fs: px(O(v, "seriesLabels", "textSize", 9)), leader: O(v, "seriesLabels", "leaderLines", true) !== false };
         endLab = Math.max(endLab, s.name.length * px(O(v, "seriesLabels", "textSize", 9)) * 0.6 + 14);
       }
@@ -751,16 +795,19 @@
     let rightLab = 14;
     if (horizontal) {
       const lo1 = labelOpts(v), w1 = Math.max(0, ...ech.filter(e => e.label && e.label.show && /right/.test(e.label.position)).flatMap(e => (e.data || []).map((d, i) => {
-        const x = d && typeof d === "object" ? d.value : d; if (x == null) return 0; const t = e.label.formatter({ value: x, dataIndex: i }); return String(t).length * (e.label.fontSize || lo1.fontSize) * 0.58; })));
-      rightLab = Math.max(12, w1 + 10);
+        const x = d && typeof d === "object" ? d.value : d; if (x == null) return 0; const t = e.label.formatter({ value: x, dataIndex: i }); return R.textW(t, e.label.fontSize || lo1.fontSize, e.label.fontWeight) + (e.label.backgroundColor && e.label.backgroundColor !== "transparent" ? 6 : 0); })));
+      rightLab = Math.max(12, w1 + 8);
     } else if (ech.some(e => e.type === "line" && e.label && e.label.show)) {
       const e0 = ech.filter(e => e.type === "line" && e.label && e.label.show).map(e => { const d = e.data[e.data.length - 1]; return d == null ? 0 : String(e.label.formatter({ value: d, dataIndex: e.data.length - 1 })).length * (e.label.fontSize || 12) * 0.3; });
       rightLab = Math.max(14, ...e0) ;
     }
-    if (!showVal && valAxis.min === undefined && valAxis.max === undefined && (isLineKind || series.every(x => x.type === "line"))) {
-      valAxis.scale = true; valAxis.min = m => m.min - (m.max - m.min) * 0.06; valAxis.max = m => m.max + (m.max - m.min) * 0.04;
+    if (!showVal && (isLineKind || series.every(x => x.type === "line"))) {
+      valAxis.scale = true;
+      if (valAxis.min === undefined) valAxis.min = m => m.min - (m.max - m.min) * 0.06;
+      if (valAxis.max === undefined) valAxis.max = m => m.max + (m.max - m.min) * 0.04;
     }
-    const grid = { left: 6, right: (horizontal ? rightLab : Math.max(rightLab, 14 + endLab)), top: (showLegend && !/^Bottom/.test(lpos) ? 24 : 10) + lblTop, bottom: (showLegend && /^Bottom/.test(lpos) ? 24 : 6), containLabel: true };
+    const legV = legW > 0, grid = { left: 6 + (legV && /^Left/.test(lpos) ? legW : 0), right: (horizontal ? rightLab : Math.max(rightLab, 14 + endLab)) + (legV && /^Right/.test(lpos) ? legW : 0), top: (showLegend && !legV && !/^Bottom/.test(lpos) ? 30 : 10) + lblTop, bottom: (showLegend && /^Bottom/.test(lpos) ? 24 : 6), containLabel: true };
+    if (horizontal) { grid.top = (showLegend && !/^Bottom/.test(lpos) ? 30 : 0) + 21; grid.bottom = (showLegend && /^Bottom/.test(lpos) ? 30 : 0) + 15; }
     if (opts.yRange) { const [a, b] = opts.yRange, pad = (b - a) * 0.06; valAxis.min = a - pad; valAxis.max = b + pad; valAxis.scale = true; }
     if (!showVal && !horizontal && series.every(x => x.type === "line")) {   // sin eje de valores: el area del grafico va de borde a borde, como el Power BI
       const lw0 = String(catLabelsAxis[0] || "").length * axFs * 0.55;
@@ -770,9 +817,19 @@
       grid.bottom += showCat ? (rot || axFs * 1.25) + 10 : 0;
       if (rot) grid.left = Math.max(grid.left, rot * 0.9);
     }
+    // columnas sin eje de valores: el Power BI deja ~44 px a la izquierda y ~32 a la derecha, etiquetas de categoria partidas al ancho de la banda
+    if (!horizontal && !showVal && !isLineKind && cat && !dateAxis && !opts.cellW && !opts.compact && !series.some(x => x.type === "line")) {
+      const W = (body.clientWidth || v.w) - 74, band = W / Math.max(1, cats.length), lh = Math.round(axFs * 1.33);
+      const wrapN = t => { const ws = String(t).split(/\s+/); let n = 1, cur = ""; for (const w of ws) { const nx = cur ? cur + " " + w : w; if (cur && R.textW(nx, axFs, ax("bold", false) ? "bold" : "normal") > band - 4) { n++; cur = w; } else cur = nx; } return n; };
+      const lines = showCat ? Math.max(1, ...catLabels.map(wrapN)) : 0;
+      Object.assign(catAxis.axisLabel, { width: band - 4, lineHeight: lh, margin: 12 });
+      catAxis.axisLine.show = false;
+      grid.containLabel = false; grid.left = 43; grid.right = 31;
+      grid.bottom = (showLegend && /^Bottom/.test(lpos) ? 24 : 0) + (lines ? lines * lh + 14 : 6);
+    }
     // barras horizontales con pocas categorias: el Power BI limita el alto de cada categoria y las centra
     if (horizontal && cats.length) {
-      const H = (body.clientHeight || v.h) - grid.top - grid.bottom, band = H / cats.length, maxBand = Math.max(40, 0.28 * H);
+      const H = (body.clientHeight || v.h) - grid.top - grid.bottom, band = H / cats.length, maxBand = Math.max(40, 0.30 * H);
       if (band > maxBand) { const extra = (H - maxBand * cats.length) / 2; grid.top += extra; grid.bottom += extra; }
     }
     if (lblBot && !valAxis.min) { const mn = Math.min(...series.flatMap(x => x.data).filter(y => y != null)); valAxis.min = mn * 1.25; }
@@ -785,7 +842,7 @@
     if (opts.compact) { opt.grid.top = 6; opt.legend.show = false; }
     // muchas categorias: como el Power BI, ancho minimo por categoria y barra de desplazamiento
     const plotLen = horizontal ? body.clientHeight - grid.top - grid.bottom : body.clientWidth - 60;
-    const minCat = horizontal ? Math.max(20, axFs * 1.7) : 18;
+    const minCat = horizontal ? Math.max(20, axFs * 1.38) : 18;
     if (cats.length * minCat > plotLen && plotLen > 0 && !isLineKind) {
       const n = Math.max(3, Math.floor(plotLen / minCat));
       const dz = { type: "slider", show: true, start: 0, end: Math.min(100, 100 * n / cats.length), zoomLock: true, brushSelect: false, showDetail: false, showDataShadow: false,
@@ -856,9 +913,16 @@
     const pprec = O(v, "labels", "percentageLabelPrecision", 2);
     const tot = rows.reduce((a, r) => a + r.v[0], 0);
     // el Power BI pasa la categoria a una linea aparte cuando la etiqueta no entra al costado de la torta
-    const lado = Math.max(40, (v.w - 0.7 * Math.min(v.w, v.h - 34)) / 2 - 20);
-    const brk = (a, b) => ((a + " " + b).length * lo.fontSize * 0.56 > lado ? a + "\n" + b : a + " " + b);
+    // (se mide con el lugar que queda al costado de cada porcion, segun su angulo)
+    const bw = body.clientWidth || v.w, bh = body.clientHeight || v.h - 34, RAD = 0.375 * Math.min(bw, bh);
+    const tot0 = rows.reduce((a, r) => a + Math.max(0, r.v[0] || 0), 0) || 1, a0 = (O(v, "slices", "startAngle", 0) || 0);
+    let acc = 0; const lado = new Map();
+    rows.forEach(r => { const f = Math.max(0, r.v[0] || 0) / tot0; const ang = (a0 + (acc + f / 2) * 360 - 90) * Math.PI / 180; acc += f;
+      lado.set(r, Math.min(230, Math.max(40, bw / 2 - Math.abs(RAD * Math.cos(ang)) - 8))); });
+    let curR = null;
+    const brk = (a, b) => (R.textW(a + " " + b, lo.fontSize, lo.bold ? "bold" : "normal") > (lado.get(curR) || 80) ? a + "\n" + b : a + " " + b);
     const txt = (r) => {
+      curR = r;
       const pc = F.num(r.v[0] / tot, "0" + (pprec ? "." + "0".repeat(pprec) : "") + "%", { prec: pprec });
       const name = fmtCat(cat, r.k[0]);
       switch (style) {
@@ -878,7 +942,7 @@
     const data = rows.map((r, i) => {
       const dp = dpColors(v).get(String(r.k[0]));
       return { name: fmtCat(cat, r.k[0]), value: r.v[0], itemStyle: { color: dp ? alpha(dp.c, dp.tr) : palette()[i % palette().length], borderColor: O(v, "dataPoint", "borderShow", false) ? "#fff" : undefined },
-        label: { color: labelColorSel(v, r.k[0]) || lo.color || (inside ? "#FFFFFF" : TH.foreground || "#252423") } };
+        label: { color: labelColorSel(v, r.k[0]) || lo.color || (inside ? "#FFFFFF" : TH.foregroundNeutralSecondary || "#605E5C") } };
     });
     const vertical = /^(Left|Right)/.test(lpos);
     const center = showLeg ? (/^Right/.test(lpos) ? ["40%", "52%"] : /^Left/.test(lpos) ? ["60%", "52%"] : /^Top/.test(lpos) ? ["50%", "56%"] : ["50%", "46%"]) : ["50%", "50%"];
@@ -888,9 +952,9 @@
       legend: showLeg ? { type: "scroll", orient: vertical ? "vertical" : "horizontal", left: /Center/.test(lpos) && !vertical ? "center" : /^Right/.test(lpos) ? "right" : 4,
         top: /^Bottom/.test(lpos) ? undefined : vertical ? "middle" : 2, bottom: /^Bottom/.test(lpos) ? 2 : undefined, icon: "circle", itemWidth: 9, itemHeight: 9,
         textStyle: { fontSize: px(O(v, "legend", "fontSize", 10)), color: O(v, "legend", "labelColor", TH.foregroundNeutralSecondary || "#605E5C") } } : { show: false },
-      series: [{ type: "pie", radius: [(inner * 0.7) + "%", "70%"], center, startAngle: 90 - (O(v, "slices", "startAngle", 0) || 0), data,
+      series: [{ type: "pie", radius: [(inner * 0.75) + "%", "75%"], center, startAngle: 90 - (O(v, "slices", "startAngle", 0) || 0), data,
         label: { show: lo.show !== false, position: inside ? "inside" : "outside", fontSize: lo.fontSize, lineHeight: lo.fontSize * 1.25, fontWeight: lo.bold ? "bold" : "normal", fontFamily: lo.family, formatter: p => txt(rows[p.dataIndex]) },
-        labelLine: { show: !inside, length: 8, length2: 8 }, emphasis: { disabled: true }, minShowLabelAngle: 1 }]
+        labelLine: { show: !inside, length: 10, length2: 10, lineStyle: { color: "#A19F9D" } }, emphasis: { disabled: true }, minShowLabelAngle: 1 }]
     });
   }
   function labelColorSel(v, val) {
@@ -936,7 +1000,7 @@
       symbolSize: (val, p) => (sz ? Math.max(9, Math.min(v.w, v.h) * 0.11 * (1 + bub / 100) * Math.sqrt(Math.abs(p.data.sz || 0) / maxS)) : 10 * (1 + bub / 50)),
       itemStyle: { color: seriesColor(v, i, s === "_" ? null : s), opacity: 1, borderColor: "#fff", borderWidth: 0 },
       symbol: (val, p) => { const sh = propSel(v, "obj", "bubbles", "markerShape", { val: p.data.k0 }); return sh === "diamond" ? "diamond" : sh === "square" ? "rect" : sh === "triangle" ? "triangle" : "circle"; },
-      label: { show: cl("show", false), position: "right", fontSize: px(cl("fontSize", 9)), color: cl("color", TH.foregroundNeutralSecondary), fontWeight: cl("bold", false) ? "bold" : "normal",
+      label: { show: cl("show", false), position: "bottom", distance: 3, fontSize: px(cl("fontSize", 9)), color: cl("color", TH.foregroundNeutralSecondary), fontWeight: cl("bold", false) ? "bold" : "normal",
         backgroundColor: cl("enableBackground", false) ? alpha(cl("backgroundColor", "#fff"), cl("backgroundTransparency", 0)) : "transparent", formatter: p => p.data.name },
       labelLayout: { hideOverlap: true }, emphasis: { disabled: true }
     }));
@@ -945,12 +1009,12 @@
       nameGap: o === "valueAxis" ? (() => { const ys = rows.map(r => r.v[1]).filter(x => x != null && (typeof O(v, o, "end") !== "number" || x <= O(v, o, "end")) && (typeof O(v, o, "start") !== "number" || x >= O(v, o, "start")));
         const mx = Math.max(...ys.map(Math.abs), typeof O(v, o, "end") === "number" ? Math.abs(O(v, o, "end")) * 0.9 : 0); return R.textW(f(Math.round(mx)), px(O(v, o, "fontSize", 9))) + 16; })() : px(O(v, o, "fontSize", 9)) + 12,
       axisLabel_: null,
-      nameTextStyle: { fontSize: px(O(v, o, "titleFontSize", 9)), color: O(v, o, "titleColor", TH.foregroundNeutralSecondary), fontWeight: O(v, o, "titleBold", false) ? "bold" : "normal" },
+      nameTextStyle: { fontSize: px(O(v, o, "titleFontSize", 9)), color: O(v, o, "titleColor", TH.foreground || "#252423"), fontWeight: O(v, o, "titleBold", false) ? "bold" : "normal" },
       min: typeof O(v, o, "start") === "number" ? O(v, o, "start") : undefined, max: typeof O(v, o, "end") === "number" ? O(v, o, "end") : undefined,
       show: true,
       axisLabel: { show: O(v, o, "show", true) !== false, formatter: f, fontSize: px(O(v, o, "fontSize", 9)), color: TH.foregroundNeutralSecondary, fontWeight: O(v, o, "bold", false) ? "bold" : "normal",
         showMinLabel: typeof O(v, o, "start") === "number" ? false : undefined, showMaxLabel: typeof O(v, o, "end") === "number" ? false : undefined },
-      splitLine: { lineStyle: { color: alpha(O(v, o, "gridlineColor", "#E1DFDD"), O(v, o, "gridlineTransparency", 0)), type: O(v, o, "gridlineStyle", "dotted") } },
+      splitLine: { show: O(v, o, "show", true) !== false && O(v, o, "gridlineShow", true) !== false, lineStyle: { color: alpha(O(v, o, "gridlineColor", "#E1DFDD"), O(v, o, "gridlineTransparency", 0)), type: O(v, o, "gridlineStyle", "dotted") } },
       axisLine: { show: false, onZero: false }, axisTick: { show: false }
     });
     // el Power BI no dibuja los puntos que quedan fuera de los limites fijos del eje
@@ -959,7 +1023,7 @@
     series.forEach(se => { se.data = se.data.filter(d => inX(d.value[0]) && inY(d.value[1])); });
     const showLeg = O(v, "legend", "show", !!ser) !== false && sNames.length > 1;
     const sch = echart(body, {
-      grid: { left: 36, right: 24, top: showLeg ? 30 : 14, bottom: 22, containLabel: true },
+      grid: { left: O(v, "valueAxis", "show", true) === false ? 69 : 36, right: 44, top: showLeg ? 30 : 14, bottom: 30, containLabel: true },
       legend: showLeg ? { type: "scroll", top: 2, left: 4, icon: "circle", itemWidth: 9, itemHeight: 9, textStyle: { fontSize: px(8), color: O(v, "legend", "labelColor", TH.foregroundNeutralSecondary) } } : { show: false },
       tooltip: { trigger: "item", confine: true, formatter: p => `<b>${p.data.name}</b><br>${label(xf)}: ${fx(p.data.value[0])}<br>${label(yf)}: ${fy(p.data.value[1])}` + (sz ? `<br>${label(sz)}: ${F.num(p.data.sz, fmtOf(sz), { units: 0 })}` : "") },
       xAxis: axis("categoryAxis", fxA, xf), yAxis: axis("valueAxis", fyA, yf), series
@@ -978,7 +1042,7 @@
       hBg: ch("backColor", /Minimal|None/i.test(preset) ? "transparent" : "#FFFFFF"), hFg: ch("fontColor", TH.foreground || "#252423"), hBold: ch("bold", true), hFs: px(ch("fontSize", 10)), hAlign: ch("alignment"),
       vFs: px(vv("fontSize", 10)), vBg: vv("backColor", "#FFFFFF"), vBg2: vv("backColorSecondary", /Default/i.test(preset) ? "#F5F5F5" : "#FFFFFF"), vFg: vv("fontColor", TH.foreground || "#252423"),
       grid: O(v, "grid", "gridHorizontal", true) !== false, gridColor: O(v, "grid", "gridHorizontalColor", "#E1DFDD"), gridV: O(v, "grid", "gridVertical", false), gridVColor: O(v, "grid", "gridVerticalColor", "#E1DFDD"),
-      outline: O(v, "grid", "outlineColor"), rhFs: px(O(v, "rowHeaders", "fontSize", O(v, "values", "fontSize", 10))), totFs: px(O(v, "total", "fontSize", O(v, "rowTotal", "fontSize", O(v, "values", "fontSize", 10))))
+      outline: O(v, "grid", "outlineColor"), rhFs: px(O(v, "rowHeaders", "fontSize", 10)), totFs: px(O(v, "total", "fontSize", O(v, "rowTotal", "fontSize", O(v, "values", "fontSize", 10))))
     };
   }
   function cellFmt(v, fd, x) {
@@ -1026,10 +1090,11 @@
     let rows = query(v, ctx, groups, ms, { keepBlank: !ms.length });
     rows = sortTable(v, rows, groups, ms);
     const st = tableStyle(v);
-    const wrap = el("div", "pv-tw"), t = el("table", "pv-t");
+    const wrap = el("div", "pv-tw"), t = el("table", "pv-t pv-tex");
     const thead = el("thead"), hr = el("tr");
-    cols.forEach(c => { const th = el("th", null, label(c)); Object.assign(th.style, { background: st.hBg, color: st.hFg, fontWeight: st.hBold ? "700" : "400", fontSize: st.hFs + "px", textAlign: c.k === "C" ? "left" : "right" });
-      const w = colWidth(v, c); if (w) { th.style.width = th.style.minWidth = th.style.maxWidth = w + "px"; th.style.whiteSpace = "normal"; } hr.appendChild(th); });
+    cols.forEach(c => { const th = el("th", null, label(c)); Object.assign(th.style, { background: st.hBg, color: st.hFg, fontWeight: st.hBold ? "700" : "400", fontSize: st.hFs + "px", textAlign: st.hAlign ? st.hAlign.toLowerCase() : c.k === "C" ? "left" : "right" });
+      const w = colWidth(v, c); if (w) { th.style.width = th.style.minWidth = th.style.maxWidth = w + "px"; th.style.whiteSpace = "normal"; }
+      if (isSorted(v, c)) th.appendChild(sortMark(st.hFg)); hr.appendChild(th); });
     const anchos = cols.map(c => colWidth(v, c));
     thead.appendChild(hr); t.appendChild(thead);
     const tb = el("tbody");
@@ -1041,7 +1106,7 @@
         const x = gi >= 0 ? r.k[gi] : r.v[mi];
         const td = el("td", null, cellFmt(v, c, x));
         Object.assign(td.style, { fontSize: st.vFs + "px", color: st.vFg, background: i % 2 ? st.vBg2 : st.vBg, textAlign: gi >= 0 && typeof x !== "number" ? "left" : "right",
-          borderBottom: st.grid ? `1px solid ${st.gridColor}` : "0" });
+          borderBottom: `1px solid ${st.grid ? st.gridColor : "transparent"}` });
         if (mi >= 0 && grads[mi]) td.style.background = grads[mi](x);
         const w = anchos[cols.indexOf(c)]; if (w) { td.style.maxWidth = w + "px"; if (gi >= 0) td.style.whiteSpace = "normal"; }
         tr.appendChild(td);
@@ -1056,9 +1121,15 @@
     }
     t.appendChild(tb); wrap.appendChild(t); body.appendChild(wrap);
   };
+  // el Power BI dibuja la flecha de orden debajo del encabezado de la columna ordenada
+  function isSorted(v, c) { const sd = (v.sort || [])[0]; sortUp = !!(sd && sd.dir === "Ascending"); return !!(sd && sd.e && c && sd.e.p === c.p && (sd.e.t == null || c.t == null || sd.e.t === c.t)); }
+  let sortUp = false;
+  function sortMark(col) { const d = el("span", "pv-sort"); d.innerHTML = `<svg viewBox="0 0 9 6"><path d="${sortUp ? "M.8 5.2 4.5 1.4 8.2 5.2" : "M.8.8 4.5 4.6 8.2.8"}" fill="none" stroke="${col || "#252423"}" stroke-width="1.2"/></svg>`; return d; }
   function sortTable(v, rows, groups, ms) {
     const sd = (v.sort || [])[0];
     const cmpK = (a, b) => (typeof a === "number" && typeof b === "number" ? a - b : String(a ?? "").localeCompare(String(b ?? ""), "es", { numeric: true }));
+    // desempate como el Power BI: por las columnas de agrupacion, en orden y ascendente
+    if (sd && groups.length) rows.sort((a, b) => { for (let i = 0; i < a.k.length; i++) { const c = cmpK(a.k[i], b.k[i]); if (c) return c; } return 0; });
     if (!sd) return rows.sort((a, b) => { if (ms.length) return (b.v[0] ?? -Infinity) - (a.v[0] ?? -Infinity); for (let i = 0; i < a.k.length; i++) { const c = cmpK(a.k[i], b.k[i]); if (c) return c; } return 0; });
     return sortRows(v, rows, groups, ms, 0);
   }
@@ -1076,7 +1147,8 @@
     let rvals = rf ? [...new Set(all.map(r => r.k[0]))] : [null];
     // columnas: combinacion de todos los campos de Columnas (ej. Categoria + Trimestre)
     const ck = r => (cf ? JSON.stringify(r.k.slice(rowsF.length)) : null);
-    let cvals = cf ? [...new Set(all.map(ck))].sort((a, b) => a.localeCompare(b, "es", { numeric: true })) : [null];
+    const cmpArr = (a, b) => { const A = JSON.parse(a), B = JSON.parse(b); for (let i = 0; i < A.length; i++) { const x = A[i], y = B[i]; const c = typeof x === "number" && typeof y === "number" ? x - y : String(x ?? "").localeCompare(String(y ?? ""), "es", { numeric: true }); if (c) return c; } return 0; };
+    let cvals = cf ? [...new Set(all.map(ck))].sort(cmpArr) : [null];
     const cell = new Map(all.map(r => [JSON.stringify([rf ? r.k[0] : null, ck(r)]), r.v]));
     const rowTot = rf ? query(v, ctx, [rf], ms, { scopeKeys: [D.fieldKey(rf)] }) : [];
     const rowTotMap = new Map(rowTot.map(r => [r.k[0], r.v]));
@@ -1100,7 +1172,7 @@
       const lastHdr = colsF.length - 1 + (ms.length > 1 ? 1 : 0);
       colsF.forEach((fc, lvl) => {
         const h = lvl === 0 ? h1 : el("tr");
-        h.appendChild(hcell(lvl === lastHdr ? (rf ? label(rf) : "") : label(fc), { left: O(v, "rowHeaders", "alignment") !== "Center" }));
+        h.appendChild(hcell(lvl === lastHdr ? (rf ? label(rf) : "") : label(fc), { left: !st.hAlign && O(v, "rowHeaders", "alignment") !== "Center" }));
         let i = 0;
         while (i < cvals.length) {   // celdas agrupadas del nivel
           let j = i + 1;
@@ -1109,22 +1181,29 @@
           h.appendChild(hcell(fmtCat(fc, cPart(cvals[i], lvl)), { span: (j - i) * ms.length }));
           i = j;
         }
-        if (colSub && lvl === 0) h.appendChild(hcell("Total", { span: ms.length, rows: colsF.length }));
+        if (colSub && lvl === 0) { const tc = hcell("Total", { span: ms.length, rows: colsF.length }); if (ms.length === 1 && isSorted(v, ms[0])) { const sm = sortMark(st.hFg); Object.assign(sm.style, { position: "absolute", right: "5px", bottom: "1px" }); tc.appendChild(sm); } h.appendChild(tc); }
         thead.appendChild(h);
       });
-      if (ms.length > 1) { const h2 = el("tr"); h2.appendChild(hcell(rf ? label(rf) : "", { left: O(v, "rowHeaders", "alignment") !== "Center" })); for (let i = 0; i < cvals.length + (colSub ? 1 : 0); i++) for (const m of ms) h2.appendChild(hcell(label(m))); thead.appendChild(h2); }
+      if (ms.length > 1) { const h2 = el("tr"); h2.appendChild(hcell(rf ? label(rf) : "", { left: !st.hAlign && O(v, "rowHeaders", "alignment") !== "Center" })); for (let i = 0; i < cvals.length + (colSub ? 1 : 0); i++) for (const m of ms) { const hc = hcell(label(m)); if (i === cvals.length && isSorted(v, m)) { const sm = sortMark(st.hFg); Object.assign(sm.style, { position: "absolute", left: "5px", bottom: "0" }); hc.appendChild(sm); } h2.appendChild(hc); } thead.appendChild(h2); }
     } else {
-      const h1 = el("tr"); h1.appendChild(hcell(rf ? label(rf) : "", { left: true })); for (const m of ms) h1.appendChild(hcell(label(m))); thead.appendChild(h1);
+      const h1 = el("tr"); const r0 = hcell(rf ? label(rf) : "", { left: !st.hAlign }); if (isSorted(v, rf)) r0.appendChild(sortMark(st.hFg)); h1.appendChild(r0);
+      for (const m of ms) { const hc = hcell(label(m)); if (isSorted(v, m)) hc.appendChild(sortMark(st.hFg)); h1.appendChild(hc); } thead.appendChild(h1);
+    }
+    if (cf) {   // el Power BI deja lugar para la flecha de orden debajo de la ultima fila de encabezados de la matriz
+      const trs = thead.querySelectorAll("tr"), last = trs[trs.length - 1];
+      const pb = Math.round(0.75 * st.hFs - 1) + "px";
+      last.querySelectorAll("th").forEach(th => { th.style.paddingBottom = pb; });
+      thead.querySelectorAll("th").forEach(th => { th.style.borderBottomColor = st.hBg; if (th.rowSpan > 1 || trs.length === 1) th.style.paddingBottom = pb; });
     }
     t.appendChild(thead);
     const tb = el("tbody");
     const vcell = (m, x, i, bold) => { const td = el("td", null, cellFmt(v, m, x)); Object.assign(td.style, { fontSize: st.vFs + "px", color: st.vFg, background: i % 2 ? st.vBg2 : st.vBg,
-      textAlign: "right", borderBottom: st.grid ? `1px solid ${st.gridColor}` : "0", borderRight: st.gridV ? `1px solid ${st.gridVColor}` : "0", fontWeight: bold ? "700" : "400" }); return td; };
+      textAlign: "right", borderBottom: `1px solid ${st.grid ? st.gridColor : "transparent"}`, borderRight: st.gridV ? `1px solid ${st.gridVColor}` : "0", fontWeight: bold ? "700" : "400" }); return td; };
     const grads = ms.map((m, j) => gradFn(v, m, all.map(r => r.v[j])));
     rvals.forEach((rv, i) => {
       const tr = el("tr");
-      const th = el("td", "rh", rf ? fmtCat(rf, rv) : ""); Object.assign(th.style, { fontSize: st.rhFs + "px", background: i % 2 ? st.vBg2 : st.vBg, borderBottom: st.grid ? `1px solid ${st.gridColor}` : "0",
-        textAlign: (O(v, "rowHeaders", "alignment") || "left").toLowerCase(), borderRight: `1px solid ${st.outline || "#0F3D6E"}` });
+      const th = el("td", "rh", rf ? fmtCat(rf, rv) : ""); Object.assign(th.style, { fontSize: st.rhFs + "px", background: i % 2 ? st.vBg2 : st.vBg, borderBottom: `1px solid ${st.grid ? st.gridColor : "transparent"}`,
+        textAlign: (O(v, "rowHeaders", "alignment") || "left").toLowerCase(), borderRight: `1px solid ${st.outline || TH.tableAccent || "#0F3D6E"}` });
       if (rv === "Balanz") th.style.fontWeight = "700";
       tr.appendChild(th);
       for (const c of cvals) { const vv = cell.get(JSON.stringify([rv, c])) || []; ms.forEach((m, j) => { const td = vcell(m, vv[j], i); if (grads[j]) td.style.background = grads[j](vv[j]); tr.appendChild(td); }); }
@@ -1132,7 +1211,7 @@
       tb.appendChild(tr);
     });
     if (rowSub && rf) {
-      const tr = el("tr", "pv-tot"); const th = el("td", "rh", "Total"); th.style.fontSize = st.totFs + "px"; th.style.textAlign = (O(v, "rowHeaders", "alignment") || "left").toLowerCase(); th.style.borderRight = `1px solid ${st.outline || "#0F3D6E"}`; tr.appendChild(th);
+      const tr = el("tr", "pv-tot"); const th = el("td", "rh", "Total"); th.style.fontSize = st.totFs + "px"; th.style.textAlign = (O(v, "rowHeaders", "alignment") || "left").toLowerCase(); th.style.borderRight = `1px solid ${st.outline || TH.tableAccent || "#0F3D6E"}`; tr.appendChild(th);
       const tc = (m, x) => { const td = vcell(m, x, 0, true); td.style.fontSize = st.totFs + "px"; return td; };
       for (const c of cvals) { const vv = cf ? (colTotMap.get(c) || []) : grand.v; ms.forEach((m, j) => tr.appendChild(tc(m, vv[j]))); }
       if (cf && colSub) ms.forEach((m, j) => tr.appendChild(tc(m, grand.v[j])));
@@ -1158,6 +1237,7 @@
       widths.forEach(w => { const c = el("col"); if (w != null) c.style.width = w + "px"; cg.appendChild(c); });
       t.prepend(cg);
       if (widths.every(x => x != null)) { t.style.tableLayout = "fixed"; t.style.width = widths.reduce((a, b) => a + b, 0) + "px"; }
+      if (widths[0] != null) t.querySelectorAll("td.rh").forEach(td => { Object.assign(td.style, { boxSizing: "border-box", width: widths[0] + "px", minWidth: widths[0] + "px", maxWidth: widths[0] + "px" }); });
     }
     const aligns = ms.map(m => propSel(v, "obj", "columnFormatting", "alignment", m.ref));
     if (aligns.some(Boolean)) tb.querySelectorAll("tr").forEach(tr => { const tds = [...tr.children].slice(1); tds.forEach((td, k) => { const a = aligns[k % ms.length]; if (a) td.style.textAlign = a.toLowerCase(); }); });

@@ -17,6 +17,10 @@ def main():
     m = {f"{r.tn}|{r.n}": r.f for r in q.itertuples() if isinstance(r.f, str)}
     q = db.query("SELECT t.Name tn, c.ExplicitName n, c.FormatString f FROM [Column] c JOIN [Table] t ON c.TableID=t.ID WHERE c.FormatString IS NOT NULL")
     c = {f"{r.tn}|{r.n}": r.f for r in q.itertuples() if isinstance(r.n, str) and not str(r.tn).startswith(("LocalDateTable", "DateTableTemplate"))}
+    # columnas decimales sin formato: el Power BI las muestra con separador de miles y 2 decimales
+    q = db.query("SELECT t.Name tn, c.ExplicitName n FROM [Column] c JOIN [Table] t ON c.TableID=t.ID WHERE c.FormatString IS NULL AND c.ExplicitDataType = 8")
+    for r in q.itertuples():
+        if isinstance(r.n, str) and not str(r.tn).startswith(("LocalDateTable", "DateTableTemplate")): c.setdefault(f"{r.tn}|{r.n}", "#,0.00")
     json.dump({"m": m, "c": c}, open(out, "w", encoding="utf-8"), ensure_ascii=False, indent=0, sort_keys=True)
     print("medidas", len(m), "columnas", len(c), "->", out)
 
