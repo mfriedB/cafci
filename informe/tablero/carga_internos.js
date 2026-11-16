@@ -54,7 +54,7 @@
       o.push({ fondo: limpio(g(r, "Fondo")), op, tipo_op: limpio(g(r, "Tipo_Operación")), especie: limpio(g(r, "Especie")), ticker: tick || null, fecha_txt: ft, fecha,
         anio: fecha ? +fecha.slice(0, 4) : null, trimestre: fecha ? "Qtr " + Math.ceil(+fecha.slice(5, 7) / 3) : null, categoria: cat, vn: num(g(r, "Valor Nominal")),
         moneda: mon, bruto, gastos: num(g(r, "Gastos_Concertación")), neto: num(g(r, "Neto_Concertación")), agente: ag, agente_norm: agn, tipo_especie: tipo,
-        monto_usd_mill: (pesos ? bruto / 1400 : bruto) / 1e6, _u: limpio(g(r, "Tipo_Operación")).toUpperCase() });
+        monto_usd_mill: (pesos ? bruto / ((fecha && window.M && M.tcAl && M.tcAl(fecha) || [0, 1400])[1]) : bruto) / 1e6, _u: limpio(g(r, "Tipo_Operación")).toUpperCase() });
     }
     // Categoría_Pase: hay una operación opuesta (compra/venta) del mismo fondo, especie, VN y agente a menos de 5 números
     const opu = { COMPRA: "VENTA", VENTA: "COMPRA" }, grp = new Map();
@@ -391,7 +391,7 @@
         <li><b>AUM interno, clientes e inversores</b>: modelo <i>DS Fondos - AM - Comisiones - Volumen - CuotaPartes</i> (área SelfService_Fondos) › <i>Abrir en la vista de consulta DAX</i>. Corré las 4 consultas de <code>informe/comite/consultas_dax.dax</code> y copiá cada resultado con <i>Copia › Toda la tabla</i>: pegalo abajo o guardalo como .txt.</li>
         <li><b>Plantillas de Excel</b> (<a href="https://github.com/mfriedB/cafci/tree/main/informe/plantillas" target="_blank" rel="noopener">bajarlas del repo</a>; cada una tiene una hoja de instrucciones): AUM y flujo por área comercial y fondo, clientes, inversores PH/PJ, fondos de terceros, emisiones primarias, fondos fuera de CAFCI, clientes excluidos (Ex Meli) y textos del mes.</li>
         <li><b>Cantidad de cuotapartistas</b> (hoja Tipo de Inversor): el Excel de la carpeta <i>Cantidad de Cuotapartistas</i>. No trae fecha: toma el mes del nombre del archivo si lo tiene (por ejemplo <i>cuotapartistas_2026-10.xlsx</i>) o el último mes cerrado, y lo podés cambiar antes de guardar. El AUM en pesos se pasa a dólares al dólar oficial vendedor del BCRA de esa fecha (cierre del mes, o la fecha del nombre del archivo), que el tablero baja solo todos los días. También arma la base de inversores (personas humanas y jurídicas) de la presentación del comité, sin correr la consulta DAX.</li>
-        <li><b>Compra/venta de especies</b> (slides de contrapartes): el mismo Excel que va a la carpeta <i>Compra_Venta_Contrapartes_</i>.</li>
+        <li><b>Compra/venta de especies</b> (slides de contrapartes): el mismo Excel que va a la carpeta <i>Compra_Venta_Contrapartes_</i>. Los montos en pesos se pasan a dólares al oficial vendedor del BCRA del día de cada operación.</li>
         <li>El tipo de archivo se reconoce solo; si se equivoca, cambialo en la lista antes de guardar.</li>
         <li>Si un archivo trae varios meses (por ejemplo el acumulado del año), se guarda solo el último. Para cargar el histórico de una vez, destildá <i>Guardar solo el último mes de cada archivo</i>.</li></ol></details>
       <div class="ci-zona" tabindex="0"><b>Arrastrá los archivos acá</b> o <label class="ci-btn">elegilos<input type="file" multiple accept=".xlsx,.xls,.xlsm,.txt,.csv,.tsv" hidden></label><div class="ci-sub">.xlsx, .txt, .csv – varios a la vez</div></div>

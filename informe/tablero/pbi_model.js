@@ -73,7 +73,12 @@
     tabla("Serie Facturación", se, { Fecha: r => r.F, "Facturación": r => r.v }, null);
     const cu = ((I.cuotapartistas || {}).filas || []).map(x => ({ f: x.Fondo, c: x.categoria_tipo_inversor, v: x.importe_usd_mill, n: x.cuotapartistas }));
     tabla("Cantidad de Cuotapartistas", cu, { Fondo: r => r.f, "Categoria Tipo Inversor": r => r.c, Cuotapartista: r => r.n }, null);
-    const cv = (I.contrapartes || []).map(x => Object.assign({ F: x.fecha }, x));
+    // pesos a USD al dólar oficial vendedor del BCRA del día de cada operación (si no hay serie, 1.400 como el Power BI)
+    const tcCv = f => { const x = f && M.tcAl ? M.tcAl(String(f).slice(0, 10)) : null; return x ? x[1] : 1400; };
+    const cv = (I.contrapartes || []).map(x => {
+      const mon = String(x.moneda || ""), pesos = mon.includes("$") && !mon.includes("U");
+      return Object.assign({ F: x.fecha }, x, x.bruto != null ? { monto_usd_mill: (pesos ? x.bruto / tcCv(x.fecha) : x.bruto) / 1e6 } : {});
+    });
     tabla("Compra_Venta_Contrapartes_", cv, {
       Agente: r => r.agente, Agente_Norm: r => r.agente_norm, "Bruto_Concertación": r => r.bruto, "Categoría_Pase": r => r.categoria_pase,
       "Categoría": r => r.categoria, Especie: r => r.especie, Fecha: r => r.F, Fecha_Concertacion: r => r.fecha_txt, Fondo: r => r.fondo,

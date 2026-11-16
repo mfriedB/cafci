@@ -129,10 +129,30 @@ def contrapartes(base):
     f = pd.to_datetime(o.fecha_txt.str[:10], format="%d/%m/%Y", errors="coerce")
     o["fecha"] = f.dt.date.astype(str); o["trimestre"] = "Qtr " + f.dt.quarter.astype("Int64").astype(str); o["anio"] = f.dt.year
     es_pesos = o.moneda.str.contains(r"\$", regex=True) & ~o.moneda.str.contains("U", regex=False)
-    o["monto_usd_mill"] = o.bruto.where(~es_pesos, o.bruto / 1400) / 1e6
+    # pesos a USD al dolar oficial vendedor del BCRA del dia de la operacion (1400 si no hay dato, como el Power BI)
+    tc = tc_oficial_serie(o.fecha[o.fecha != "NaT"].min(), o.fecha[o.fecha != "NaT"].max()) if (o.fecha != "NaT").any() else None
+    if tc is not None and len(tc):
+        f = pd.to_datetime(o.fecha, errors="coerce")
+        v = pd.merge_asof(pd.DataFrame({"f": f, "i": range(len(o))}).dropna().sort_values("f"), tc, left_on="f", right_on="fecha", direction="backward").set_index("i").valor
+        tcv = pd.Series(range(len(o))).map(v).fillna(1400).values
+    else: tcv = 1400
+    o["monto_usd_mill"] = o.bruto.where(~es_pesos, o.bruto / tcv) / 1e6
     cols = ["fondo", "op", "tipo_op", "especie", "ticker", "fecha_txt", "fecha", "anio", "trimestre", "categoria", "categoria_pase", "vn",
             "moneda", "bruto", "gastos", "neto", "agente", "agente_norm", "tipo_especie", "monto_usd_mill"]
     return json.loads(o[cols].to_json(orient="records", force_ascii=False))
+
+
+def tc_oficial_serie(desde, hasta):
+    """Serie diaria del dolar oficial vendedor del BCRA entre dos fechas (DataFrame fecha, valor); None si falla."""
+    import urllib.request
+    try:
+        d0 = pd.Timestamp(desde) - pd.Timedelta(days=15); url = f"https://api.bcra.gob.ar/estadisticas/v4.0/Monetarias/4?desde={d0:%Y-%m-%d}&hasta={pd.Timestamp(hasta):%Y-%m-%d}&limit=1000"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (informe-gestion-fci)", "Accept": "application/json"})
+        with urllib.request.urlopen(req, timeout=60) as r: d = json.load(r)
+        t = pd.DataFrame([(x["fecha"], float(x["valor"])) for res in d.get("results", []) for x in res.get("detalle", [])], columns=["fecha", "valor"])
+        t["fecha"] = pd.to_datetime(t.fecha); return t.sort_values("fecha")
+    except Exception as e:
+        print("aviso: sin dolar oficial del BCRA:", e); return None
 
 
 def tc_oficial_al(fecha):

@@ -11,6 +11,8 @@
   /* Industria FCI - AUM Resumen: "AUM por Moneda de Suscripción" -> "Composición por Moneda según Gerente"
      (100% por tipo de gerente, ARS y USD, con el AUM total de cada fila y la industria abajo) */
   C.push({ hoja: "Industria FCI - AUM Resumen", id: "354eade8e481f50a7570", texto: "Composición por Moneda según Gerente" });
+  /* Compraventa a Contrapartes: los pesos se dolarizan al oficial vendedor del BCRA de cada fecha (antes, 1.400 fijo) */
+  C.push({ hoja: "Compraventa a Contrapartes: Montos", id: "96ea618686bb0cb03467", texto: "Montos en millones de USD, los $ dolarizados al dólar oficial vendedor del BCRA de cada operación" });
   C.push({ hoja: "Industria FCI - AUM Resumen", id: "ed7a3bd05e7571b7549c", dibujar(v, env, R) {
     const { body } = R.container(v, env.host, null);
     const ctx = R.visualCtx(env.page, env.st, v);
