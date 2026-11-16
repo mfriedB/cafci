@@ -3,7 +3,7 @@
 //   clase: Codigo CAFCI (una o varias) | codigo: Codigo CNV (usa la cuota de referencia de cada fondo)
 //   base100=1: base 100 al inicio | moneda: original (default) | ars | usd (convertido con promedio MEP-CCL del dia)
 //   Periodo maximo: 400 dias.
-const { indice, diarioCols, dolar, bajar, parseCSV, responder, manejar } = require("./_lib");
+const { indice, diarioCols, dolar, bajar, parseCSV, responder, manejar } = require("../_lib");
 const dia = s => new Date(s + "T00:00:00Z"), iso = d => d.toISOString().slice(0, 10);
 module.exports = manejar(async (req, res) => {
   const q = req.query;

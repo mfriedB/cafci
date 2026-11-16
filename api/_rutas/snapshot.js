@@ -8,7 +8,7 @@
 //   filtros: tipo, subtipo, gerente, tipo_gerente, fondo, codigo (Codigo CNV); incluir_596=1 suma fondos del Decreto 596
 // Montos en millones. Porcentajes: susc_netas_pct y rendimiento_pct sobre el patrimonio de inicio; honorarios_*_pct anuales
 // (honorarios del periodo / patrimonio promedio, anualizado).
-const { indice, diarioCols, dolar, contiene, responder, manejar } = require("./_lib");
+const { indice, diarioCols, dolar, contiene, responder, manejar } = require("../_lib");
 const COLS = ["fecha", "codigo_cafci", "codigo_cnv", "fondo_clase", "fondo_1816", "fondo", "gerente_1816", "gerente", "tipo_gerente",
   "categoria_1816", "subcategoria_1816", "moneda", "depositaria", "decreto_596", "patrimonio_ars", "flujo_ars", "hon_sg", "hon_sd"];
 const C = Object.fromEntries(COLS.map((c, i) => [c, i]));

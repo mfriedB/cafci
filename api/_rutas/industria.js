@@ -1,5 +1,5 @@
 // GET /api/industria?desde=2026-01&por=categoria   (por = total | categoria | subcategoria | gerente | tipo_gerente)
-const { indice, mensual, meses, contiene, responder, manejar } = require("./_lib");
+const { indice, mensual, meses, contiene, responder, manejar } = require("../_lib");
 const M = ["AUM_promedio", "AUM_Inicial", "AUM_Final", "Susc_Netas", "Rendimiento", "Facturacion_Gerente", "Facturacion_Depo"];
 module.exports = manejar(async (req, res) => {
   const q = req.query, por = (q.por || "total").toLowerCase();

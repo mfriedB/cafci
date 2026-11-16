@@ -1,5 +1,5 @@
 // GET /api/fondos?mes=2026-10&gerente=Balanz&categoria=Money%20Market&subcategoria=MM%20ARS&tipo_gerente=Bancaria&fondo=ahorro&codigo=123
-const { mensual, contiene, responder, manejar } = require("./_lib");
+const { mensual, contiene, responder, manejar } = require("../_lib");
 module.exports = manejar(async (req, res) => {
   const q = req.query;
   const { meta, filas } = await mensual(q.mes);

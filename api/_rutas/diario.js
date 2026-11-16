@@ -3,7 +3,7 @@
 // por=fondo (default) | gerente | categoria | subcategoria | tipo_gerente | total  agrega por fecha.
 // Filtros: codigo (Codigo CNV, varios con coma), fondo, gerente, categoria, subcategoria, tipo_gerente. Maximo 13 meses.
 const zlib = require("zlib");
-const { bajar, parseCSV, indice, meses, contiene, responder, manejar } = require("./_lib");
+const { bajar, parseCSV, indice, meses, contiene, responder, manejar } = require("../_lib");
 module.exports = manejar(async (req, res) => {
   const q = req.query, idx = await indice();
   const ult = idx.mensual[idx.mensual.length - 1].hasta;

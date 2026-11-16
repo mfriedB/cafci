@@ -2,7 +2,7 @@
 // Indicadores precalculados por scripts/insights.py (procesado/insights/). Filtros de texto: gerente, fondo, categoria,
 // subcategoria, campo; codigo (Codigo CNV); solo_alertas=1 (alertas); confirmados=1 (cambios: sin provisorios);
 // desde/hasta (cambios: fecha, concentracion: mes); grupo, eje (estacionalidad); top=N; formato=csv
-const { bajar, parseCSV, contiene, responder, manejar } = require("./_lib");
+const { bajar, parseCSV, contiene, responder, manejar } = require("../_lib");
 const TIPOS = ["alertas", "liquidez", "estacionalidad", "sensibilidad", "fees", "concentracion", "cambios"];
 module.exports = manejar(async (req, res) => {
   const q = req.query, tipo = (q.tipo || "resumen").toLowerCase();

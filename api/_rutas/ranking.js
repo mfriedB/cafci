@@ -1,5 +1,5 @@
 // GET /api/ranking?mes=2026-10&por=gerente&metrica=AUM_promedio&top=30
-const { mensual, contiene, responder, manejar } = require("./_lib");
+const { mensual, contiene, responder, manejar } = require("../_lib");
 module.exports = manejar(async (req, res) => {
   const q = req.query, por = (q.por || "gerente").toLowerCase(), met = q.metrica || "AUM_promedio", top = Number(q.top || 30);
   const { meta, filas } = await mensual(q.mes);

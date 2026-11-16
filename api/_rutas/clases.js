@@ -1,5 +1,5 @@
 // GET /api/clases?mes=2026-11&codigo=1234   (codigo = Codigo CNV del fondo; clase = Codigo CAFCI de la clase)
-const { diario, contiene, responder, manejar } = require("./_lib");
+const { diario, contiene, responder, manejar } = require("../_lib");
 module.exports = manejar(async (req, res) => {
   const q = req.query;
   if (!q.mes) { const e = new Error("Indicar mes=AAAA-MM"); e.status = 400; throw e; }

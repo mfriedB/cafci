@@ -1,5 +1,5 @@
 // GET /api/serie?codigo=1234,5678&desde=2026-01&hasta=2026-11   (o fondo=texto / gerente=texto)
-const { indice, mensual, meses, contiene, responder, manejar } = require("./_lib");
+const { indice, mensual, meses, contiene, responder, manejar } = require("../_lib");
 module.exports = manejar(async (req, res) => {
   const q = req.query;
   if (!q.codigo && !q.fondo && !q.gerente) { const e = new Error("Indicar codigo, fondo o gerente"); e.status = 400; throw e; }

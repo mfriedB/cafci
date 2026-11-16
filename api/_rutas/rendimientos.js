@@ -6,7 +6,7 @@
 //   filtros: tipo, subtipo, gerente, tipo_gerente, fondo (texto), codigo (Codigo CNV), clase (Codigo CAFCI), moneda_clase
 //   orden: 1D | 7D | MTD | 30D (default) | 90D | YTD | 365D ; top
 // Columnas pos_<v>: puesto dentro del subtipo 1816 (1 = mayor rendimiento) entre las cuotas listadas.
-const { bajar, parseCSV, contiene, responder, manejar } = require("./_lib");
+const { bajar, parseCSV, contiene, responder, manejar } = require("../_lib");
 const V = ["1D", "7D", "MTD", "30D", "90D", "YTD", "365D"];
 module.exports = manejar(async (req, res) => {
   const q = req.query;
