@@ -707,7 +707,7 @@
     const y2Axis = y2.length ? { type: "value", scale: true, show: false, splitLine: { show: false },
       min: O(v, "y2Axis", "secStart", O(v, "valueAxis", "secStart")), max: O(v, "y2Axis", "secEnd", O(v, "valueAxis", "secEnd")), axisLabel: { show: false, formatter: fmtAxis(y2[0]) } } : null;
     if (y2Axis) {   // eje secundario oculto: la linea usa todo el alto, como el Power BI
-      if (typeof y2Axis.min !== "number") y2Axis.min = m => m.min - (m.max - m.min) * 0.06;
+      if (typeof y2Axis.min !== "number") { const pad = O(v, "labels", "optimizeLabelDisplay", true) === false ? 0.14 : 0.06; y2Axis.min = m => m.min - (m.max - m.min) * pad; }
       if (typeof y2Axis.max !== "number") y2Axis.max = m => m.max + (m.max - m.min) * 0.04;
     }
     const catAxis = {
@@ -755,6 +755,11 @@
         data: s.data.map((x, i) => {
           const o2 = {};
           if (isBar && pos === "top" && x != null && x < 0) o2.label = { position: horizontal ? "left" : "bottom" };
+          // todas las etiquetas visibles y sin lugar entre puntos: se escalonan en dos alturas para que no se pisen
+          if (!isBar && x != null && showSer && O(v, "labels", "optimizeLabelDisplay", true) === false && i % 2 === 1) {
+            const lw = R.textW(fmt(x), lo.fontSize, lo.bold ? "bold" : "normal") + 8;
+            if (lw > plotW / Math.max(1, cats.length)) o2.label = Object.assign(o2.label || {}, { position: "bottom", distance: 6 });
+          }
           // lineas con posicion automatica: la serie de abajo lleva la etiqueta debajo del punto, como el Power BI
           if (!isBar && x != null && /Auto/i.test(lo.pos || "Auto") && series.filter(z => z.type !== "bar").length > 1) {
             const otros = series.filter(z => z !== s && z.type !== "bar" && z.axis === s.axis).map(z => z.data[i]).filter(y => y != null);
@@ -767,7 +772,7 @@
         label: { show: !!showSer, position: pos, fontSize: lo.fontSize, color: lo.color || (/inside/i.test(pos) ? "#FFFFFF" : TH.foregroundNeutralSecondary || "#605E5C"), fontWeight: lo.bold ? "bold" : "normal",
           fontFamily: lo.family, backgroundColor: lo.bg || "transparent", padding: lo.bg ? [1, 3] : 0,
           formatter: p => { if (p.value == null) return ""; if (!isBar && every > 1 && p.dataIndex % every !== (cats.length - 1) % every) return ""; return fmt(p.value); } },
-        labelLayout: { hideOverlap: isBar ? O(v, "labels", "optimizeLabelDisplay", true) !== false : true },
+        labelLayout: { hideOverlap: O(v, "labels", "optimizeLabelDisplay", true) !== false },   // "optimizar etiquetas" apagado en el PBI: se ven todas
         emphasis: { disabled: true }
       };
       if (!isBar) Object.assign(o, { symbol: marker ? "circle" : "none", symbolSize: O(v, "lineStyles", "markerSize", 5) * 1.6, showSymbol: marker || !!showSer, connectNulls: true,
@@ -803,7 +808,7 @@
     }
     if (!showVal && (isLineKind || series.every(x => x.type === "line"))) {
       valAxis.scale = true;
-      if (valAxis.min === undefined) valAxis.min = m => m.min - (m.max - m.min) * 0.06;
+      if (valAxis.min === undefined) { const pad = O(v, "labels", "optimizeLabelDisplay", true) === false ? 0.14 : 0.06; valAxis.min = m => m.min - (m.max - m.min) * pad; }
       if (valAxis.max === undefined) valAxis.max = m => m.max + (m.max - m.min) * 0.04;
     }
     const legV = legW > 0, grid = { left: 6 + (legV && /^Left/.test(lpos) ? legW : 0), right: (horizontal ? rightLab : Math.max(rightLab, 14 + endLab)) + (legV && /^Right/.test(lpos) ? legW : 0), top: (showLegend && !legV && !/^Bottom/.test(lpos) ? 30 : 10) + lblTop, bottom: (showLegend && /^Bottom/.test(lpos) ? 24 : 6), containLabel: true };
