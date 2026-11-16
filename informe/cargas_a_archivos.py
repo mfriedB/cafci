@@ -99,6 +99,11 @@ def main():
             filas += [dict(zip(d["cols"], f)) for d in ds for f in d["filas"]]
             I["contrapartes"] = filas
             print(f"contrapartes: meses de la carga manual {sorted(meses)}")
+        ds = sorted(por.get("cuotapartistas", []), key=lambda d: d["mes"])   # cuotapartistas: vale la foto más nueva
+        if ds:
+            u = ds[-1]
+            I["cuotapartistas"] = {"archivo": u.get("archivo"), "filas": [dict(zip(u["cols"], f)) for f in u["filas"]]}
+            print(f"cuotapartistas: carga manual de {u['mes']}")
         json.dump(I, open(a.internos, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"), default=str)
     if a.extras: extras(por, a.extras)
 

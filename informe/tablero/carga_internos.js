@@ -70,6 +70,24 @@
     return { tipo: "compraventa", meses };
   }
 
+  /* Cantidad de Cuotapartistas (foto del momento, sin fecha): mismas reglas que internos.py → cuotapartistas().
+     Se guarda en el mes en que se sube; vale la foto más nueva. */
+  const TIPO_INV = {"Agentes de Colocacion y distribucion Integral de FCIs": "ACDIs", "Cajas de Prevision": "Institucionales", "Compañias de Seguros": "Institucionales", "Inversores Corporativo.": "Corporativos", "Inversores Corporativos": "Corporativos", "Personas Humanas Argentinas Mayores de Edad": "P. Humanas", "Personas Humanas con Residencia en el Exterior": "P. Humanas", "Pymes": "PyMEs", "Aseguradoras de Riesgos de Trabajo": "Institucionales", "Personas Humanas Argentinas Menores de Edad": "P. Humanas", "Entidades Financieras Autorizadas por el BCRA": "Institucionales", "Fondos Comunes de Inversion": "Institucionales", "Personas Jurídicas con Residencia en el Exterior": "Institucionales"};
+  function cuotapartistas(tab) {
+    const hn = tab[0].map(c => limpio(c)), ix = n => hn.indexOf(n);
+    const falta = ["Fondo", "Tipo Inversor", "Importe", "Moneda", "Cuotapartista"].filter(n => ix(n) < 0);
+    if (falta.length) throw new Error("Faltan columnas de cuotapartistas: " + falta.join(", "));
+    const acc = new Map();
+    for (const r of tab.slice(1)) {
+      if (!r || !limpio(r[ix("Fondo")])) continue;
+      const t = limpio(r[ix("Tipo Inversor")]), cat = TIPO_INV[t] || t, k = limpio(r[ix("Fondo")]) + "|" + cat;
+      const imp = num(r[ix("Importe")]), usd = (limpio(r[ix("Moneda")]) !== "$" ? imp : imp / 1535) / 1e6;
+      const x = acc.get(k) || { f: limpio(r[ix("Fondo")]), c: cat, v: 0, n: new Set() }; x.v += usd; x.n.add(limpio(r[ix("Cuotapartista")])); acc.set(k, x);
+    }
+    const hoy = new Date(), mes = `${hoy.getFullYear()}-${pad(hoy.getMonth() + 1)}`;
+    return { tipo: "cuotapartistas", meses: { [mes]: [...acc.values()].map(x => [x.f, x.c, x.v, x.n.size]) } };
+  }
+
   const TIPOS = {
     com_unidad: { nombre: "Facturación por unidad de negocio", cols: ["unidad", "comisiones"], unidad: "USD" },
     com_fondo: { nombre: "Facturación por fondo", cols: ["fondo", "comisiones"], unidad: "USD" },
@@ -82,7 +100,8 @@
     cerrados: { nombre: "Fondos fuera de CAFCI (cerrados, FCICC)", cols: ["fondo", "aum", "fact"], unidad: "USD" },
     exclusiones: { nombre: "Clientes excluidos (Ex Meli)", cols: ["cliente", "motivo"], unidad: "" },
     textos: { nombre: "Textos del mes (acciones, destacados, ratings, follow-ups)", cols: ["seccion", "texto"], unidad: "" },
-    compraventa: { nombre: "Compra/venta de especies de los fondos (contrapartes)", cols: CV_COLS, unidad: "USD" }
+    compraventa: { nombre: "Compra/venta de especies de los fondos (contrapartes)", cols: CV_COLS, unidad: "USD" },
+    cuotapartistas: { nombre: "Cantidad de cuotapartistas por fondo y tipo de inversor", cols: ["Fondo", "categoria_tipo_inversor", "importe_usd_mill", "cuotapartistas"], unidad: "USD" }
   };
   /* Plantillas Excel (una hoja, encabezados en la primera fila). Las de AUM, clientes e inversores reemplazan a las
      consultas DAX y se guardan con el mismo formato. Columnas: nombre normalizado → posibles encabezados. */
@@ -179,7 +198,10 @@
     // 4) compra/venta de especies (Compra_Venta_Contrapartes_)
     if ((!forzar || forzar === "compraventa") && idx("Operación_Numero") >= 0 && idx("Tipo de Especie") >= 0) return compraventa(tab);
     if (forzar === "compraventa") return compraventa(tab);
-    // 5) plantillas Excel de Claude
+    // 5) cantidad de cuotapartistas
+    if ((!forzar || forzar === "cuotapartistas") && idx("Tipo Inversor") >= 0 && idx("Cuotapartista") >= 0) return cuotapartistas(tab);
+    if (forzar === "cuotapartistas") return cuotapartistas(tab);
+    // 6) plantillas Excel de Claude
     const hn = (tab[0] || []).map(norm);
     const pos = alias => { for (const a of alias) { const i = hn.indexOf(a); if (i >= 0) return i; } return -1; };
     const cand = PLANT.filter(p => !forzar || p.tipo === forzar || (forzar === "aum_unidad" && p.tipo === "aum_unidad_fondo"))
@@ -291,6 +313,11 @@
       for (const d of cv) for (const f of d.filas) out.push(Object.fromEntries(CV_COLS.map((c, k) => [c, f[k]])));
       I.contrapartes = out;
     } else I.contrapartes = base.contrapartes;
+    const cq = datos("cuotapartistas");
+    if (!base.cuotapartistas) base.cuotapartistas = I.cuotapartistas || { archivo: null, filas: [] };
+    if (cq.length) { const u = cq[cq.length - 1];
+      I.cuotapartistas = { archivo: u.archivo, filas: u.filas.map(f => ({ Fondo: f[0], categoria_tipo_inversor: f[1], importe_usd_mill: f[2], cuotapartistas: f[3] })) };
+    } else I.cuotapartistas = base.cuotapartistas;
     I.manual = {};
     for (const t of ORDEN) { const docs = datos(t); if (docs.length) I.manual[t] = docs; }
     try { if (window.D && D.build) D.build(); } catch (e) { console.error(e); }
@@ -301,11 +328,11 @@
   const mesTxt = m => { if (m === "fijo") return "sin mes"; const [y, mm] = m.split("-"); return ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"][+mm - 1] + "-" + y.slice(2); };
   const rango = ms => (ms.length ? mesTxt(ms[0]) + (ms.length > 1 ? " a " + mesTxt(ms[ms.length - 1]) : "") : "–");
   function total(tipo, filas) {
-    const c = { com_unidad: 1, com_fondo: 1, aum_unidad: 1, aum_unidad_fondo: 2, clientes: 2, inversores: 3, terceros: 2, emisiones: 2, cerrados: 2, compraventa: 19 }[tipo];
+    const c = { com_unidad: 1, com_fondo: 1, aum_unidad: 1, aum_unidad_fondo: 2, clientes: 2, inversores: 3, terceros: 2, emisiones: 2, cerrados: 2, compraventa: 19, cuotapartistas: 2 }[tipo];
     return c == null ? filas.length : filas.reduce((a, r) => a + (+r[c] || 0), 0);
   }
   const queMide = t => ({ com_unidad: "Facturación USD", com_fondo: "Facturación USD", inversores: "AUM", clientes: "AUM USD",
-    terceros: "AUM ARS", emisiones: "Facturación USD", cerrados: "Facturación USD", exclusiones: "Clientes", textos: "Textos", compraventa: "Monto USD mill." })[t] || "AUM USD";
+    terceros: "AUM ARS", emisiones: "Facturación USD", cerrados: "Facturación USD", exclusiones: "Clientes", textos: "Textos", compraventa: "Monto USD mill.", cuotapartistas: "AUM USD mill." })[t] || "AUM USD";
   const nuevoId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   // partes de hasta ~180 KB (límite de 256 KB por documento)
   function partir(filas) {
@@ -326,6 +353,7 @@
         <li><b>Facturación</b>: Power BI Service › <i>Rporte de Comision por Fondos v2</i> › página <i>Fondos YTD</i>. En la matriz grande: <i>Más opciones › Exportar datos › Datos con diseño actual</i> (.xlsx), una vez con <i>Analisis por = Unidad Negocio</i> y otra con <i>Fondos</i>. También sirven los Excel mensuales de las carpetas (<i>comisiones_fci_*.xlsx</i>, <i>comisiones_fondo_*.xlsx</i>).</li>
         <li><b>AUM interno, clientes e inversores</b>: modelo <i>DS Fondos - AM - Comisiones - Volumen - CuotaPartes</i> (área SelfService_Fondos) › <i>Abrir en la vista de consulta DAX</i>. Corré las 4 consultas de <code>informe/comite/consultas_dax.dax</code> y copiá cada resultado con <i>Copia › Toda la tabla</i>: pegalo abajo o guardalo como .txt.</li>
         <li><b>Plantillas de Excel</b> (<a href="https://github.com/mfriedB/cafci/tree/main/informe/plantillas" target="_blank" rel="noopener">bajarlas del repo</a>; cada una tiene una hoja de instrucciones): AUM y flujo por área comercial y fondo, clientes, inversores PH/PJ, fondos de terceros, emisiones primarias, fondos fuera de CAFCI, clientes excluidos (Ex Meli) y textos del mes.</li>
+        <li><b>Cantidad de cuotapartistas</b> (hoja Tipo de Inversor): el Excel de la carpeta <i>Cantidad de Cuotapartistas</i>. No trae fecha: se guarda en el mes en que lo subís.</li>
         <li><b>Compra/venta de especies</b> (slides de contrapartes): el mismo Excel que va a la carpeta <i>Compra_Venta_Contrapartes_</i>.</li>
         <li>El tipo de archivo se reconoce solo; si se equivoca, cambialo en la lista antes de guardar.</li>
         <li>Si un archivo trae varios meses (por ejemplo el acumulado del año), se guarda solo el último. Para cargar el histórico de una vez, destildá <i>Guardar solo el último mes de cada archivo</i>.</li></ol></details>
