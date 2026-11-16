@@ -203,12 +203,13 @@ def main():
     D = pd.concat([D, A], ignore_index=True).sort_values(["prio", "planilla"])
     D = D.drop_duplicates(["codigo_cafci", "fecha_dato"], keep="last")
     D["fecha"] = D.fecha_dato
-    # clases nuevas: las primeras planillas a veces traen el codigo CNV vacio; se completa con el de la misma clase
-    # (si no, la suscripcion inicial queda fuera del fondo; ej. Mills M1000 Balanceado Pesos, 05/05/2026)
+    # codigo CNV de cada clase = el ultimo informado: en las primeras planillas de una clase nueva a veces viene vacio
+    # o con otro codigo (ej. Mills M1000 Balanceado Pesos, 04-05/05/2026, con codigo 73); si no, la suscripcion
+    # inicial queda en otro fondo
     cn = pd.to_numeric(D.codigo_cnv, errors="coerce")
-    mapa = pd.Series(cn.values, index=D.codigo_cafci.values).dropna()
-    mapa = mapa[~mapa.index.duplicated(keep="last")]
-    D["codigo_cnv"] = cn.where(cn.notna(), D.codigo_cafci.map(mapa)).round().astype("Int64")
+    orden = pd.DataFrame({"c": D.codigo_cafci.values, "f": D.fecha.values, "n": cn.values}).dropna(subset=["n"]).sort_values("f")
+    mapa = orden.drop_duplicates("c", keep="last").set_index("c").n
+    D["codigo_cnv"] = D.codigo_cafci.map(mapa).where(D.codigo_cafci.isin(mapa.index), cn).round().astype("Int64")
     D = limpiar(D)
     D = migraciones(D)
     for c in ["vcp", "vcp_ant", "vcp_reexp_ars", "ccp", "ccp_ant", "patrimonio", "patrimonio_ant", "hon_sg", "hon_sd"]:
