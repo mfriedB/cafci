@@ -1,6 +1,7 @@
 """Actualiza las slides 4 a 9 de la Call de Fondos sin pasar por Power BI ni por 1816.
 
-Datos: base oficial CAFCI/CNV publicada en GitHub (repo mfriedB/cafci, carpeta procesado/).
+Datos: base oficial CAFCI/CNV via la API https://cafci.vercel.app/api/fondos (respaldo: rama datos del repo mfriedB/cafci, procesado/).
+El script vigente se baja con: curl -sfL -o call_fondos.py "https://cafci.vercel.app/api/script?nombre=call_fondos.py"
 La base ya trae la clasificacion de 1816 (tipo, subtipo, nombre del fondo, gerente corto y tipo de gerente; ver
 mapeo/ y scripts/taxonomia.py), asi que no hace falta ningun archivo local.
 
@@ -19,7 +20,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
 
-BASE_URL = "https://raw.githubusercontent.com/mfriedB/cafci/datos/procesado/"
+API_URL = os.environ.get("CAFCI_API", "https://cafci.vercel.app/api")
+BASE_URL = "https://raw.githubusercontent.com/mfriedB/cafci/datos/procesado/"   # respaldo si la API no responde
 AQUI = os.path.dirname(os.path.abspath(__file__))
 NAVY, LIGHT, BZ, IND, VIOLET, GRISAZ, TITLE = "#2B3270", "#5B84D1", "#6B5CFF", "#232A5C", "#7400F5", "#5E7AA6", "#2E3283"
 MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
@@ -32,10 +34,22 @@ DPI = 100
 def leer_url(nombre):
     with urllib.request.urlopen(BASE_URL + nombre, timeout=120) as r: return r.read()
 
+def leer_api(mes):
+    with urllib.request.urlopen(f"{API_URL}/fondos?mes={mes}&formato=csv", timeout=120) as r: return r.read()
+
 def cargar(desde="2025-12"):
-    idx = json.loads(leer_url("index.json"))
-    meses = [m for m in idx["mensual"] if m["mes"] >= desde]
-    D = pd.concat([pd.read_csv(io.BytesIO(leer_url(m["archivo"]))) for m in meses], ignore_index=True)
+    """Base mensual por fondo desde la API (cafci.vercel.app/api/fondos); si la API no responde, lee procesado/ de la rama datos."""
+    try:
+        with urllib.request.urlopen(f"{API_URL}/fondos", timeout=60) as r: ult = json.loads(r.read())["mes"]
+        meses = [str(m) for m in pd.period_range(desde, ult, freq="M")]
+        D = pd.concat([pd.read_csv(io.BytesIO(leer_api(m))) for m in meses], ignore_index=True)
+        idx = {"fuente": API_URL}
+        print("datos: API", API_URL, "| meses", meses[0], "a", meses[-1])
+    except Exception as e:
+        print("API no disponible (", e, ") -> uso la rama datos de GitHub")
+        idx = json.loads(leer_url("index.json"))
+        meses = [m for m in idx["mensual"] if m["mes"] >= desde]
+        D = pd.concat([pd.read_csv(io.BytesIO(leer_url(m["archivo"]))) for m in meses], ignore_index=True)
     D["mes"] = D.Fecha.str[:7]
     D["Gerente_corto"] = D.Gerente
     D["Tipo_Gerente"] = D.Tipo_Gerente.map({"Bancaria": "Bancarias"}).fillna("Independientes")

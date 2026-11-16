@@ -74,6 +74,7 @@ Carpeta `api/` (funciones serverless de Vercel, sin dependencias). Lee la misma 
 | `/api/rendimientos` | `/api/rendimientos?subtipo=MM%20ARS&orden=30D&expresion=tna` (Ranking de 1816) |
 | `/api/vcp` | `/api/vcp?codigo=876&desde=2026-01-01&base100=1` (Series de VCP) |
 | `/api/taxonomia` | `/api/taxonomia?fuente=regla` (clasificación 1816 de cada fondo) |
+| `/api/script` | `/api/script?nombre=call_fondos.py` (versión vigente del script de la Call de Fondos, para bajarlo con curl) |
 
 Los filtros de texto no distinguen mayúsculas ni acentos. Montos en millones de ARS.
 

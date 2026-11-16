@@ -4,7 +4,7 @@ const RUTAS = {
   clases: require("./_rutas/clases"), dashboard: require("./_rutas/dashboard"), diario: require("./_rutas/diario"),
   dolar: require("./_rutas/dolar"), fondos: require("./_rutas/fondos"), industria: require("./_rutas/industria"),
   insights: require("./_rutas/insights"), ranking: require("./_rutas/ranking"), rendimientos: require("./_rutas/rendimientos"),
-  serie: require("./_rutas/serie"), snapshot: require("./_rutas/snapshot"), taxonomia: require("./_rutas/taxonomia"),
+  script: require("./_rutas/script"), serie: require("./_rutas/serie"), snapshot: require("./_rutas/snapshot"), taxonomia: require("./_rutas/taxonomia"),
   vcp: require("./_rutas/vcp"),
 };
 module.exports = (req, res) => {
