@@ -127,7 +127,7 @@
       C.estado = "ok";
       aplicar();
     } catch (e) { console.error(e); C.estado = "error"; C.err = e.message || String(e); }
-    if (window.APP && APP.rerender) APP.rerender();
+    finally { if (window.APP && APP.rerender) APP.rerender(); }
   }
 
   /* ---- mezcla con los datos de la carpeta (data/internos.json): la carga manual gana mes por mes ---- */
@@ -217,8 +217,11 @@
     }
     function controles(ok) {   // facturación por unidad y por fondo del mismo mes tienen que sumar lo mismo
       const u = ok.find(p => p.tipo === "com_unidad"), f = ok.find(p => p.tipo === "com_fondo"); if (!u || !f) return "";
-      return Object.keys(u.meses).filter(m => f.meses[m]).map(m => { const a = total("com_unidad", u.meses[m]), b = total("com_fondo", f.meses[m]);
-        const d = Math.abs(a - b) / Math.max(1, a); return `<div class="${d > 0.01 ? "mal" : "bien"}">${mesTxt(m)}: por unidad USD ${fmt(a)} · por fondo USD ${fmt(b)} ${d > 0.01 ? "⚠ no coinciden" : "✓"}</div>`; }).join("");
+      const ms = Object.keys(u.meses).filter(m => f.meses[m]).sort();
+      const mal = ms.filter(m => { const a = total("com_unidad", u.meses[m]), b = total("com_fondo", f.meses[m]); return Math.abs(a - b) / Math.max(1, a) > 0.01; });
+      const ult = ms[ms.length - 1];
+      return (ult ? `<div class="bien">Control: la facturación por unidad y por fondo coincide en ${ms.length - mal.length} de ${ms.length} meses (${mesTxt(ult)}: USD ${fmt(total("com_unidad", u.meses[ult]))}).</div>` : "")
+        + mal.map(m => `<div class="mal">⚠ ${mesTxt(m)}: por unidad USD ${fmt(total("com_unidad", u.meses[m]))} · por fondo USD ${fmt(total("com_fondo", f.meses[m]))}</div>`).join("");
     }
     async function guardar() {
       const g = prev.querySelector(".ci-guardar"); g.disabled = true; g.textContent = "Guardando…";
