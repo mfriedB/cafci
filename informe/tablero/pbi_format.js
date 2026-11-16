@@ -54,7 +54,7 @@
     const grp = parts[0].includes(",");
     let d;
     if (opt.prec != null) d = opt.prec;
-    else if (unit > 1) d = 1;
+    else if (unit > 1) { const ax = Math.abs(x); d = ax >= 100 ? 0 : ax >= 10 ? 1 : 2; }   // automatico del Power BI: 3 cifras significativas
     else if (parts[1]) {
       const fixed = (parts[1].match(/0/g) || []).length, opt2 = (parts[1].match(/#/g) || []).length;
       d = fixed;

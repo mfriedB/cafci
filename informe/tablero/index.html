@@ -180,17 +180,18 @@ nav.pbi-tabs button[aria-pressed="true"]{background:#fff;color:#252423;font-weig
 .pv-tl{line-height:1.2;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pv-slicer{display:flex;flex-direction:column;padding:2px 4px;overflow:hidden}
 .pv-sh{font-weight:400;padding:2px 4px 4px;margin-bottom:2px}
-.pv-dd{all:unset;box-sizing:border-box;display:block;width:100%;border:1px solid #c8c6c4;border-radius:2px;padding:4px 22px 4px 6px;background:#fff;color:#605E5C;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
+.pv-dd{all:unset;box-sizing:border-box;display:block;width:100%;border:1px solid #c8c6c4;border-radius:2px;padding:6px 22px 6px 6px;background:#fff;color:#605E5C;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative}
 .pv-dd::after{content:"";position:absolute;right:8px;top:50%;width:6px;height:6px;border-right:1.5px solid #605e5c;border-bottom:1.5px solid #605e5c;transform:translateY(-70%) rotate(45deg)}
 .pv-list,.pv-ls{overflow:auto;flex:1 1 auto;min-height:0}
 .pv-it,.pv-lt{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:6px;width:100%;padding:3px 4px;cursor:pointer;color:#252423;white-space:nowrap}
 .pv-lt{border:0;border-radius:0;margin:0;padding:1px 4px;background:transparent}
 .pv-lx{padding:2px 6px;flex:1;overflow:hidden;text-overflow:ellipsis;align-self:stretch;display:flex;align-items:center}
 .pv-lq{flex:0 0 auto;border:0;border-bottom:1px solid #c8c6c4;margin:2px 4px 4px;padding:3px 4px;font-family:inherit;outline:none}
+.part>.pv-ck{background:#fff;box-shadow:inset 0 0 0 2px #fff,inset 0 0 0 8px #252423}
 .pv-rd{border-radius:50% !important}
 .on>.pv-rd{background:#fff !important;box-shadow:inset 0 0 0 3px #fff,inset 0 0 0 10px #252423}
-.pv-ck{flex:0 0 auto;width:11px;height:11px;border:1px solid #605e5c;border-radius:2px;background:#fff}
-.on>.pv-ck{background:#121212;border-color:#121212;background-image:linear-gradient(45deg,transparent 45%,#fff 45%,#fff 55%,transparent 55%)}
+.pv-ck{flex:0 0 auto;width:12px;height:12px;border:1px solid #605e5c;border-radius:1px;background:#fff;box-sizing:border-box}
+.on>.pv-ck{background:#252423 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.2l2.3 2.3 4.8-5' fill='none' stroke='%23fff' stroke-width='1.6'/%3E%3C/svg%3E") center/100% no-repeat;border-color:#252423}
 .pv-it:hover,.pv-lt:hover{background:#f3f2f1}
 .pv-pop{position:absolute;z-index:3000;background:#fff;border:1px solid #c8c6c4;box-shadow:0 4px 12px rgba(0,0,0,.18);max-height:320px;overflow:auto;padding:4px;font-family:'Segoe UI',Arial,sans-serif}
 .pv-btns{position:absolute;inset:0;display:grid;gap:4px;padding:4px;grid-auto-rows:1fr}
@@ -201,10 +202,10 @@ nav.pbi-tabs button[aria-pressed="true"]{background:#fff;color:#252423;font-weig
 .pv-ts{position:absolute;inset:4px;width:calc(100% - 8px);height:calc(100% - 8px);box-sizing:border-box;border:0;padding:4px 8px;font:inherit;font-size:12px;background:#fff}
 .pv-tw{position:absolute;inset:0;overflow:auto}
 .pv-t{border-collapse:collapse;width:auto;min-width:0;font-variant-numeric:tabular-nums;font-family:'Segoe UI',Arial,sans-serif}
-.pv-t th{position:sticky;top:0;padding:4px 12px;white-space:nowrap;z-index:1;font-family:'Segoe UI Semibold','Segoe UI',Arial,sans-serif}
-.pv-t td{padding:1px 12px;line-height:1.3;white-space:nowrap}
+.pv-t th{position:sticky;top:0;padding:3px 5px;white-space:nowrap;z-index:1;font-family:'Segoe UI Semibold','Segoe UI',Arial,sans-serif}
+.pv-t td{padding:1px 5px;line-height:1.22;white-space:nowrap;overflow:hidden;text-overflow:clip}
 .pv-t td.rh{text-align:left}
-.pv-t tr.pv-tot td{font-weight:700;border-top:1px solid #252423;background:#fff}
+.pv-t tr.pv-tot td{font-weight:700;border-top:1px solid #252423;background:#fff;position:sticky;bottom:0}
 .pv-sm{position:absolute;inset:0;display:grid;gap:4px}
 .pv-smc{position:relative;display:flex;flex-direction:column;min-height:0;border:1px solid #edebe9}
 .pv-smh{font-size:12px;padding:2px 4px;color:#252423}
