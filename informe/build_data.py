@@ -39,6 +39,30 @@ def pendientes(A):
     return sorted(out, key=lambda x: (x["alta"], x["aum"]), reverse=True)
 
 
+# Call de Fondos, slide "Fondos ARS - short duration YTD": rendimiento acumulado diario del anio de estas clases
+CLASES_YTD = [(1115, "Balanz Capital Ahorro B"), (3357, "Balanz Capital Money Market C"),
+              (5580, "Balanz Crédito Privado C"), (3671, "Balanz Lecaps A")]
+
+
+def rend_ytd(meses):
+    anio = meses[-1][:4]; ms = [str(int(anio) - 1) + "-12"] + [m for m in meses if m.startswith(anio)]
+    cod = [c for c, _ in CLASES_YTD]; partes = []
+    for m in ms:
+        try: d = leer(m + ".csv.gz", sub="clases_diario") if os.path.exists(os.path.join(os.path.dirname(LOCAL), "clases_diario", m + ".csv.gz")) \
+            else pd.read_csv(RAW.replace("/informe/", "/clases_diario/") + m + ".csv.gz")
+        except Exception as e:
+            print("aviso: sin clases_diario", m, e); continue
+        partes.append(d[d.codigo_cafci.isin(cod)][["fecha", "codigo_cafci", "vcp"]])
+    if not partes: return {}
+    d = pd.concat(partes); d = d[d.vcp > 0].sort_values("fecha")
+    W = d.pivot_table(index="fecha", columns="codigo_cafci", values="vcp", aggfunc="last").sort_index().ffill()
+    base = W[W.index < anio + "-01-01"]
+    if base.empty: return {}
+    W = W[W.index >= anio + "-01-01"]; b = base.iloc[-1]
+    return {"fechas": [str(x)[:10] for x in W.index],
+            "series": [{"n": n, "v": [round(float(v), 5) for v in (W[c] / b[c] - 1).fillna(0)]} for c, n in CLASES_YTD if c in W]}
+
+
 def columnar(df, dic, desde=None, dec=3):
     if desde: df = df[df.Fecha.str[:7] >= desde]
     out = {"m": df.Fecha.str[:7].map(dic["mes_idx"]).astype(int).tolist()}
@@ -64,7 +88,8 @@ def main():
         listas[k] = vals; dic[k + "_idx"] = {v: i for i, v in enumerate(vals)}
     data = {"generado": pd.Timestamp.now(tz="America/Argentina/Buenos_Aires").isoformat(timespec="minutes"),
             "meses": meses, "fecha_mes": [fecha_mes[m] for m in meses], "dic": listas,
-            "ars": columnar(A, dic, dec=2), "usd": columnar(U, dic, desde="2024-12", dec=4), "pendientes": pendientes(A)}
+            "ars": columnar(A, dic, dec=2), "usd": columnar(U, dic, desde="2024-12", dec=4), "pendientes": pendientes(A),
+            "rend_ytd": rend_ytd(meses)}
     json.dump(data, open(os.path.join(salida, "industria.json"), "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     I = {}
     if internos and os.path.isdir(internos):

@@ -78,6 +78,7 @@
     M.ARS = decode(ind.ars, ind.dic, ind.meses, ind.fecha_mes);
     M.USD = decode(ind.usd, ind.dic, ind.meses, ind.fecha_mes);
     M.I = intl || {};
+    M.R = ind.rend_ytd || {};
     M.lastMi = M.meses.length - 1;
     M.gerentes = [...new Set(M.ARS.filter(r => r.mi === M.lastMi).map(r => r.g))].sort((a, b) => a.localeCompare(b, "es"));
     M.gerentesAll = [...new Set(M.ARS.map(r => r.g))].sort((a, b) => a.localeCompare(b, "es"));
