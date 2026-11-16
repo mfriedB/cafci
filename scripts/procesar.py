@@ -107,12 +107,16 @@ def limpiar(D):
     for _ in range(3):
         malo = pd.Series(False, index=D.index)
         g = D.groupby("codigo_cafci")
+        # un dato coherente (patrimonio = cuotapartes x VCP / 1000) con VCP sin salto es un flujo real de ida y vuelta
+        # (ej. suscripcion grande el ultimo dia del mes y rescate al dia siguiente): NO se descarta (1816 lo cuenta)
+        coherente = (D.patrimonio - D.ccp * D.vcp / 1000).abs() <= 0.02 * D.patrimonio.abs().clip(lower=1)
         for c in ["patrimonio", "ccp", "vcp"]:
             x = D[c]; a = g[c].shift(); b = g[c].shift(-1)
             ok = (a > 0) & (b > 0)
             r1, r2 = x / a, b / x.where(x != 0)
             salto = ok & (((r1 < 0.6) & (r2 > 1.6)) | ((r1 > 1.6) & (r2 < 0.6)) | (x <= 0))
             salto &= ((b / a) - 1).abs() < 0.25            # vuelve a un nivel parecido al anterior
+            if c != "vcp": salto &= ~coherente | (x <= 0)
             malo |= salto.fillna(False)
         if not malo.any(): break
         total += int(malo.sum()); D = D[~malo]
@@ -120,19 +124,24 @@ def limpiar(D):
     return D
 
 def migraciones(D):
-    """Clase que deja de informar mientras el fondo sigue con otras clases (ej. Galicia 28/08/2026: Clase I -> Clase C):
-    se agrega un dato con cuotapartes y patrimonio en 0 el primer dia siguiente en que el fondo informa, para que la
-    salida de la clase vieja compense la entrada a la nueva (si no, el flujo del fondo suma la entrada y no la salida)."""
+    """Bajas de clases: se agrega un dato con cuotapartes y patrimonio en 0 el dia siguiente al ultimo informado.
+    - Clase que deja de informar mientras el fondo sigue con otras clases (migracion, ej. Galicia 28/08/2026 Clase I ->
+      Clase C): la salida de la clase vieja compensa la entrada a la nueva (si no, el fondo suma la entrada y no la salida).
+    - Fondo entero que deja de informar (liquidacion, fusion): su patrimonio sale como rescate (igual que 1816)."""
     D = D.sort_values(["codigo_cafci", "fecha"])
     ult = D.groupby("codigo_cafci").tail(1)
     ult = ult[(pd.to_numeric(ult.ccp, errors="coerce") > 0) & ult.codigo_cnv.notna()]
     fechas_f = D.groupby("codigo_cnv").fecha.apply(lambda s: sorted(set(s)))
+    todas = sorted(set(D.fecha)); fmax = todas[-1]
     nuevos = []
     for _, r in ult.iterrows():
         fs = fechas_f.get(r.codigo_cnv, [])
         sig = [f for f in fs if f > r.fecha]
-        if not sig: continue                      # el fondo entero dejo de informar: no es migracion
-        if (pd.Timestamp(sig[-1]) - pd.Timestamp(r.fecha)).days < 7: continue   # puede ser rezago de la clase: esperar una semana
+        if not sig:                               # el fondo entero dejo de informar (liquidacion, fusion, baja)
+            if (pd.Timestamp(fmax) - pd.Timestamp(r.fecha)).days < 10: continue  # puede ser rezago: esperar
+            sig = [f for f in todas if f > r.fecha]   # salida el dia habil siguiente (como 1816: rescate)
+            if not sig: continue
+        elif (pd.Timestamp(sig[-1]) - pd.Timestamp(r.fecha)).days < 7: continue   # puede ser rezago de la clase
         n = r.copy(); n["fecha"] = sig[0]; n["fecha_dato"] = sig[0]; n["ccp"] = 0; n["patrimonio"] = 0; n["ccp_ant"] = None
         nuevos.append(n)
     if nuevos:
@@ -248,6 +257,11 @@ def main():
     D = D.sort_values(["codigo_cafci", "fecha"])
     prev = D.groupby("codigo_cafci").ccp.shift()
     ccp_prev = prev.where(prev.notna(), D.ccp_ant)
+    # alta: primer dato de una clase (posterior al inicio del panel) = suscripcion inicial completa (como 1816);
+    # la columna "dia anterior" de la planilla de lanzamiento suele repetir las cuotapartes del dia y perdia el flujo
+    inicio = D.fecha.min()
+    alta = prev.isna() & (D.fecha > inicio + timedelta(days=10))
+    ccp_prev = ccp_prev.where(~alta, 0.0)
     D["flujo_ars"] = ((D.ccp - ccp_prev) * D.vcp / 1000 * D.fx).fillna(0.0)
     # control: un flujo no puede superar el patrimonio de la clase; si pasa (error de cuotapartes o VCP en la
     # planilla) se toma la variacion de patrimonio descontado el rendimiento del dia
