@@ -119,6 +119,28 @@ def limpiar(D):
     print("datos puntuales descartados:", total)
     return D
 
+def migraciones(D):
+    """Clase que deja de informar mientras el fondo sigue con otras clases (ej. Galicia 28/08/2026: Clase I -> Clase C):
+    se agrega un dato con cuotapartes y patrimonio en 0 el primer dia siguiente en que el fondo informa, para que la
+    salida de la clase vieja compense la entrada a la nueva (si no, el flujo del fondo suma la entrada y no la salida)."""
+    D = D.sort_values(["codigo_cafci", "fecha"])
+    ult = D.groupby("codigo_cafci").tail(1)
+    ult = ult[(pd.to_numeric(ult.ccp, errors="coerce") > 0) & ult.codigo_cnv.notna()]
+    fechas_f = D.groupby("codigo_cnv").fecha.apply(lambda s: sorted(set(s)))
+    nuevos = []
+    for _, r in ult.iterrows():
+        fs = fechas_f.get(r.codigo_cnv, [])
+        sig = [f for f in fs if f > r.fecha]
+        if not sig: continue                      # el fondo entero dejo de informar: no es migracion
+        if (pd.Timestamp(sig[-1]) - pd.Timestamp(r.fecha)).days < 7: continue   # puede ser rezago de la clase: esperar una semana
+        n = r.copy(); n["fecha"] = sig[0]; n["fecha_dato"] = sig[0]; n["ccp"] = 0; n["patrimonio"] = 0; n["ccp_ant"] = None
+        nuevos.append(n)
+    if nuevos:
+        D = pd.concat([D, pd.DataFrame(nuevos)], ignore_index=True)
+        print("clases que dejaron de informar con el fondo activo (salida registrada):", len(nuevos))
+    return D
+
+
 def categoria_1816(r):
     c = r.clasificacion_cafci or ""
     if c.startswith(("Mercado de Dinero", "Plazo Fijo")): return "Money Market"   # "Plazo Fijo" = nombre viejo (hasta 2021)
@@ -173,6 +195,7 @@ def main():
     D = D.drop_duplicates(["codigo_cafci", "fecha_dato"], keep="last")
     D["fecha"] = D.fecha_dato
     D = limpiar(D)
+    D = migraciones(D)
     for c in ["vcp", "vcp_ant", "vcp_reexp_ars", "ccp", "ccp_ant", "patrimonio", "patrimonio_ant", "hon_sg", "hon_sd"]:
         D[c] = pd.to_numeric(D[c], errors="coerce").fillna(0.0)
     D["fondo"] = D.fondo_clase.map(nombre_fondo)
