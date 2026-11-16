@@ -49,9 +49,18 @@ for _s in ["Agro", "Brasil", "Chile", "Consumo", "Energía", "Financiera", "Mexi
     TIPO_ESPECIE["Renta Fija Corporativa " + _s] = "ONs U$S"
 
 
+# Bajadas automaticas del Power BI Service (pbi_comisiones.py): van FUERA de las carpetas que lee el Power BI Desktop
+# "Informe Gestion FCI.pbix" (combina todos los archivos de cada carpeta y falla con archivos de otro formato).
+EXTRA = {"PBI - Mati - Comisiones": "Claude outputs/comisiones_pbi/unidad",
+         "PBI - Mati - Comisiones x Fondo": "Claude outputs/comisiones_pbi/fondo",
+         "Serie Facturación": "Claude outputs/comisiones_pbi/serie"}
+
+
 def leer(carpeta, patron="*.xlsx"):
     # orden por fecha de modificacion: ante el mismo mes en dos archivos, gana el mas nuevo (ej. la bajada automatica del Power BI)
-    fs = sorted([f for f in glob.glob(os.path.join(carpeta, patron)) if not os.path.basename(f).startswith("~$")], key=os.path.getmtime)
+    base, nombre = os.path.dirname(carpeta), os.path.basename(carpeta)
+    dirs = [carpeta] + ([os.path.join(base, EXTRA[nombre])] if nombre in EXTRA else [])
+    fs = sorted([f for c in dirs for f in glob.glob(os.path.join(c, patron)) if not os.path.basename(f).startswith("~$")], key=os.path.getmtime)
     return pd.concat([pd.read_excel(f).assign(**{"Source.Name": os.path.basename(f)}) for f in fs], ignore_index=True) if fs else pd.DataFrame()
 
 

@@ -7,9 +7,11 @@ unidades/fondos en columnas, con ComisionYTM a precision completa.
 
 Uso: python3 pbi_comisiones.py CARPETA_FCI_PBI_FONDOS ARCHIVO1.xlsx [ARCHIVO2.xlsx ...]
 Escribe (pisando la version anterior del mismo año):
-  PBI - Mati - Comisiones/comisiones_fci_pbi_AAAA.xlsx
-  PBI - Mati - Comisiones x Fondo/comisiones_fondo_pbi_AAAA.xlsx
-  Serie Facturación/serie_pbi_AAAA.xlsx   (total mensual = suma de todas las unidades)
+  Claude outputs/comisiones_pbi/unidad/comisiones_fci_pbi_AAAA.xlsx
+  Claude outputs/comisiones_pbi/fondo/comisiones_fondo_pbi_AAAA.xlsx
+  Claude outputs/comisiones_pbi/serie/serie_pbi_AAAA.xlsx   (total mensual = suma de todas las unidades)
+NUNCA en "PBI - Mati - Comisiones", "PBI - Mati - Comisiones x Fondo" ni "Serie Facturación": esas carpetas las combina
+el Power BI Desktop "Informe Gestion FCI.pbix" y un archivo de otro formato rompe su actualizacion. internos.py lee ambas.
 """
 import os, sys
 import pandas as pd
@@ -38,6 +40,10 @@ def leer_matriz(path):
     return tipo, pd.DataFrame(filas)
 
 
+def dest(base, sub):
+    d = os.path.join(base, "Claude outputs", "comisiones_pbi", sub); os.makedirs(d, exist_ok=True); return d
+
+
 def main():
     base, archivos = sys.argv[1], sys.argv[2:]
     for f in archivos:
@@ -45,14 +51,14 @@ def main():
         if d.empty: print("sin datos:", f); continue
         anio = pd.to_datetime(d.FechaFinMes).dt.year.max()
         if tipo == "Unidad Negocio":
-            d.to_excel(os.path.join(base, "PBI - Mati - Comisiones", f"comisiones_fci_pbi_{anio}.xlsx"), index=False)
+            d.to_excel(os.path.join(dest(base, "unidad"), f"comisiones_fci_pbi_{anio}.xlsx"), index=False)
             s = d.groupby("FechaFinMes", as_index=False).ComisionYTM.sum().rename(columns={"FechaFinMes": "Fecha", "ComisionYTM": "Facturación"})
             s["Facturación"] = s["Facturación"].round(0)
-            s.to_excel(os.path.join(base, "Serie Facturación", f"serie_pbi_{anio}.xlsx"), index=False)
+            s.to_excel(os.path.join(dest(base, "serie"), f"serie_pbi_{anio}.xlsx"), index=False)
             print(f"unidades {anio}: {d.FechaFinMes.nunique()} meses, {d['Unidad Negocio'].nunique()} unidades; ultimo mes",
                   s.Fecha.max(), "total", f"{s['Facturación'].iloc[-1]:,.0f}")
         else:
-            d.to_excel(os.path.join(base, "PBI - Mati - Comisiones x Fondo", f"comisiones_fondo_pbi_{anio}.xlsx"), index=False)
+            d.to_excel(os.path.join(dest(base, "fondo"), f"comisiones_fondo_pbi_{anio}.xlsx"), index=False)
             print(f"fondos {anio}: {d.FechaFinMes.nunique()} meses, {d['Unidad Negocio'].nunique()} fondos")
 
 

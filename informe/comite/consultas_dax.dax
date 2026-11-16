@@ -3,7 +3,7 @@
 // Se corren en la vista de consultas DAX de Power BI en la WEB (área de trabajo SelfService_Fondos > modelo > "…" >
 // "Abrir en la vista de consulta DAX"); ver web_dax.md. También funcionan en Power BI Desktop.
 // Resultado: un .txt por consulta (tab-separado, formato "Copia > Toda la tabla") en
-//   C:\Users\mfried\OneDrive - BALANZ\FCI - PBI - Fondos\PBI - Mati\Claude outputs\informe_comite\dax\
+//   C:\Users\mfried\OneDrive - BALANZ\FCI - PBI - Fondos\Claude outputs\informe_comite\dax\
 // Las consultas toman siempre los últimos meses disponibles: no hay que cambiar fechas.
 
 // ===== 1) dax_mes_unidad.txt =====

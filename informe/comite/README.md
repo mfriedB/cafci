@@ -5,7 +5,7 @@ Arma la presentación ejecutiva (20 slides core + 5 adicionales) del mes cerrado
 Todos los números, títulos y gráficos se calculan del dato del mes: no hay textos fijos.
 
 **Este repo tiene sólo código.** Los datos internos de Balanz viven en
-`C:\Users\mfried\OneDrive - BALANZ\FCI - PBI - Fondos\PBI - Mati\Claude outputs\informe_comite\` y en el artifact privado.
+`C:\Users\mfried\OneDrive - BALANZ\FCI - PBI - Fondos\Claude outputs\informe_comite\` y en el artifact privado.
 
 ## Fuentes
 
@@ -13,7 +13,7 @@ Todos los números, títulos y gráficos se calculan del dato del mes: no hay te
 |---|---|---|
 | Industria (AUM, flujos, ranking, share) | CAFCI/CNV, este repo `procesado/informe/` | automático (GitHub Actions) |
 | Rendimientos vs peer group 1816 | este repo `procesado/clases_diario/` + `rend_corte.py` | automático |
-| Facturación por unidad y fondo | Power BI "Rporte de Comision por Fondos v2" | tarea mensual de comisiones (1er día hábil) → `PBI - Mati/Claude outputs/informe/data/internos.json` |
+| Facturación por unidad y fondo | Power BI "Rporte de Comision por Fondos v2" | tarea mensual de comisiones (1er día hábil) → `Claude outputs/informe/data/internos.json` |
 | AUM por área, clientes, ACDIs, inversores, facturación por fondo | modelo "DS Fondos - AM - Comisiones - Volumen - CuotaPartes" | Power BI **web** (vista de consultas DAX, ver `web_dax.md`), consultas de `consultas_dax.dax` → `informe_comite/dax/*.txt` |
 | AUM por área nov-19 → sep-26 | digitalizado del informe anterior | fijo, `informe_comite/hist_area.csv` |
 
