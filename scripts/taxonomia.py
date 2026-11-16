@@ -1,6 +1,7 @@
 """Taxonomia 1816 para todos los fondos CAFCI/CNV.
 
 Base: mapeo/taxonomia_1816.csv (Codigo_CNV -> Tipo/Subtipo/Gerente/Tipo de gerente, relevado una vez de 1816)
+      mapeo/taxonomia_manual.csv (fondos que no estan en 1816 y se revisaron a mano; fuente_tax = "manual")
       mapeo/clases_1816.csv    (codigo_cafci -> cuota 1816 y si es la "cuota de referencia" de 1816)
 Fondos que no estan en la tabla (nuevos) se clasifican solos, sin 1816:
   1. escisiones: heredan la clasificacion del fondo padre (id_cnv_padre de la planilla CNV)
@@ -46,6 +47,13 @@ def clasificar(meta):
     tax = pd.read_csv(os.path.join(MAPEO, "taxonomia_1816.csv"))
     m = meta.merge(tax, on="Codigo_CNV", how="left")
     m["fuente_tax"] = m.Subtipo_1816.notna().map({True: "1816", False: None})
+    pm = os.path.join(MAPEO, "taxonomia_manual.csv")
+    if os.path.exists(pm):
+        man = pd.read_csv(pm).drop(columns=["nota"], errors="ignore").set_index("Codigo_CNV")
+        sel = m.Subtipo_1816.isna() & m.Codigo_CNV.isin(man.index)
+        for c in ["Fondo_1816", "Tipo_1816", "Subtipo_1816", "Gerente_1816", "Tipo_Gerente_1816"]:
+            m.loc[sel, c] = m.loc[sel, "Codigo_CNV"].map(man[c])
+        m.loc[sel, "fuente_tax"] = "manual"
     conocidos = m[m.Subtipo_1816.notna()]
     sub = conocidos.set_index("Codigo_CNV").Subtipo_1816
     # gerente corto / tipo por sociedad gerente

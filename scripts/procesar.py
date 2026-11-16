@@ -186,7 +186,7 @@ def main():
     meta["Codigo_CNV"] = meta.Codigo_CNV.astype(int)
     tax = taxonomia.clasificar(meta).drop_duplicates("Codigo_CNV").set_index("Codigo_CNV")
     tax.drop(columns=["moneda_fondo", "region", "horizonte", "plazo_liq", "id_cnv_padre"], errors="ignore").to_csv(os.path.join(PROC, "taxonomia.csv"))
-    nuevos = tax[tax.fuente_tax != "1816"]
+    nuevos = tax[~tax.fuente_tax.isin(["1816", "manual"])]
     if len(nuevos): print("fondos clasificados por regla (no estan en mapeo/taxonomia_1816.csv):", len(nuevos))
     cnv = pd.to_numeric(D.codigo_cnv, errors="coerce")
     for c, t in [("categoria_1816", "Tipo_1816"), ("subcategoria_1816", "Subtipo_1816"), ("gerente_1816", "Gerente_1816"),

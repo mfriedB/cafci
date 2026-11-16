@@ -25,7 +25,7 @@ def pendientes(A):
     try: t = leer("taxonomia.csv", sub="")
     except Exception as e:
         print("aviso: sin taxonomia.csv", e); return []
-    t = t[t.fuente_tax.astype(str) != "1816"]
+    t = t[~t.fuente_tax.astype(str).isin(["1816", "manual"])]
     alta = A.groupby("Codigo_CNV").Fecha.min()
     ult = A[A.Fecha == A.Fecha.max()].groupby("Codigo_CNV").AUM_Final.sum()
     out = []

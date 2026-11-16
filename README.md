@@ -40,6 +40,8 @@ Base: `https://raw.githubusercontent.com/mfriedB/cafci/main/procesado/`
   grande. Quedan marcados en `procesado/taxonomia.csv` (`fuente_tax` = `regla: ...`). El subtipo de 1816 es criterio de
   sus analistas: la regla acierta el tipo en ~80% y el subtipo en ~50%, así que conviene revisar los nuevos y, si hace
   falta, agregarlos a `mapeo/taxonomia_1816.csv` (una línea; la base se regenera sola).
+- `mapeo/taxonomia_manual.csv`: fondos que no están en 1816 y se clasificaron a mano (por ejemplo, mirando la cartera
+  y los pares en el Monitor de carteras). Quedan con `fuente_tax` = `manual` y salen del aviso de fondos sin clasificar.
 - Rendimientos (`procesado/rendimientos.csv`): directos sobre el valor de cuotaparte, con las mismas ventanas que 1816
   (1D, 7D, MTD, 30D, 90D, YTD, 365D). Validado contra el ranking de 1816 al 12/11/2026: idénticos en la moneda de la
   clase (99,5% de las cuotas, el resto son errores puntuales de 1816). Las clases en dólares convertidas a pesos (y
