@@ -203,6 +203,12 @@ def main():
     D = pd.concat([D, A], ignore_index=True).sort_values(["prio", "planilla"])
     D = D.drop_duplicates(["codigo_cafci", "fecha_dato"], keep="last")
     D["fecha"] = D.fecha_dato
+    # clases nuevas: las primeras planillas a veces traen el codigo CNV vacio; se completa con el de la misma clase
+    # (si no, la suscripcion inicial queda fuera del fondo; ej. Mills M1000 Balanceado Pesos, 05/05/2026)
+    cn = pd.to_numeric(D.codigo_cnv, errors="coerce")
+    mapa = pd.Series(cn.values, index=D.codigo_cafci.values).dropna()
+    mapa = mapa[~mapa.index.duplicated(keep="last")]
+    D["codigo_cnv"] = cn.where(cn.notna(), D.codigo_cafci.map(mapa)).round().astype("Int64")
     D = limpiar(D)
     D = migraciones(D)
     for c in ["vcp", "vcp_ant", "vcp_reexp_ars", "ccp", "ccp_ant", "patrimonio", "patrimonio_ant", "hon_sg", "hon_sd"]:
