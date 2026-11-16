@@ -210,6 +210,30 @@ nav.pbi-tabs button[aria-pressed="true"]{background:#fff;color:#252423;font-weig
 .pv-smc{position:relative;display:flex;flex-direction:column;min-height:0;border:1px solid #edebe9}
 .pv-smh{font-size:12px;padding:2px 4px;color:#252423}
 .pv-smb{position:relative;flex:1 1 auto;min-height:0}
+
+/* Carga manual de datos internos */
+.ci-wrap{max-width:1100px;font-size:14px;line-height:1.45}
+.ci-wrap h2{margin:0 0 6px;font-size:22px}.ci-wrap h3{margin:22px 0 8px;font-size:16px}
+.ci-intro{color:#444;margin:0 0 10px}.ci-sub{color:#6b6f7b;font-size:12.5px}
+.ci-ayuda,.ci-pegar{margin:8px 0;background:#f5f7fb;border:1px solid #e1e5ee;border-radius:6px;padding:8px 12px}
+.ci-ayuda summary,.ci-pegar summary{cursor:pointer;font-weight:600}
+.ci-ayuda ol{margin:8px 0 4px;padding-left:20px}.ci-ayuda li{margin-bottom:6px}
+.ci-zona{margin:12px 0;border:2px dashed #9aa9d6;border-radius:8px;padding:26px;text-align:center;background:#fff}
+.ci-zona.on{background:#eef2fb;border-color:#293486}
+.ci-btn{display:inline-block;background:#293486;color:#fff;border:0;border-radius:5px;padding:7px 14px;font:inherit;font-weight:600;cursor:pointer}
+.ci-btn[disabled]{opacity:.5;cursor:default}
+.ci-zona .ci-btn{margin-left:6px}
+.ci-pegar textarea{width:100%;box-sizing:border-box;margin:8px 0;font:12px ui-monospace,monospace}
+.ci-t{border-collapse:collapse;width:100%;margin-bottom:10px}
+.ci-t th,.ci-t td{border-bottom:1px solid #e1e5ee;padding:6px 8px;text-align:left;vertical-align:top}
+.ci-t th{background:#f1f3fa;font-weight:600}.ci-t .n{text-align:right;white-space:nowrap}
+.ci-t tr.err td{color:#b3261e}
+.ci-t select{font:inherit;max-width:280px}
+.ci-x{border:0;background:none;color:#888;cursor:pointer;font-size:15px}
+.ci-guardar{margin-top:6px}
+.ci-ctrl div,.ci-estado>div{margin:4px 0}
+.bien{color:#1d6b38}.mal{color:#b3261e;font-weight:600}
+.ci-borrar{background:#fff;color:#b3261e;border:1px solid #e3b4b0;padding:4px 10px}
 </style>
 </head>
 <body>
@@ -231,6 +255,7 @@ nav.pbi-tabs button[aria-pressed="true"]{background:#fff;color:#252423;font-weig
 <script>window.P = { pages: [] };</script>
 <script src="pages_call_slides.js"></script>
 <script src="pages_call_prop.js"></script>
+<script src="carga_internos.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

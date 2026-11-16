@@ -7,7 +7,7 @@
   document.getElementById("meta").textContent = `Datos CAFCI/CNV al ${ult} · actualizado ${gen}`;
   const GPBI = "Informe de Gestión (Power BI)";
   const pages = PBI.pages.map((p, i) => ({ id: "pbi-" + (i + 1), group: GPBI, name: p.name, spec: p }))
-    .concat((window.P ? P.pages : []).map(p => Object.assign({ group: "Call de Fondos · slides" }, p, { group: "Call de Fondos · slides" })));
+    .concat((window.P ? P.pages : []).map(p => Object.assign({}, p, { group: p.group === "Datos internos" ? p.group : "Call de Fondos · slides" })));
   const groups = [...new Set(pages.map(p => p.group))];
   const state = {};
   let cur = pages[0].id;
@@ -62,6 +62,9 @@
     requestAnimationFrame(() => U.resizeAll());
   }
   window.addEventListener("resize", () => { fit(); });
+  // datos internos cargados a mano (carga_internos.js): se leen de la base del artifact y se vuelve a dibujar la hoja
+  window.APP = { rerender: () => requestAnimationFrame(render) };
+  if (window.CARGAS && CARGAS.conectar) CARGAS.conectar();
 
   /* ---- Aviso: fondos con patrimonio que no estan en la tabla de 1816 y hay que clasificar ---- */
   const PEND = M.pend || [], KEY = "pendVistos";
