@@ -413,6 +413,7 @@ def actualizar_pptx(ruta, salida, imgs, corte, info4, cajas9):
                     if t2 != t:
                         p.runs[0].text = t2
                         for r in p.runs[1:]: r.text = ""
+                        if "CAFCI" in t2: sh.width = max(sh.width, Emu(6900000))   # "fuente CAFCI / CNV" en una sola linea
         if n == 4 and info4.get("puesto_balanz"):
             for sh in s.shapes:
                 if sh.has_text_frame and sh.text_frame.text.strip().startswith("TOP"):
