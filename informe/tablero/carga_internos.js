@@ -73,19 +73,31 @@
   /* Cantidad de Cuotapartistas (foto del momento, sin fecha): mismas reglas que internos.py → cuotapartistas().
      Se guarda en el mes en que se sube; vale la foto más nueva. */
   const TIPO_INV = {"Agentes de Colocacion y distribucion Integral de FCIs": "ACDIs", "Cajas de Prevision": "Institucionales", "Compañias de Seguros": "Institucionales", "Inversores Corporativo.": "Corporativos", "Inversores Corporativos": "Corporativos", "Personas Humanas Argentinas Mayores de Edad": "P. Humanas", "Personas Humanas con Residencia en el Exterior": "P. Humanas", "Pymes": "PyMEs", "Aseguradoras de Riesgos de Trabajo": "Institucionales", "Personas Humanas Argentinas Menores de Edad": "P. Humanas", "Entidades Financieras Autorizadas por el BCRA": "Institucionales", "Fondos Comunes de Inversion": "Institucionales", "Personas Jurídicas con Residencia en el Exterior": "Institucionales"};
-  function cuotapartistas(tab) {
+  // mes de un archivo sin columna de fecha: el del nombre del archivo, si lo trae; si no, el mes cerrado (o el actual después del 20)
+  function mesDeNombre(nombre) {
+    const s = String(nombre || ""); let m;
+    if ((m = s.match(/(20\d{2})[-_. ]?(0[1-9]|1[0-2])(?!\d)/))) return `${m[1]}-${m[2]}`;
+    if ((m = s.match(/(\d{1,2})[-_.](\d{1,2})[-_.](20\d{2})/))) return `${m[3]}-${pad(+m[2])}`;
+    const h = new Date(), d = h.getDate() <= 20 ? new Date(h.getFullYear(), h.getMonth() - 1, 1) : h;
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+  }
+  function cuotapartistas(tab, nombre) {
     const hn = tab[0].map(c => limpio(c)), ix = n => hn.indexOf(n);
     const falta = ["Fondo", "Tipo Inversor", "Importe", "Moneda", "Cuotapartista"].filter(n => ix(n) < 0);
     if (falta.length) throw new Error("Faltan columnas de cuotapartistas: " + falta.join(", "));
-    const acc = new Map();
+    const acc = new Map(), inv = new Map();
     for (const r of tab.slice(1)) {
       if (!r || !limpio(r[ix("Fondo")])) continue;
-      const t = limpio(r[ix("Tipo Inversor")]), cat = TIPO_INV[t] || t, k = limpio(r[ix("Fondo")]) + "|" + cat;
+      const f = limpio(r[ix("Fondo")]), t = limpio(r[ix("Tipo Inversor")]), cat = TIPO_INV[t] || t, k = f + "|" + cat, cp = limpio(r[ix("Cuotapartista")]);
       const imp = num(r[ix("Importe")]), usd = (limpio(r[ix("Moneda")]) !== "$" ? imp : imp / 1535) / 1e6;
-      const x = acc.get(k) || { f: limpio(r[ix("Fondo")]), c: cat, v: 0, n: new Set() }; x.v += usd; x.n.add(limpio(r[ix("Cuotapartista")])); acc.set(k, x);
+      const x = acc.get(k) || { f, c: cat, v: 0, n: new Set() }; x.v += usd; x.n.add(cp); acc.set(k, x);
+      // también arma "Inversores por tipo y fondo" (la consulta DAX 4 del comité): persona humana (PF) o jurídica (PJ)
+      const tp = /personas humanas/i.test(t) ? "PF" : "PJ", ki = cat + "|" + tp + "|" + f;
+      const y = inv.get(ki) || { c: cat, tp, f, v: 0, n: new Set() }; y.v += usd * 1e6; y.n.add(cp); inv.set(ki, y);
     }
-    const hoy = new Date(), mes = `${hoy.getFullYear()}-${pad(hoy.getMonth() + 1)}`;
-    return { tipo: "cuotapartistas", meses: { [mes]: [...acc.values()].map(x => [x.f, x.c, x.v, x.n.size]) } };
+    const mes = mesDeNombre(nombre);
+    return { tipo: "cuotapartistas", sinFecha: true, meses: { [mes]: [...acc.values()].map(x => [x.f, x.c, x.v, x.n.size]) },
+      extra: { tipo: "inversores", meses: { [mes]: [...inv.values()].map(y => [y.c, y.tp, y.f, Math.round(y.v), y.n.size]) } } };
   }
 
   // Pase: compra y venta opuestas del mismo fondo, especie, VN y agente con números de operación a menos de 5
@@ -172,7 +184,7 @@
   const colNom = c => { const s = limpio(c); const m = s.match(/\[([^\]]+)\]/g); return m ? m[m.length - 1].slice(1, -1) : s; };
 
   /* ---- detección y normalización: devuelve {tipo, meses: {AAAA-MM: [[...], ...]}, aviso} ---- */
-  function procesar(tab, forzar) {
+  function procesar(tab, forzar, nombre) {
     const h0 = limpio(tab[0] && tab[0][0]);
     // 1) matriz del Power BI "Rporte de Comision por Fondos v2" (Datos con diseño actual): meses en filas
     if ((h0 === "Unidad Negocio" || h0 === "Fondos") && limpio(tab[1] && tab[1][0]) === "AnoMesCorto") {
@@ -211,8 +223,8 @@
     if ((!forzar || forzar === "compraventa") && idx("Operación_Numero") >= 0 && idx("Tipo de Especie") >= 0) return compraventa(tab);
     if (forzar === "compraventa") return compraventa(tab);
     // 5) cantidad de cuotapartistas
-    if ((!forzar || forzar === "cuotapartistas") && idx("Tipo Inversor") >= 0 && idx("Cuotapartista") >= 0) return cuotapartistas(tab);
-    if (forzar === "cuotapartistas") return cuotapartistas(tab);
+    if ((!forzar || forzar === "cuotapartistas") && idx("Tipo Inversor") >= 0 && idx("Cuotapartista") >= 0) return cuotapartistas(tab, nombre);
+    if (forzar === "cuotapartistas") return cuotapartistas(tab, nombre);
     // 6) plantillas Excel de Claude
     const hn = (tab[0] || []).map(norm);
     const pos = alias => { for (const a of alias) { const i = hn.indexOf(a); if (i >= 0) return i; } return -1; };
@@ -366,7 +378,7 @@
         <li><b>Facturación</b>: Power BI Service › <i>Rporte de Comision por Fondos v2</i> › página <i>Fondos YTD</i>. En la matriz grande: <i>Más opciones › Exportar datos › Datos con diseño actual</i> (.xlsx), una vez con <i>Analisis por = Unidad Negocio</i> y otra con <i>Fondos</i>. También sirven los Excel mensuales de las carpetas (<i>comisiones_fci_*.xlsx</i>, <i>comisiones_fondo_*.xlsx</i>).</li>
         <li><b>AUM interno, clientes e inversores</b>: modelo <i>DS Fondos - AM - Comisiones - Volumen - CuotaPartes</i> (área SelfService_Fondos) › <i>Abrir en la vista de consulta DAX</i>. Corré las 4 consultas de <code>informe/comite/consultas_dax.dax</code> y copiá cada resultado con <i>Copia › Toda la tabla</i>: pegalo abajo o guardalo como .txt.</li>
         <li><b>Plantillas de Excel</b> (<a href="https://github.com/mfriedB/cafci/tree/main/informe/plantillas" target="_blank" rel="noopener">bajarlas del repo</a>; cada una tiene una hoja de instrucciones): AUM y flujo por área comercial y fondo, clientes, inversores PH/PJ, fondos de terceros, emisiones primarias, fondos fuera de CAFCI, clientes excluidos (Ex Meli) y textos del mes.</li>
-        <li><b>Cantidad de cuotapartistas</b> (hoja Tipo de Inversor): el Excel de la carpeta <i>Cantidad de Cuotapartistas</i>. No trae fecha: se guarda en el mes en que lo subís.</li>
+        <li><b>Cantidad de cuotapartistas</b> (hoja Tipo de Inversor): el Excel de la carpeta <i>Cantidad de Cuotapartistas</i>. No trae fecha: toma el mes del nombre del archivo si lo tiene (por ejemplo <i>cuotapartistas_2026-10.xlsx</i>) o el último mes cerrado, y lo podés cambiar antes de guardar. También arma la base de inversores (personas humanas y jurídicas) de la presentación del comité, sin correr la consulta DAX.</li>
         <li><b>Compra/venta de especies</b> (slides de contrapartes): el mismo Excel que va a la carpeta <i>Compra_Venta_Contrapartes_</i>.</li>
         <li>El tipo de archivo se reconoce solo; si se equivoca, cambialo en la lista antes de guardar.</li>
         <li>Si un archivo trae varios meses (por ejemplo el acumulado del año), se guarda solo el último. Para cargar el histórico de una vez, destildá <i>Guardar solo el último mes de cada archivo</i>.</li></ol></details>
@@ -377,7 +389,7 @@
     const ta = w.querySelector("textarea");
 
     async function agregar(nombre, tab) {
-      try { const r = procesar(tab); pendientes.push(Object.assign({ archivo: nombre, tab }, r)); }
+      try { const r = procesar(tab, null, nombre); pendientes.push(Object.assign({ archivo: nombre, tab }, r)); }
       catch (e) { pendientes.push({ archivo: nombre, error: e.message }); }
       dibujarPrev();
     }
@@ -404,7 +416,7 @@
         const nota = (reemp.length ? `<div class="ci-sub">reemplaza ${reemp.length === 1 ? mesTxt(reemp[0]) : reemp.length + " meses"} ya cargado${reemp.length === 1 ? "" : "s"}</div>` : "")
           + (uc && ult && ult !== "fijo" && ult < uc ? `<div class="mal">es anterior al último mes cargado (${mesTxt(uc)})</div>` : "");
         h += `<tr><td>${esc(p.archivo)}</td><td><select data-i="${i}">${ORDEN.map(t => `<option value="${t}"${t === p.tipo ? " selected" : ""}>${TIPOS[t].nombre}</option>`).join("")}</select></td>
-          <td>${rango(ms)}</td><td>${rango(g)}${nota}</td>
+          <td>${p.sinFecha ? `<input type="month" class="ci-mes" data-i="${i}" value="${ult}" title="El archivo no trae fecha: elegí a qué mes corresponde">` : rango(ms)}</td><td>${rango(g)}${nota}${p.extra ? `<div class="ci-sub">también arma: ${TIPOS[p.extra.tipo].nombre}</div>` : ""}</td>
           <td class="n">${ult ? queMide(p.tipo) + " " + mesTxt(ult) + ": " + fmt(total(p.tipo, p.meses[ult])) : ""}</td><td><button class="ci-x" data-i="${i}" type="button" aria-label="Quitar">✕</button></td></tr>`;
       });
       h += `</tbody></table><div class="ci-ctrl">${controles(ok)}</div>
@@ -413,7 +425,9 @@
       prev.innerHTML = h;
       prev.querySelector(".ci-ult").addEventListener("change", e => { soloUltimo = e.target.checked; dibujarPrev(); });
       prev.querySelectorAll("select").forEach(s => s.addEventListener("change", () => { const p = pendientes[+s.dataset.i];
-        try { Object.assign(p, procesar(p.tab, s.value)); delete p.error; } catch (e) { p.error = e.message; } dibujarPrev(); }));
+        try { Object.assign(p, { sinFecha: false, extra: null }, procesar(p.tab, s.value, p.archivo)); delete p.error; } catch (e) { p.error = e.message; } dibujarPrev(); }));
+      prev.querySelectorAll(".ci-mes").forEach(m => m.addEventListener("change", () => { const p = pendientes[+m.dataset.i]; if (!/^\d{4}-\d{2}$/.test(m.value)) return;
+        const mover = mm => ({ [m.value]: Object.values(mm)[0] }); p.meses = mover(p.meses); if (p.extra) p.extra.meses = mover(p.extra.meses); dibujarPrev(); }));
       prev.querySelectorAll(".ci-x").forEach(b => b.addEventListener("click", () => { pendientes.splice(+b.dataset.i, 1); dibujarPrev(); }));
       const g = prev.querySelector(".ci-guardar"); if (g) g.addEventListener("click", guardar);
     }
