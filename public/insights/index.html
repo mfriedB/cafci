@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Insights FCI · CAFCI/CNV</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<style>
+  :root { --navy:#0b2545; --azul:#1f5fa8; --celeste:#8fb8de; --gris:#6b7280; --borde:#e5e7eb; --fondo:#f6f7f9;
+          --rojo:#c0392b; --verde:#1e8449; --amarillo:#f4d35e; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; color:#111827; background:var(--fondo); font-size:14px; }
+  header { background:var(--navy); color:#fff; padding:14px 22px; display:flex; flex-wrap:wrap; gap:12px 24px; align-items:center; justify-content:space-between; }
+  header h1 { margin:0; font-size:18px; font-weight:600; }
+  header .sub { font-size:12px; opacity:.8; }
+  header label { font-size:12px; opacity:.9; margin-right:6px; }
+  header select { padding:4px 6px; border-radius:4px; border:0; }
+  nav { display:flex; gap:2px; padding:0 16px; background:#fff; border-bottom:1px solid var(--borde); overflow-x:auto; }
+  nav button { border:0; background:none; padding:12px 14px; font-size:13px; cursor:pointer; color:var(--gris); border-bottom:3px solid transparent; white-space:nowrap; }
+  nav button.on { color:var(--navy); border-bottom-color:var(--azul); font-weight:600; }
+  main { padding:18px 22px 40px; max-width:1400px; margin:0 auto; }
+  section { display:none; } section.on { display:block; }
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:12px; margin-bottom:16px; }
+  .kpi { background:#fff; border:1px solid var(--borde); border-radius:8px; padding:12px 14px; }
+  .kpi .v { font-size:22px; font-weight:600; color:var(--navy); }
+  .kpi .l { font-size:12px; color:var(--gris); margin-top:2px; }
+  .card { background:#fff; border:1px solid var(--borde); border-radius:8px; padding:14px 16px; margin-bottom:16px; }
+  .card h2 { font-size:15px; margin:0 0 4px; color:var(--navy); }
+  .card p.nota { margin:0 0 10px; color:var(--gris); font-size:12px; line-height:1.45; }
+  .grid2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(460px,1fr)); gap:16px; }
+  .chart { width:100%; height:340px; }
+  .filtros { display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; margin:6px 0 10px; font-size:12px; color:var(--gris); }
+  .filtros select, .filtros input { padding:4px 6px; border:1px solid var(--borde); border-radius:4px; font-size:12px; }
+  .tabla { overflow:auto; max-height:560px; border:1px solid var(--borde); border-radius:6px; }
+  table { border-collapse:collapse; width:100%; font-size:12px; }
+  th { position:sticky; top:0; background:#f1f4f8; text-align:left; padding:7px 8px; cursor:pointer; white-space:nowrap; color:var(--navy); font-weight:600; border-bottom:1px solid var(--borde); }
+  td { padding:6px 8px; border-bottom:1px solid #f0f1f3; white-space:nowrap; }
+  td.n, th.n { text-align:right; font-variant-numeric:tabular-nums; }
+  tr.propio td { background:#eef4fb; }
+  .neg { color:var(--rojo); } .pos { color:var(--verde); }
+  .tag { display:inline-block; padding:1px 6px; border-radius:10px; font-size:11px; background:#fde8e6; color:var(--rojo); margin-right:4px; }
+  .tag.up { background:#e3f4ea; color:var(--verde); }
+  .tag.gris { background:#eef0f3; color:var(--gris); }
+  .cargando { color:var(--gris); padding:20px; }
+  footer { color:var(--gris); font-size:11px; text-align:center; padding:10px; }
+  @media (max-width:640px){ .grid2 { grid-template-columns:1fr; } main { padding:12px; } }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Insights de la industria FCI</h1>
+    <div class="sub">Planilla Diaria CAFCI archivada por la CNV · corte <span id="corte">…</span> · montos en millones de ARS</div>
+  </div>
+  <div><label for="ger">Gerente a destacar</label><select id="ger"></select></div>
+</header>
+<nav id="tabs">
+  <button data-t="alertas" class="on">Alertas de flujo</button>
+  <button data-t="diario">Flujo diario</button>
+  <button data-t="estacionalidad">Estacionalidad</button>
+  <button data-t="liquidez">Liquidez</button>
+  <button data-t="sensibilidad">Ranking → flujos</button>
+  <button data-t="fees">Fees</button>
+  <button data-t="concentracion">Concentración</button>
+  <button data-t="cambios">Cambios de condiciones</button>
+</nav>
+<main>
+  <section id="s-alertas" class="on">
+    <div class="kpis" id="k-alertas"></div>
+    <div class="card">
+      <h2>Fondos con alerta al último día</h2>
+      <p class="nota">Racha: días hábiles seguidos con rescates netos (alerta desde 5). Percentil: ubicación del flujo del día (en % del patrimonio previo) contra los últimos 250 días del mismo fondo; alerta si cae en el 2% peor o mejor y mueve más del 1%. Fondos con patrimonio mayor a $1.000 M.</p>
+      <div class="filtros">
+        <label><input type="checkbox" id="a-solo" checked> Solo con alerta</label>
+        <label><input type="checkbox" id="a-ger"> Solo gerente destacado</label>
+        <span>Categoría <select id="a-cat"></select></span>
+      </div>
+      <div class="tabla" id="t-alertas"></div>
+    </div>
+  </section>
+
+  <section id="s-diario">
+    <div class="card">
+      <h2>Suscripciones netas diarias por categoría</h2>
+      <p class="nota">Suma por día de planilla. Últimos 3 meses.</p>
+      <div class="chart" id="c-diario-cat"></div>
+    </div>
+    <div class="card">
+      <h2>Flujo diario del gerente destacado vs. industria (% del patrimonio previo)</h2>
+      <div class="filtros">Categoría <select id="d-cat"></select></div>
+      <div class="chart" id="c-diario-ger"></div>
+    </div>
+  </section>
+
+  <section id="s-estacionalidad">
+    <div class="card">
+      <h2>Flujo promedio según el día hábil del mes</h2>
+      <p class="nota" id="n-estac"></p>
+      <div class="filtros">Categoría <select id="e-cat"></select></div>
+      <div class="grid2">
+        <div><b style="font-size:12px">Por día hábil desde el inicio del mes</b><div class="chart" id="c-estac-dh"></div></div>
+        <div><b style="font-size:12px">Por días hábiles al cierre (1 = último día del mes)</b><div class="chart" id="c-estac-dc"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="s-liquidez">
+    <div class="card">
+      <h2>Riesgo de rescate: peor día y percentil 1 vs. la subcategoría</h2>
+      <p class="nota">Últimos 250 días hábiles, flujos en % del patrimonio del día anterior. Más negativo que la mediana de la subcategoría = rescates más bruscos que los pares. Fondos con patrimonio promedio mayor a $1.000 M.</p>
+      <div class="filtros">
+        <label><input type="checkbox" id="l-ger" checked> Solo gerente destacado</label>
+        <span>Subcategoría <select id="l-sub"></select></span>
+      </div>
+      <div class="chart" id="c-liq" style="height:380px"></div>
+      <div class="tabla" id="t-liq"></div>
+    </div>
+  </section>
+
+  <section id="s-sensibilidad">
+    <div class="card">
+      <h2>¿Cuánto mueve el ranking los flujos?</h2>
+      <p class="nota" id="n-sens"></p>
+      <div class="chart" id="c-sens" style="height:420px"></div>
+      <div class="tabla" id="t-sens"></div>
+    </div>
+  </section>
+
+  <section id="s-fees">
+    <div class="card">
+      <h2>Fee efectivo y participación por subcategoría</h2>
+      <p class="nota" id="n-fees"></p>
+      <div class="chart" id="c-fees" style="height:400px"></div>
+      <div class="tabla" id="t-fees"></div>
+    </div>
+    <div class="card">
+      <h2>Todos los gerentes de una subcategoría</h2>
+      <div class="filtros">Subcategoría <select id="f-sub"></select></div>
+      <div class="tabla" id="t-fees-sub"></div>
+    </div>
+  </section>
+
+  <section id="s-concentracion">
+    <div class="card">
+      <h2>Concentración de las suscripciones</h2>
+      <p class="nota">Suscripción bruta = suma de los días con entrada neta a nivel gerente. % top 3 días = cuánto de esa suscripción entró en los 3 mejores días del mes. Alto = dependencia de pocos tickets grandes. El mes en curso es parcial.</p>
+      <div class="filtros"><span>Mes <select id="k-mes"></select></span><span>Grupo <select id="k-grupo"></select></span></div>
+      <div class="chart" id="c-conc" style="height:380px"></div>
+      <div class="tabla" id="t-conc"></div>
+    </div>
+  </section>
+
+  <section id="s-cambios">
+    <div class="card">
+      <h2>Cambios en las condiciones de las clases</h2>
+      <p class="nota">Honorarios de gerente y depositaria, comisiones, mínimo, plazo de liquidación, calificación y depositaria, más altas y bajas de clases. Para filtrar las idas y vueltas de la planilla, un valor nuevo cuenta solo si se mantiene 5 planillas seguidas; los más recientes que todavía no cumplen eso figuran como provisorios.</p>
+      <div class="filtros">
+        <span>Campo <select id="c-campo"></select></span>
+        <span>Desde <input type="date" id="c-desde"></span>
+        <label><input type="checkbox" id="c-conf" checked> Sin provisorios</label>
+        <label><input type="checkbox" id="c-ger"> Solo gerente destacado</label>
+        <span>Patrimonio clase mín. ($M) <input type="number" id="c-min" value="1000" style="width:80px"></span>
+      </div>
+      <div class="tabla" id="t-cambios"></div>
+    </div>
+  </section>
+</main>
+<footer>Fuente: Planilla Diaria CAFCI archivada por la CNV e Informes Mensuales CAFCI. Clasificación de 1816. API: <a href="/api/insights">/api/insights</a>, <a href="/api/diario">/api/diario</a>.</footer>
+
+<script>
+const API = "/api/";
+const D = {};
+const charts = {};
+const $ = id => document.getElementById(id);
+const fmtN = (v, d = 0) => v == null || isNaN(v) ? "—" : Number(v).toLocaleString("es-AR", { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmtP = (v, d = 1) => v == null || isNaN(v) ? "—" : (v * 100).toLocaleString("es-AR", { minimumFractionDigits: d, maximumFractionDigits: d }) + "%";
+const cls = v => v < 0 ? "neg" : v > 0 ? "pos" : "";
+const ger = () => $("ger").value;
+const esGer = g => g === ger();
+const NAVY = "#0b2545", AZUL = "#1f5fa8", CEL = "#8fb8de", GRIS = "#c7ccd4", ROJO = "#c0392b", VERDE = "#1e8449";
+const PALETA = ["#0b2545", "#1f5fa8", "#5b9bd5", "#8fb8de", "#f4a259", "#bc4b51", "#5b8e7d", "#8d6a9f"];
+
+async function get(path) {
+  const r = await fetch(API + path);
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || r.status);
+  const j = await r.json();
+  return j.datos || j;
+}
+function chart(id) {
+  if (!charts[id]) charts[id] = echarts.init($(id), null, { renderer: "canvas" });
+  return charts[id];
+}
+window.addEventListener("resize", () => Object.values(charts).forEach(c => c.resize()));
+function opciones(sel, vals, def, todos) {
+  const s = $(sel), prev = s.value;
+  s.innerHTML = (todos ? `<option value="">${todos}</option>` : "") + vals.map(v => `<option>${v}</option>`).join("");
+  s.value = vals.includes(prev) ? prev : (def ?? (todos ? "" : vals[0]));
+}
+function tabla(id, filas, cols, opt = {}) {
+  const cont = $(id);
+  let orden = cont._orden || opt.orden || null;
+  const render = () => {
+    let f = filas.slice();
+    if (orden) { const { k, asc } = orden; f.sort((a, b) => { const x = a[k], y = b[k]; if (x == null) return 1; if (y == null) return -1; return (x > y ? 1 : x < y ? -1 : 0) * (asc ? 1 : -1); }); }
+    const th = cols.map(c => `<th class="${c.n ? "n" : ""}" data-k="${c.k}">${c.t}${orden && orden.k === c.k ? (orden.asc ? " ▲" : " ▼") : ""}</th>`).join("");
+    const tb = f.slice(0, opt.max || 800).map(r => `<tr class="${opt.propio && opt.propio(r) ? "propio" : ""}">` + cols.map(c => {
+      const v = r[c.k]; const txt = c.f ? c.f(v, r) : (v ?? "—");
+      return `<td class="${c.n ? "n" : ""} ${c.color ? cls(v) : ""}">${txt}</td>`; }).join("") + "</tr>").join("");
+    cont.innerHTML = filas.length ? `<table><thead><tr>${th}</tr></thead><tbody>${tb}</tbody></table>` : `<div class="cargando">Sin datos para el filtro elegido.</div>`;
+    cont.querySelectorAll("th").forEach(h => h.onclick = () => { const k = h.dataset.k; orden = { k, asc: orden && orden.k === k ? !orden.asc : false }; cont._orden = orden; render(); });
+  };
+  render();
+}
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+// ---------------------------------------------------------------- alertas
+function vAlertas() {
+  const A = D.alertas, g = ger();
+  const conAl = A.filter(r => r.alerta);
+  const propios = conAl.filter(r => esGer(r.gerente));
+  const rachaG = A.filter(r => esGer(r.gerente) && r.racha_rescates >= 5).reduce((s, r) => s + r.flujo_racha, 0);
+  $("k-alertas").innerHTML = [
+    [fmtN(conAl.length), "fondos con alerta en la industria"],
+    [fmtN(propios.length), `fondos de ${esc(g)} con alerta`],
+    [fmtN(rachaG), `$M rescatados en rachas abiertas (${esc(g)})`],
+    [fmtN(conAl.filter(r => /peor/.test(r.alerta)).length), "rescates del día fuera de lo normal"],
+  ].map(([v, l]) => `<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
+  opciones("a-cat", [...new Set(A.map(r => r.categoria).filter(Boolean))].sort(), "", "Todas");
+  const cat = $("a-cat").value;
+  const f = A.filter(r => (!$("a-solo").checked || r.alerta) && (!$("a-ger").checked || esGer(r.gerente)) && (!cat || r.categoria === cat));
+  tabla("t-alertas", f, [
+    { k: "fondo", t: "Fondo", f: v => esc(v) }, { k: "gerente", t: "Gerente", f: v => esc(v) }, { k: "subcategoria", t: "Subcategoría", f: v => esc(v) },
+    { k: "patrimonio", t: "Patrimonio", n: 1, f: v => fmtN(v) },
+    { k: "flujo_dia", t: "Flujo día", n: 1, color: 1, f: v => fmtN(v) }, { k: "flujo_dia_pct", t: "% día", n: 1, color: 1, f: v => fmtP(v) },
+    { k: "percentil_dia", t: "Percentil", n: 1, f: v => v == null ? "—" : fmtN(v * 100) },
+    { k: "flujo_5d_pct", t: "% 5 días", n: 1, color: 1, f: v => fmtP(v) },
+    { k: "racha_rescates", t: "Racha", n: 1 }, { k: "flujo_racha", t: "Flujo racha", n: 1, color: 1, f: v => fmtN(v) },
+    { k: "flujo_racha_pct", t: "% racha", n: 1, color: 1, f: v => fmtP(v) },
+    { k: "alerta", t: "Alerta", f: v => (v || "").split("; ").filter(Boolean).map(a => `<span class="tag ${/mejor/.test(a) ? "up" : ""}">${esc(a)}</span>`).join("") },
+  ], { propio: r => esGer(r.gerente), orden: { k: "flujo_racha", asc: true } });
+}
+
+// ---------------------------------------------------------------- diario
+async function vDiario() {
+  if (!D.diarioCat) {
+    const hasta = D.corte, d = new Date(hasta); d.setMonth(d.getMonth() - 3);
+    const desde = d.toISOString().slice(0, 10);
+    [D.diarioCat, D.diarioTot] = await Promise.all([get(`diario?desde=${desde}&hasta=${hasta}&por=categoria`), get(`diario?desde=${desde}&hasta=${hasta}&por=total`)]);
+    D.diarioDesde = desde;
+  }
+  const fechas = [...new Set(D.diarioCat.map(r => r.fecha))].sort();
+  const cats = [...new Set(D.diarioCat.map(r => r.categoria))].filter(c => c !== "(sin dato)").sort();
+  const m = new Map(D.diarioCat.map(r => [r.fecha + "|" + r.categoria, r.flujo]));
+  chart("c-diario-cat").setOption({
+    color: PALETA, tooltip: { trigger: "axis", valueFormatter: v => "$ " + fmtN(v) + " M" }, legend: { top: 0, type: "scroll" },
+    grid: { left: 70, right: 16, top: 34, bottom: 60 }, dataZoom: [{ type: "slider", height: 18, bottom: 8 }],
+    xAxis: { type: "category", data: fechas }, yAxis: { type: "value", axisLabel: { formatter: v => fmtN(v / 1000) + " mil M" } },
+    series: cats.map(c => ({ name: c, type: "bar", stack: "f", data: fechas.map(f => m.get(f + "|" + c) ?? 0) })),
+  }, true);
+  opciones("d-cat", ["Todas", ...cats], "Todas");
+  const cat = $("d-cat").value;
+  const q = `diario?desde=${D.diarioDesde}&hasta=${D.corte}&por=total&gerente=${encodeURIComponent(ger())}` + (cat !== "Todas" ? `&categoria=${encodeURIComponent(cat)}` : "");
+  const qi = cat !== "Todas" ? `diario?desde=${D.diarioDesde}&hasta=${D.corte}&por=total&categoria=${encodeURIComponent(cat)}` : null;
+  const [G, I] = await Promise.all([get(q), qi ? get(qi) : Promise.resolve(D.diarioTot)]);
+  const mg = new Map(G.map(r => [r.fecha, r.flujo_pct])), mi = new Map(I.map(r => [r.fecha, r.flujo_pct]));
+  chart("c-diario-ger").setOption({
+    color: [AZUL, GRIS], tooltip: { trigger: "axis", valueFormatter: v => fmtP(v, 2) }, legend: { top: 0 },
+    grid: { left: 60, right: 16, top: 34, bottom: 60 }, dataZoom: [{ type: "slider", height: 18, bottom: 8 }],
+    xAxis: { type: "category", data: fechas }, yAxis: { type: "value", axisLabel: { formatter: v => fmtP(v, 0) } },
+    series: [{ name: ger(), type: "bar", data: fechas.map(f => mg.get(f) ?? null) }, { name: "Industria", type: "line", symbol: "none", data: fechas.map(f => mi.get(f) ?? null) }],
+  }, true);
+}
+
+// ---------------------------------------------------------------- estacionalidad
+function vEstac() {
+  const E = D.estacionalidad;
+  opciones("e-cat", ["Total", ...[...new Set(E.map(r => r.categoria))].filter(c => c !== "Total").sort()], "Total");
+  const cat = $("e-cat").value;
+  $("n-estac").textContent = `Flujo neto medio del día en puntos básicos del patrimonio previo, ${E[0].desde} a ${E[0].hasta} (12 meses completos). El tooltip muestra también la mediana y el % de días con rescate neto.`;
+  for (const [eje, id] of [["dia_habil", "c-estac-dh"], ["dias_al_cierre", "c-estac-dc"]]) {
+    const f = E.filter(r => r.categoria === cat && r.eje === eje).sort((a, b) => a.dia - b.dia);
+    chart(id).setOption({
+      tooltip: { trigger: "axis", formatter: p => { const r = f[p[0].dataIndex]; return `Día ${r.dia}<br>Medio: ${fmtN(r.flujo_medio_bps, 1)} pb<br>Mediano: ${fmtN(r.flujo_mediano_bps, 1)} pb<br>Días con rescate: ${fmtP(r.pct_dias_rescate, 0)}<br>Meses: ${r.dias}`; } },
+      grid: { left: 50, right: 10, top: 16, bottom: 30 },
+      xAxis: { type: "category", data: f.map(r => r.dia), inverse: eje === "dias_al_cierre" }, yAxis: { type: "value", name: "pb" },
+      series: [{ type: "bar", data: f.map(r => ({ value: r.flujo_medio_bps, itemStyle: { color: r.flujo_medio_bps < 0 ? ROJO : AZUL } })),
+                 label: { show: true, position: "top", fontSize: 10, formatter: p => fmtN(p.value, 0) } }],
+    }, true);
+  }
+}
+
+// ---------------------------------------------------------------- liquidez
+function vLiq() {
+  const L = D.liquidez;
+  opciones("l-sub", [...new Set(L.map(r => r.subcategoria).filter(Boolean))].sort(), "", "Todas");
+  const sub = $("l-sub").value;
+  const f = L.filter(r => (!$("l-ger").checked || esGer(r.gerente)) && (!sub || r.subcategoria === sub));
+  const ff = f.slice().sort((a, b) => b.patrimonio_prom - a.patrimonio_prom).slice(0, 25);
+  chart("c-liq").setOption({
+    color: [AZUL, GRIS], legend: { top: 0 }, tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, valueFormatter: v => fmtP(v) },
+    grid: { left: 200, right: 20, top: 30, bottom: 20 },
+    yAxis: { type: "category", data: ff.map(r => r.fondo), inverse: true, axisLabel: { width: 190, overflow: "truncate" } },
+    xAxis: { type: "value", axisLabel: { formatter: v => fmtP(v, 0) } },
+    series: [{ name: "Peor día del fondo", type: "bar", data: ff.map(r => r.peor_dia) }, { name: "Mediana subcategoría", type: "bar", data: ff.map(r => r.peor_dia_subcat) }],
+  }, true);
+  tabla("t-liq", f, [
+    { k: "fondo", t: "Fondo", f: v => esc(v) }, { k: "gerente", t: "Gerente", f: v => esc(v) }, { k: "subcategoria", t: "Subcategoría", f: v => esc(v) },
+    { k: "patrimonio_prom", t: "Patrim. prom.", n: 1, f: v => fmtN(v) },
+    { k: "peor_dia", t: "Peor día", n: 1, f: v => fmtP(v) }, { k: "fecha_peor_dia", t: "Fecha" }, { k: "peor_dia_subcat", t: "Mediana subcat.", n: 1, f: v => fmtP(v) },
+    { k: "p1", t: "P1", n: 1, f: v => fmtP(v) }, { k: "p1_subcat", t: "P1 subcat.", n: 1, f: v => fmtP(v) },
+    { k: "p5", t: "P5", n: 1, f: v => fmtP(v) }, { k: "volatilidad", t: "Volatilidad", n: 1, f: v => fmtP(v, 2) },
+    { k: "pct_dias_rescate", t: "% días rescate", n: 1, f: v => fmtP(v, 0) }, { k: "fondos_subcat", t: "Fondos subcat.", n: 1 },
+  ], { propio: r => esGer(r.gerente), orden: { k: "patrimonio_prom", asc: false } });
+}
+
+// ---------------------------------------------------------------- sensibilidad
+function vSens() {
+  const S = D.sensibilidad;
+  $("n-sens").textContent = `Los fondos de cada subcategoría se ordenan en 5 grupos según su rendimiento del mes (q1 = 20% peor, q5 = 20% mejor) y se mide la mediana de las suscripciones netas del mes siguiente en % del patrimonio inicial. Meses ${S[0].desde} a ${S[0].hasta}, fondos con patrimonio promedio mayor a $5.000 M. Diferencia q5 − q1 alta = el ranking mueve plata.`;
+  const f = S.filter(r => r.subcategoria !== "Total").slice(0, 14);
+  chart("c-sens").setOption({
+    color: ["#bc4b51", "#e8a598", "#c7ccd4", "#8fb8de", "#1f5fa8"], legend: { top: 0 },
+    tooltip: { trigger: "axis", valueFormatter: v => fmtP(v) }, grid: { left: 60, right: 16, top: 34, bottom: 70 },
+    xAxis: { type: "category", data: f.map(r => r.subcategoria), axisLabel: { rotate: 35, fontSize: 11 } },
+    yAxis: { type: "value", axisLabel: { formatter: v => fmtP(v, 0) } },
+    series: [1, 2, 3, 4, 5].map(q => ({ name: `q${q}`, type: "bar", data: f.map(r => r[`q${q}_flujo_mes_sig`]) })),
+  }, true);
+  tabla("t-sens", S, [{ k: "subcategoria", t: "Subcategoría", f: v => esc(v) }, { k: "observaciones", t: "Obs.", n: 1 },
+    ...[1, 2, 3, 4, 5].map(q => ({ k: `q${q}_flujo_mes_sig`, t: `q${q}`, n: 1, color: 1, f: v => fmtP(v) })),
+    { k: "diferencia_q5_q1", t: "q5 − q1", n: 1, color: 1, f: v => fmtP(v) }], { orden: { k: "diferencia_q5_q1", asc: false } });
+}
+
+// ---------------------------------------------------------------- fees
+function vFees() {
+  const F = D.fees, g = ger();
+  $("n-fees").textContent = `${F[0].mes}. Fee efectivo = facturación de gerente anualizada / patrimonio promedio. Si el share de facturación supera al share de AUM, el gerente cobra por encima del mercado en esa subcategoría.`;
+  const f = F.filter(r => r.gerente === g).sort((a, b) => b.aum_promedio - a.aum_promedio);
+  chart("c-fees").setOption({
+    color: [AZUL, GRIS], legend: { top: 0 }, tooltip: { trigger: "axis", valueFormatter: v => fmtN(v, 2) + "%" },
+    grid: { left: 50, right: 16, top: 34, bottom: 80 },
+    xAxis: { type: "category", data: f.map(r => r.subcategoria), axisLabel: { rotate: 35, fontSize: 11 } }, yAxis: { type: "value", name: "% anual" },
+    series: [{ name: `Fee ${g}`, type: "bar", data: f.map(r => r.fee_efectivo * 100) }, { name: "Fee mercado", type: "bar", data: f.map(r => r.fee_mercado * 100) }],
+  }, true);
+  f.forEach(r => r.brecha = r.share_facturacion - r.share_aum);
+  tabla("t-fees", f, [
+    { k: "subcategoria", t: "Subcategoría", f: v => esc(v) }, { k: "aum_promedio", t: "AUM prom.", n: 1, f: v => fmtN(v) },
+    { k: "ranking_aum", t: "Puesto", n: 1 }, { k: "fondos", t: "Fondos", n: 1 },
+    { k: "fee_efectivo", t: "Fee", n: 1, f: v => fmtP(v, 2) }, { k: "fee_mercado", t: "Fee mercado", n: 1, f: v => fmtP(v, 2) },
+    { k: "share_aum", t: "Share AUM", n: 1, f: v => fmtP(v) }, { k: "share_facturacion", t: "Share facturación", n: 1, f: v => fmtP(v) },
+    { k: "brecha", t: "Facturación − AUM", n: 1, color: 1, f: v => fmtP(v) },
+  ], { orden: { k: "aum_promedio", asc: false } });
+  opciones("f-sub", [...new Set(F.map(r => r.subcategoria))].sort(), f[0] && f[0].subcategoria);
+  const s = F.filter(r => r.subcategoria === $("f-sub").value);
+  tabla("t-fees-sub", s, [
+    { k: "ranking_aum", t: "Puesto", n: 1 }, { k: "gerente", t: "Gerente", f: v => esc(v) }, { k: "aum_promedio", t: "AUM prom.", n: 1, f: v => fmtN(v) },
+    { k: "fee_efectivo", t: "Fee", n: 1, f: v => fmtP(v, 2) }, { k: "share_aum", t: "Share AUM", n: 1, f: v => fmtP(v) },
+    { k: "share_facturacion", t: "Share facturación", n: 1, f: v => fmtP(v) }, { k: "fondos", t: "Fondos", n: 1 },
+  ], { propio: r => esGer(r.gerente), orden: { k: "ranking_aum", asc: true } });
+}
+
+// ---------------------------------------------------------------- concentracion
+function vConc() {
+  const C = D.concentracion;
+  const ms = [...new Set(C.map(r => r.mes))].sort().reverse(), mesCorte = D.corte.slice(0, 7);
+  if (!$("k-mes").options.length) {
+    $("k-mes").innerHTML = ms.map(m => `<option value="${m}">${m}${m === mesCorte ? " (parcial)" : ""}</option>`).join("");
+    $("k-mes").value = ms.find(m => m !== mesCorte) || ms[0];
+  }
+  opciones("k-grupo", ["Total", "Liquidez (MM y T+1)", "Resto"], "Liquidez (MM y T+1)");
+  const f = C.filter(r => r.mes === $("k-mes").value && r.grupo === $("k-grupo").value).sort((a, b) => b.suscripcion_bruta_diaria - a.suscripcion_bruta_diaria);
+  const top = f.slice(0, 20);
+  chart("c-conc").setOption({
+    tooltip: { trigger: "axis", axisPointer: { type: "shadow" }, formatter: p => { const r = top[p[0].dataIndex]; return `${esc(r.gerente)}<br>% top 3 días: ${fmtP(r.pct_top3_dias, 0)}<br>Suscripción bruta: $ ${fmtN(r.suscripcion_bruta_diaria)} M<br>Días con entradas: ${r.dias_con_entradas} de ${r.dias}`; } },
+    grid: { left: 110, right: 30, top: 10, bottom: 20 },
+    yAxis: { type: "category", data: top.map(r => r.gerente), inverse: true }, xAxis: { type: "value", max: 1, axisLabel: { formatter: v => fmtP(v, 0) } },
+    series: [{ type: "bar", data: top.map(r => ({ value: r.pct_top3_dias, itemStyle: { color: esGer(r.gerente) ? AZUL : CEL } })),
+               label: { show: true, position: "right", fontSize: 10, formatter: p => fmtP(p.value, 0) } }],
+  }, true);
+  tabla("t-conc", f, [
+    { k: "gerente", t: "Gerente", f: v => esc(v) }, { k: "suscripcion_bruta_diaria", t: "Suscripción bruta", n: 1, f: v => fmtN(v) },
+    { k: "rescate_bruto_diario", t: "Rescate bruto", n: 1, f: v => fmtN(v) }, { k: "flujo_neto", t: "Flujo neto", n: 1, color: 1, f: v => fmtN(v) },
+    { k: "pct_top3_dias", t: "% top 3 días", n: 1, f: v => fmtP(v, 0) }, { k: "mayor_dia", t: "Mayor día", n: 1, f: v => fmtN(v) },
+    { k: "dias_con_entradas", t: "Días con entradas", n: 1 }, { k: "dias", t: "Días", n: 1 },
+  ], { propio: r => esGer(r.gerente), orden: { k: "suscripcion_bruta_diaria", asc: false } });
+}
+
+// ---------------------------------------------------------------- cambios
+const CAMPO = { hon_sg: "Honorario gerente", hon_sd: "Honorario depositaria", comision_ingreso: "Comisión ingreso", comision_rescate: "Comisión rescate",
+  minimo_inversion: "Mínimo inversión", plazo_liq: "Plazo liquidación", calificacion: "Calificación", depositaria: "Depositaria", alta_clase: "Alta de clase", baja_clase: "Baja de clase" };
+function vCambios() {
+  const X = D.cambios;
+  const s = $("c-campo"), prev = s.value;
+  s.innerHTML = `<option value="">Todos</option>` + Object.entries(CAMPO).map(([k, v]) => `<option value="${k}">${v}</option>`).join("");
+  s.value = prev;
+  if (!$("c-desde").value) { const d = new Date(D.corte); d.setDate(d.getDate() - 90); $("c-desde").value = d.toISOString().slice(0, 10); }
+  const campo = s.value, desde = $("c-desde").value, min = Number($("c-min").value || 0);
+  const f = X.filter(r => (!campo || r.campo === campo) && (!desde || r.fecha >= desde) && (!$("c-conf").checked || r.provisorio !== "True")
+    && (!$("c-ger").checked || esGer(r.gerente)) && ((r.patrimonio_clase || 0) >= min || r.campo === "alta_clase"));
+  const val = (v, r) => v == null ? "—" : /hon_|comision/.test(r.campo) ? fmtN(v, 2) + "%" : r.campo === "minimo_inversion" ? fmtN(v) : esc(v);
+  tabla("t-cambios", f, [
+    { k: "fecha", t: "Fecha" }, { k: "campo", t: "Cambio", f: v => CAMPO[v] || v }, { k: "clase", t: "Clase", f: v => esc(v) },
+    { k: "gerente", t: "Gerente", f: v => esc(v) }, { k: "subcategoria", t: "Subcategoría", f: v => esc(v) },
+    { k: "antes", t: "Antes", f: val }, { k: "despues", t: "Después", f: val },
+    { k: "patrimonio_clase", t: "Patrim. clase", n: 1, f: v => fmtN(v) },
+    { k: "provisorio", t: "", f: v => v === "True" ? `<span class="tag gris">provisorio</span>` : "" },
+  ], { propio: r => esGer(r.gerente), orden: { k: "fecha", asc: false } });
+}
+
+// ---------------------------------------------------------------- arranque
+const VISTAS = { alertas: vAlertas, diario: vDiario, estacionalidad: vEstac, liquidez: vLiq, sensibilidad: vSens, fees: vFees, concentracion: vConc, cambios: vCambios };
+let actual = "alertas";
+function mostrar(t) {
+  actual = t;
+  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.t === t));
+  document.querySelectorAll("section").forEach(s => s.classList.toggle("on", s.id === "s-" + t));
+  Promise.resolve(VISTAS[t]()).then(() => Object.values(charts).forEach(c => c.resize())).catch(e => console.error(e));
+  history.replaceState(null, "", "#" + t);
+}
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => mostrar(b.dataset.t));
+["a-solo", "a-ger", "a-cat"].forEach(id => $(id).onchange = vAlertas);
+$("d-cat").onchange = vDiario; $("e-cat").onchange = vEstac;
+["l-ger", "l-sub"].forEach(id => $(id).onchange = vLiq);
+$("f-sub").onchange = vFees; ["k-mes", "k-grupo"].forEach(id => $(id).onchange = vConc);
+["c-campo", "c-desde", "c-conf", "c-ger", "c-min"].forEach(id => $(id).onchange = vCambios);
+$("ger").onchange = () => { try { localStorage.setItem("ger", ger()); } catch (e) {} mostrar(actual); };
+
+(async () => {
+  try {
+    const tipos = ["alertas", "liquidez", "estacionalidad", "sensibilidad", "fees", "concentracion", "cambios"];
+    const [res, ...datos] = await Promise.all([get("insights"), ...tipos.map(t => get(`insights?tipo=${t}`))]);
+    tipos.forEach((t, i) => D[t] = datos[i]);
+    D.corte = res.fecha_corte; $("corte").textContent = res.fecha_corte;
+    const gers = [...new Set(D.fees.map(r => r.gerente))].sort();
+    let g0 = "Balanz"; try { g0 = localStorage.getItem("ger") || g0; } catch (e) {}
+    opciones("ger", gers, gers.includes(g0) ? g0 : gers[0]);
+    const h = location.hash.slice(1);
+    mostrar(VISTAS[h] ? h : "alertas");
+  } catch (e) {
+    document.querySelector("main").innerHTML = `<div class="card">No se pudieron cargar los datos: ${esc(e.message)}</div>`;
+  }
+})();
+</script>
+</body>
+</html>

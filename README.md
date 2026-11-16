@@ -76,6 +76,24 @@ Los filtros de texto no distinguen mayúsculas ni acentos. Montos en millones de
 Validación del snapshot contra 1816 (1/6 al 12/11/2026, por cuota): patrimonio inicio y fin y suscripciones netas
 de la industria dentro del 0,05%; 99% de las cuotas en pesos dentro del 1%; honorarios % iguales en 99%.
 
+## Insights (lo que 1816 no muestra)
+
+`scripts/insights.py` corre en cada actualización y deja en `procesado/insights/` indicadores precalculados sobre el
+detalle diario por clase, más una serie diaria liviana por fondo (`procesado/fondos_diario/AAAA-MM.csv.gz` y
+`parquet/fondos_diario.parquet`). Tablero web: **https://cafci.vercel.app/insights**.
+
+| Archivo / `tipo=` | Contenido |
+|---|---|
+| `alertas` | por fondo a la última fecha: racha de días con rescates netos, flujo del día y de 5 días, percentil del flujo del día contra su último año; alerta con racha ≥ 5 o día en el 2% extremo (y > 1%) |
+| `liquidez` | últimos 250 días hábiles: peor día de rescate, percentiles 1 y 5, volatilidad de flujos y % de días con rescate, contra la mediana de la subcategoría |
+| `estacionalidad` | flujo medio (pb del patrimonio previo) por día hábil del mes y por días al cierre, por categoría, últimos 12 meses completos |
+| `sensibilidad` | suscripciones netas del mes siguiente según el quintil de rendimiento del mes dentro de la subcategoría (últimos 24 meses) |
+| `fees` | fee efectivo de gerente por subcategoría y gerente vs. mercado, share de AUM y de facturación (último mes completo) |
+| `concentracion` | por gerente y mes: suscripción bruta diaria, % que entró en los 3 mejores días, días con entradas |
+| `cambios` | cambios de honorarios, comisiones, mínimo, plazo, calificación y depositaria que se sostienen ≥ 5 planillas, y altas/bajas de clases (13 meses) |
+
+Endpoints: `/api/insights?tipo=alertas&gerente=balanz&solo_alertas=1`, `/api/diario?desde=2026-10-01&por=categoria`.
+
 ## Consultas SQL sobre Parquet (DuckDB)
 
 ```sql

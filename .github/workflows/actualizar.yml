@@ -63,6 +63,9 @@ jobs:
       - name: Cuotapartistas (serie CAFCI y estimacion por fondo)
         continue-on-error: true
         run: python -u scripts/cuotapartistas.py
+      - name: Insights (alertas, liquidez, estacionalidad, fees, cambios) y serie diaria por fondo
+        continue-on-error: true
+        run: python -u scripts/insights.py
       - name: Parquet (consultas SQL por HTTP)
         run: python -u scripts/parquet.py
       - name: Guardar planillas originales (cache)

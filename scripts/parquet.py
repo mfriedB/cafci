@@ -93,6 +93,7 @@ def main():
     archivos = sorted(os.path.relpath(p, OUT).replace(os.sep, "/") for p in glob.glob(os.path.join(OUT, "**", "*.parquet"), recursive=True))
     cat = {"base_url": URL, "fondos_mensual": URL + "fondos_mensual.parquet", "fondos": URL + "fondos.parquet",
            "clases": URL + "clases.parquet", "dolar": URL + "dolar.parquet", "rendimientos": URL + "rendimientos.parquet",
+           "fondos_diario": URL + "fondos_diario.parquet",
            "clases_diario": [URL + a for a in archivos if a.startswith("clases_diario/")]}
     nuevo = json.dumps(cat, ensure_ascii=False, indent=1)
     p = os.path.join(OUT, "catalogo.json")
