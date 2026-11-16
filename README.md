@@ -5,9 +5,13 @@ la Planilla Diaria de CAFCI archivada por la CNV (desde enero 2020) y los Inform
 Se actualiza sola de lunes a viernes (GitHub Actions) y se publica en `procesado/` con el mismo formato que la
 bajada "Métricas por Fondo" de 1816.
 
+**Dónde están los datos:** la rama `main` tiene solo código. Los datos (`procesado/` e `informes/`) se publican en la
+rama **`datos`**, que tiene un único commit que cada corrida reemplaza, así el repo no crece con cada actualización.
+Para tenerlos local: `git clone --depth 1 --branch datos https://github.com/mfriedB/cafci cafci-datos`.
+
 ## Consumo (API: archivos con dirección fija)
 
-Base: `https://raw.githubusercontent.com/mfriedB/cafci/main/procesado/`
+Base: `https://raw.githubusercontent.com/mfriedB/cafci/datos/procesado/`
 
 | Archivo | Contenido |
 |---|---|
@@ -99,7 +103,7 @@ Endpoints: `/api/insights?tipo=alertas&gerente=balanz&solo_alertas=1`, `/api/dia
 ```sql
 INSTALL httpfs; LOAD httpfs;
 SELECT Mes, Gerente, sum(AUM_promedio) AS aum
-FROM 'https://raw.githubusercontent.com/mfriedB/cafci/main/procesado/parquet/fondos_mensual.parquet'
+FROM 'https://raw.githubusercontent.com/mfriedB/cafci/datos/procesado/parquet/fondos_mensual.parquet'
 WHERE Mes >= '2026-01' GROUP BY ALL ORDER BY Mes, aum DESC;
 ```
 

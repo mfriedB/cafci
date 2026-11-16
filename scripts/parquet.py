@@ -17,7 +17,7 @@ import pyarrow.parquet as pq
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROC = os.path.join(BASE, "procesado"); OUT = os.path.join(PROC, "parquet")
-URL = "https://raw.githubusercontent.com/mfriedB/cafci/main/procesado/parquet/"
+URL = "https://raw.githubusercontent.com/mfriedB/cafci/datos/procesado/parquet/"
 os.makedirs(os.path.join(OUT, "clases_diario"), exist_ok=True)
 cambios = 0
 

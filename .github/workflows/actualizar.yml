@@ -1,5 +1,7 @@
 # Base de fondos CAFCI/CNV: descarga las planillas diarias oficiales, el dolar MEP y los informes de CAFCI,
-# procesa todo al formato de la base de 1816 y publica los resultados en procesado/ (rama main).
+# procesa todo al formato de la base de 1816 y publica los resultados en la rama `datos` (procesado/ e informes/).
+# La rama datos tiene un solo commit que se reemplaza en cada corrida: el historial no crece con los datos.
+# main guarda solo codigo.
 name: Actualizar base CAFCI-CNV
 
 on:
@@ -24,6 +26,14 @@ jobs:
     timeout-minutes: 300
     steps:
       - uses: actions/checkout@v5
+      - name: Traer los datos publicados (rama datos)
+        run: |
+          if git clone -q --depth 1 --branch datos --single-branch "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" _datos; then
+            for d in procesado informes; do rm -rf "$d"; [ -d "_datos/$d" ] && mv "_datos/$d" "$d"; done
+          else
+            echo "No existe la rama datos: se arma desde cero"; mkdir -p _datos
+          fi
+          mkdir -p procesado informes
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
@@ -74,12 +84,16 @@ jobs:
         with:
           path: raw
           key: planillas-${{ github.run_id }}
-      - name: Publicar resultados
+      - name: Publicar resultados (rama datos, un solo commit)
         run: |
+          cd _datos
+          [ -d .git ] || { git init -q; git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}"; }
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add procesado informes
-          if ! git diff --cached --quiet; then
-            git commit -m "Base CAFCI-CNV: actualizacion automatica"
-            for i in 1 2 3; do git pull --rebase -X theirs origin main && git push origin HEAD:main && break; sleep 10; done
-          fi
+          rm -rf procesado informes && mv ../procesado ../informes .
+          git add -A
+          if git rev-parse -q --verify HEAD >/dev/null && git diff --cached --quiet; then echo "Sin cambios en los datos"; exit 0; fi
+          git checkout -q --orphan publicar
+          git commit -q -m "Base CAFCI-CNV: datos al $(python3 -c "import json;print(json.load(open('procesado/index.json'))['mensual'][-1]['hasta'])") (corrida ${{ github.run_id }})"
+          git push -q -f origin publicar:datos
+          echo "Publicado en la rama datos: $(git rev-parse --short HEAD)"

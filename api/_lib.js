@@ -1,6 +1,6 @@
 // Utilidades compartidas de la API: lee la base publicada en GitHub (procesado/) con cache en memoria.
 const zlib = require("zlib");
-const BASE = process.env.BASE_URL || "https://raw.githubusercontent.com/mfriedB/cafci/main/procesado/";
+const BASE = process.env.BASE_URL || "https://raw.githubusercontent.com/mfriedB/cafci/datos/procesado/";
 const TTL = 10 * 60 * 1000;
 const cache = new Map();
 

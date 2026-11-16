@@ -8,7 +8,7 @@ Salida: SALIDA/industria.json y SALIDA/internos.json
 import io, json, os, sys, urllib.request
 import pandas as pd
 
-RAW = "https://raw.githubusercontent.com/mfriedB/cafci/main/procesado/informe/"
+RAW = "https://raw.githubusercontent.com/mfriedB/cafci/datos/procesado/informe/"
 AQUI = os.path.dirname(os.path.abspath(__file__))
 LOCAL = os.path.join(os.path.dirname(AQUI), "procesado", "informe")
 

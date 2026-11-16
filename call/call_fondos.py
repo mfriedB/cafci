@@ -19,7 +19,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib import font_manager
 
-BASE_URL = "https://raw.githubusercontent.com/mfriedB/cafci/main/procesado/"
+BASE_URL = "https://raw.githubusercontent.com/mfriedB/cafci/datos/procesado/"
 AQUI = os.path.dirname(os.path.abspath(__file__))
 NAVY, LIGHT, BZ, IND, VIOLET, GRISAZ, TITLE = "#2B3270", "#5B84D1", "#6B5CFF", "#232A5C", "#7400F5", "#5E7AA6", "#2E3283"
 MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]

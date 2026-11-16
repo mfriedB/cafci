@@ -28,6 +28,16 @@ ap.add_argument("--mes"); ap.add_argument("--cafci", required=True); ap.add_argu
 ap.add_argument("--dax", required=True); ap.add_argument("--hist", required=True); ap.add_argument("--out", required=True)
 ap.add_argument("--chequear", action="store_true", help="sólo controla que estén los datos del mes y termina")
 A_ = ap.parse_args()
+# Los datos procesados viven en la rama `datos` del repo (main tiene solo codigo). Si --cafci es un clon de main sin
+# procesado/, se baja la rama datos al lado y se usa esa.
+if not os.path.isdir(os.path.join(A_.cafci, "procesado")):
+    _d = os.path.join(A_.cafci, "_datos")
+    if not os.path.isdir(os.path.join(_d, "procesado")):
+        subprocess.run(["git", "clone", "-q", "--depth", "1", "--branch", "datos", "--single-branch",
+                        "https://github.com/mfriedB/cafci", _d], check=True)
+    else:
+        subprocess.run(["git", "-C", _d, "pull", "-q", "--depth", "1"], check=False)
+    A_.cafci = _d
 OUT = A_.out; PNG = os.path.join(OUT, "png"); os.makedirs(PNG, exist_ok=True); os.makedirs(os.path.join(OUT, "project", "slides"), exist_ok=True)
 
 # ------------------------------------------------------------------ formato
