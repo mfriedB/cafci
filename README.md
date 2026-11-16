@@ -102,3 +102,35 @@ SELECT Mes, Gerente, sum(AUM_promedio) AS aum
 FROM 'https://raw.githubusercontent.com/mfriedB/cafci/main/procesado/parquet/fondos_mensual.parquet'
 WHERE Mes >= '2026-01' GROUP BY ALL ORDER BY Mes, aum DESC;
 ```
+
+## Reglas de procesamiento de la base (validadas contra 1816, nov-2026)
+
+`scripts/procesar.py` ya aplica estas reglas solo. Sirven para revisar diferencias contra 1816 y para no deshacerlas.
+
+| Caso | Qué hace la base CAFCI | Ejemplo |
+|---|---|---|
+| **Migración de clase**: una clase deja de informar y el fondo sigue con otras (todo pasa de Clase I a Clase C) | Registra la salida de la clase vieja el mismo día que entra a la nueva, así el traspaso neto da cero (espera 7 días por si es rezago). | Galicia 28/08/2026 (Fima Retorno Total, Fima Infraestructura I y II). 1816 contó la entrada en agosto y la salida en septiembre. |
+| **Fondo que deja de informar** (liquidación, fusión, baja) | Su patrimonio sale como rescate el día hábil siguiente (espera 10 días por si es rezago). | Alpha Recursos Naturales, abril 2026. |
+| **Fondo o clase nueva** | El primer dato cuenta como suscripción inicial completa. Si las primeras planillas traen el código CNV vacío, lo completa con el de la misma clase. | Mills M1000 Balanceado Pesos, 05/05/2026. |
+| **Flujo real de ida y vuelta** (suscripción o rescate grande el último día del mes que vuelve al día siguiente) | No se descarta como error si el dato es coherente (patrimonio = cuotapartes × VCP / 1000) y el VCP no salta. Solo se descartan los saltos incoherentes o los ceros entre dos días con dato. | Delta Pesos 31/07, Unico Liquidez Pesos 30/10. |
+| **Cambio de nombre o de gerente** | Se compara por código CNV, no por nombre; el nombre del mes es el último informado. | Gainvest → Stonex, ST Zero → Consultatio Zero, HF → Fima. |
+
+Diferencias conocidas en las que 1816 se equivoca, que **no** se corrigen en la base:
+- **Dato viejo a fin de mes**: 1816 repite el patrimonio del día anterior si el fondo informó tarde (Pionero Pesos Plus 31/08: +199 mil M en 1816).
+- **Alta tardía**: 1816 incorpora fondos nuevos uno o más meses después (Alpha Dólar, febrero en CAFCI y marzo en 1816; MAF Gestión Activa II).
+- **Bajas transitorias**: 1816 saca un fondo un mes que no informó a fin de mes y lo vuelve a sumar como suscripción (JA Roca, Apolo Dólares, Cocos Medalla).
+- **Patrimonio inicial revisado**: el AUM inicial de 1816 no siempre coincide con su propio cierre del mes anterior (Fima Premium, Allaria Ahorro en enero).
+- **Valor distinto del último día** en algunos Money Market (Lombard 31/07, Premier Renta CP 31/08 y 30/09): se compensa al mes siguiente; queda la versión de la planilla CNV.
+
+Resultado de la validación ene–oct 2026:
+- Flujo ex-MM de Balanz igual todos los meses (±3 mil M).
+- AUM total ±0,2 %.
+- Flujo ex-MM acumulado de la industria: 12,51 bill. en CAFCI contra 12,55 bill. en 1816.
+- Ventaja de Balanz sobre el segundo: +42 % en ambas.
+
+Al comparar con 1816:
+- Emparejar por código CNV y sumar agosto y septiembre juntos cuando hubo migraciones.
+- Revisar cada diferencia de más de 8 mil M por fondo con la planilla diaria (`procesado/clases_diario/AAAA-MM.csv.gz`) antes de decidir cuál está bien.
+- Si aparece un patrón nuevo, agregar la regla a `procesar.py` y a esta tabla.
+
+En el log de cada run de GitHub Actions ("Procesar") se ven dos controles: "datos puntuales descartados" y "clases que dejaron de informar con el fondo activo". Un salto grande en cualquiera de los dos respecto del run anterior es para revisar.
