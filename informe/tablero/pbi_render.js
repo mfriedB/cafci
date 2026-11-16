@@ -703,7 +703,7 @@
       }
     }
     // eje oculto: el Power BI estira la barra mas larga hasta el borde del area (sin redondear la escala)
-    if (!showVal && !isLineKind && series.some(x => x.type === "bar") && typeof endV !== "number") { valAxis.max = m => Math.max(0, m.max); if (typeof startV !== "number") valAxis.min = m => Math.min(0, m.min); }   // si no, containLabel de echarts reserva lugar para etiquetas ocultas
+    if (!showVal && !isLineKind && series.some(x => x.type === "bar") && typeof endV !== "number") { valAxis.max = m => Math.max(0, m.max); if (typeof startV !== "number") valAxis.min = m => (m.min < 0 ? m.min - (Math.max(0, m.max) - m.min) * (horizontal ? 0.02 : 0.22) : 0); }   // si no, containLabel de echarts reserva lugar para etiquetas ocultas
     const y2Axis = y2.length ? { type: "value", scale: true, show: false, splitLine: { show: false },
       min: O(v, "y2Axis", "secStart", O(v, "valueAxis", "secStart")), max: O(v, "y2Axis", "secEnd", O(v, "valueAxis", "secEnd")), axisLabel: { show: false, formatter: fmtAxis(y2[0]) } } : null;
     if (y2Axis) {   // eje secundario oculto: la linea usa todo el alto, como el Power BI
