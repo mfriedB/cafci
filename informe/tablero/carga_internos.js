@@ -384,10 +384,13 @@
     }
     const cols = (tab[0] || []).map(colNom), idx = n => cols.indexOf(n);
     // 2) formato mensual de las carpetas (AnoMesCorto, FechaFinMes, Unidad Negocio, ComisionYTM)
-    if (idx("FechaFinMes") >= 0 && idx("Unidad Negocio") >= 0 && idx("ComisionYTM") >= 0) {
+    // (también "Exportar datos › Datos resumidos" de la matriz, por Unidad Negocio o por Fondos)
+    const pri = ns => ns.map(idx).find(i => i >= 0) ?? -1;
+    const iMes = pri(["FechaFinMes", "AnoMesCorto", "Mes", "Fecha"]), iNom = pri(["Unidad Negocio", "Fondos", "Fondo", "Analisis por"]), iVal = pri(["ComisionYTM", "Comision", "Comisión"]);
+    if (iMes >= 0 && iNom >= 0 && iVal >= 0 && (idx("ComisionYTM") >= 0 || idx("FechaFinMes") >= 0 || idx("AnoMesCorto") >= 0)) {
       const meses = {}, nombres = new Set();
-      for (const r of tab.slice(1)) { const mes = aMes(r[idx("FechaFinMes")]), n = limpio(r[idx("Unidad Negocio")]); if (!mes || !n) continue;
-        nombres.add(n); (meses[mes] = meses[mes] || []).push([n, num(r[idx("ComisionYTM")])]); }
+      for (const r of tab.slice(1)) { const mes = aMes(r[iMes]), n = limpio(r[iNom]); if (!mes || !n || n === "Total" || r[iVal] == null || r[iVal] === "") continue;
+        nombres.add(n); (meses[mes] = meses[mes] || []).push([n, num(r[iVal])]); }
       const enUnidad = [...nombres].filter(n => UNIDAD[n]).length;
       return finCom(forzar || (enUnidad >= nombres.size / 2 ? "com_unidad" : "com_fondo"), meses);
     }
