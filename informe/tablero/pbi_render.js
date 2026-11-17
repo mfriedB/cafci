@@ -302,7 +302,7 @@
     for (const b of boxes) { const y = +b.dataset.y0 + corr.get(b); b.style.top = y + "px";
       W = Math.max(W, orig.get(b).x + parseFloat(b.style.width) + 8); H = Math.max(H, y + parseFloat(b.style.height) + 8); }
     stage.style.width = W + "px"; stage.style.height = H + "px";
-    stage.dataset.alto = H > page.h ? "1" : "";
+    stage.dataset.alto = H > page.h && stage.dataset.ajuste === "largo" ? "1" : "";
     if (window.APP && APP.fit) APP.fit();
   }
   function fontFam(f, dflt) {
@@ -1319,7 +1319,8 @@
       } catch (e) { console.error(v.type, v.id, e); }
       if (stage.lastElementChild && stage.childElementCount > before) stage.lastElementChild.style.zIndex = String(i + 1);
     });
-    if (cambios.some(c => c.ajustar)) { ajustarHoja(stage, page); if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (stage.isConnected) ajustarHoja(stage, page); }); }
+    const aj = (cambios.find(c => c.ajustar) || {}).ajustar;
+    if (aj) { stage.dataset.ajuste = aj; ajustarHoja(stage, page); if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (stage.isConnected) ajustarHoja(stage, page); }); }
     return stage;
   };
   function textSel(v) {
