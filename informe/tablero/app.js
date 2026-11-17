@@ -32,7 +32,7 @@
     const w = stage.offsetWidth, h = stage.offsetHeight;
     const availW = main.clientWidth - 24, availH = window.innerHeight - main.getBoundingClientRect().top - 16 + window.scrollY;
     let s = availW / w;
-    if (availH > 300) s = Math.min(s, availH / h);
+    if (availH > 300 && !stage.dataset.alto) s = Math.min(s, availH / h);   // hojas que crecen para mostrar tablas completas: escala al ancho y se recorre con el scroll
     s = Math.max(0.3, s);
     stage.style.transform = `scale(${s})`;
     scaleBox.style.width = w * s + "px"; scaleBox.style.height = h * s + "px";
@@ -63,7 +63,7 @@
   }
   window.addEventListener("resize", () => { fit(); });
   // datos internos cargados a mano (carga_internos.js): se leen de la base del artifact y se vuelve a dibujar la hoja
-  window.APP = { rerender: () => requestAnimationFrame(render) };
+  window.APP = { rerender: () => requestAnimationFrame(render), fit: () => fit() };
   if (window.CARGAS && CARGAS.conectar) CARGAS.conectar();
 
   /* ---- Aviso: fondos con patrimonio que no estan en la tabla de 1816 y hay que clasificar ---- */

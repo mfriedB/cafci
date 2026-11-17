@@ -15,6 +15,8 @@
   const LEY_RESUMEN = { top: 6, left: 8, icon: "circle", itemWidth: 10, itemHeight: 10, itemGap: 18, textStyle: { fontFamily: "'Segoe UI', Arial, sans-serif", fontSize: 13, color: "#605E5C", padding: [0, 0, 0, 0] } };
   C.push({ hoja: "Industria FCI - AUM Resumen", leyenda: LEY_RESUMEN });
   /* Compraventa a Contrapartes: los pesos se dolarizan al oficial vendedor del BCRA de cada fecha (antes, 1.400 fijo) */
+  /* Compraventa a Contrapartes: tablas completas, sin barras de desplazamiento (la hoja crece en alto y ancho) */
+  for (const h of ["Compraventa a Contrapartes: Montos", "Compraventa a Contrapartes: %", "Compraventa a Contrapartes: Tabla Completa"]) C.push({ hoja: h, ajustar: true });
   C.push({ hoja: "Compraventa a Contrapartes: Montos", id: "96ea618686bb0cb03467", texto: "Montos en millones de USD, los $ dolarizados al dólar oficial vendedor del BCRA de cada operación" });
   C.push({ hoja: "Industria FCI - AUM Resumen", id: "ed7a3bd05e7571b7549c", dibujar(v, env, R) {
     const { body } = R.container(v, env.host, null);

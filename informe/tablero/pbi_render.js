@@ -275,6 +275,36 @@
     host.appendChild(box);
     return { box, body, title };
   }
+  /* Hojas "ajustar" (pbi_custom.js): las tablas y textos se agrandan hasta mostrar todo su contenido sin barras de desplazamiento;
+     lo que está debajo se corre hacia abajo y la hoja crece en alto y ancho (el tablero la escala al ancho y se recorre con el scroll de la página). */
+  function ajustarHoja(stage, page) {
+    const boxes = [...stage.children].filter(b => b.classList.contains("pv"));
+    const orig = new Map(boxes.map(b => [b, { x: parseFloat(b.style.left), y: parseFloat(b.style.top), w: parseFloat(b.dataset.w0 || b.style.width), h: parseFloat(b.dataset.h0 || b.style.height) }]));
+    boxes.forEach(b => { const o = orig.get(b); b.dataset.w0 = o.w; b.dataset.h0 = o.h; b.dataset.y0 = b.dataset.y0 || o.y;
+      b.style.width = o.w + "px"; b.style.height = o.h + "px"; b.style.top = b.dataset.y0 + "px"; });
+    const crec = [];
+    for (const b of boxes) {
+      const o = { x: orig.get(b).x, y: +b.dataset.y0, w: +b.dataset.w0, h: +b.dataset.h0 };
+      const sc = b.querySelector(".pv-tw") || (b.dataset.t === "textbox" ? b.querySelector(".pv-body") : null); if (!sc) continue;
+      const dw = Math.max(0, Math.ceil(sc.scrollWidth - sc.clientWidth)), dh = Math.max(0, Math.ceil(sc.scrollHeight - sc.clientHeight));
+      if (dw > 1) b.style.width = (o.w + dw + 2) + "px";
+      if (dh > 1) { b.style.height = (o.h + dh + 2) + "px"; crec.push({ b, o, dh: dh + 2, dw: dw > 1 ? dw + 2 : 0 }); }
+      if (sc.classList.contains("pv-tw")) sc.style.overflow = "hidden";
+    }
+    // lo que está debajo de un visual que creció se corre hacia abajo
+    const corr = new Map(boxes.map(b => [b, 0]));
+    for (const c of crec.sort((a, b) => a.o.y - b.o.y)) {
+      const bot = c.o.y + c.o.h, x0 = c.o.x, x1 = c.o.x + c.o.w + c.dw;
+      for (const b of boxes) { if (b === c.b) continue; const y = +b.dataset.y0, x = orig.get(b).x, w = parseFloat(b.style.width);
+        if (y >= bot - 4 && x < x1 && x + w > x0) corr.set(b, Math.max(corr.get(b), corr.get(c.b) + c.dh)); }
+    }
+    let W = page.w, H = page.h;
+    for (const b of boxes) { const y = +b.dataset.y0 + corr.get(b); b.style.top = y + "px";
+      W = Math.max(W, orig.get(b).x + parseFloat(b.style.width) + 8); H = Math.max(H, y + parseFloat(b.style.height) + 8); }
+    stage.style.width = W + "px"; stage.style.height = H + "px";
+    stage.dataset.alto = H > page.h ? "1" : "";
+    if (window.APP && APP.fit) APP.fit();
+  }
   function fontFam(f, dflt) {
     if (!f || typeof f !== "string") return dflt;
     const n = f.replace(/''/g, "'").split(",")[0].replace(/'/g, "").trim();
@@ -1218,7 +1248,7 @@
       if (rv === "Balanz") th.style.fontWeight = "700";
       tr.appendChild(th);
       for (const c of cvals) { const vv = cell.get(JSON.stringify([rv, c])) || []; ms.forEach((m, j) => { const td = vcell(m, vv[j], i); if (grads[j]) td.style.background = grads[j](vv[j]); tr.appendChild(td); }); }
-      if (cf && colSub) { const vv = rowTotMap.get(rv) || []; ms.forEach((m, j) => tr.appendChild(vcell(m, vv[j], i, true))); }
+      if (cf && colSub) { const vv = (rf ? rowTotMap.get(rv) : grand && grand.v) || []; ms.forEach((m, j) => tr.appendChild(vcell(m, vv[j], i, true))); }
       tb.appendChild(tr);
     });
     if (rowSub && rf) {
@@ -1289,6 +1319,7 @@
       } catch (e) { console.error(v.type, v.id, e); }
       if (stage.lastElementChild && stage.childElementCount > before) stage.lastElementChild.style.zIndex = String(i + 1);
     });
+    if (cambios.some(c => c.ajustar)) { ajustarHoja(stage, page); if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (stage.isConnected) ajustarHoja(stage, page); }); }
     return stage;
   };
   function textSel(v) {
