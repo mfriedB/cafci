@@ -177,7 +177,9 @@ def cuotapartistas(base):
     # pesos a dolares al oficial vendedor del BCRA de la fecha de la planilla (fecha del nombre o de modificacion del archivo)
     import re as _re
     nm = os.path.basename(fs[-1]); m = _re.search(r"(20\d{2})[-_.](\d{2})[-_.](\d{2})", nm) or _re.search(r"(\d{1,2})[-_.](\d{1,2})[-_.](20\d{2})", nm)
+    m2 = None if m else _re.search(r"(?:^|\D)(0?[1-9]|1[0-2])[-_.](20\d{2})(?!\d)", nm)   # MM-AAAA: cierre de ese mes
     fecha = (f"{m.group(1)}-{m.group(2)}-{m.group(3)}" if len(m.group(1)) == 4 else f"{m.group(3)}-{int(m.group(2)):02d}-{int(m.group(1)):02d}") if m \
+        else (pd.Timestamp(f"{m2.group(2)}-{int(m2.group(1)):02d}-01") + pd.offsets.MonthEnd(0)).strftime("%Y-%m-%d") if m2 \
         else pd.Timestamp(os.path.getmtime(fs[-1]), unit="s").strftime("%Y-%m-%d")
     tc = tc_oficial_al(fecha); tcv = tc[1] if tc else 1535
     d["importe_usd_mill"] = d.Importe.where(d.Moneda.map(limpio) != "$", d.Importe / tcv) / 1e6

@@ -78,6 +78,7 @@
     const s = String(nombre || ""); let m;
     if ((m = s.match(/(20\d{2})[-_. ]?(0[1-9]|1[0-2])(?!\d)/))) return `${m[1]}-${m[2]}`;
     if ((m = s.match(/(\d{1,2})[-_.](\d{1,2})[-_.](20\d{2})/))) return `${m[3]}-${pad(+m[2])}`;
+    if ((m = s.match(/(?:^|\D)(0?[1-9]|1[0-2])[-_.](20\d{2})(?!\d)/))) return `${m[2]}-${pad(+m[1])}`;   // MM-AAAA (ej. "Posición CP TODOS 10-2026")
     const h = new Date(), d = h.getDate() <= 20 ? new Date(h.getFullYear(), h.getMonth() - 1, 1) : h;
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
   }
@@ -137,6 +138,7 @@
     exclusiones: { nombre: "Clientes excluidos (Ex Meli)", cols: ["cliente", "motivo"], unidad: "" },
     textos: { nombre: "Textos del mes (acciones, destacados, ratings, follow-ups)", cols: ["seccion", "texto"], unidad: "" },
     compraventa: { nombre: "Compra/venta de especies de los fondos (contrapartes)", cols: CV_COLS, unidad: "USD" },
+    serie_facturacion: { nombre: "Serie de facturación mensual (Serie Facturación)", cols: ["fecha", "facturacion"], unidad: "USD" },
     cuotapartistas: { nombre: "Cantidad de cuotapartistas por fondo y tipo de inversor", cols: ["Fondo", "categoria_tipo_inversor", "importe_usd_mill", "cuotapartistas"], unidad: "USD" }
   };
   /* Plantillas Excel (una hoja, encabezados en la primera fila). Las de AUM, clientes e inversores reemplazan a las
@@ -180,8 +182,59 @@
   const xlsx = () => xlsxP || (xlsxP = new Promise((ok, mal) => { if (window.XLSX) return ok(window.XLSX);
     const s = document.createElement("script"); s.src = XLSX_URL; s.onload = () => ok(window.XLSX); s.onerror = () => mal(new Error("no se pudo cargar el lector de Excel")); document.head.appendChild(s); }));
 
+  /* Lector rápido para .xlsx grandes (ej. la planilla de cuotapartistas, 300 mil filas): descomprime la hoja en streaming
+     y la recorre fila por fila sin armar el libro entero. Si la hoja es de cuotapartistas, guarda solo las columnas que se usan. */
+  const USA_CP = ["Fondo", "Clase", "Tipo Inversor", "Cuotapartista", "Importe", "Moneda"];
+  async function leerXlsxGrande(file) {
+    const buf = async (a, b) => new Uint8Array(await file.slice(a, b).arrayBuffer());
+    const tail = await buf(Math.max(0, file.size - 70000), file.size), dv = new DataView(tail.buffer);
+    let eo = -1; for (let i = tail.length - 22; i >= 0; i--) if (dv.getUint32(i, true) === 0x06054b50) { eo = i; break; }
+    if (eo < 0) throw new Error("no es un .xlsx válido");
+    const n = dv.getUint16(eo + 10, true), cdSize = dv.getUint32(eo + 12, true), cdOff = dv.getUint32(eo + 16, true);
+    const cd = await buf(cdOff, cdOff + cdSize), cv = new DataView(cd.buffer), ent = {}, td = new TextDecoder();
+    for (let i = 0, p = 0; i < n; i++) {
+      const met = cv.getUint16(p + 10, true), cs = cv.getUint32(p + 20, true), ln = cv.getUint16(p + 28, true), lx = cv.getUint16(p + 30, true), lc = cv.getUint16(p + 32, true), off = cv.getUint32(p + 42, true);
+      ent[td.decode(cd.subarray(p + 46, p + 46 + ln))] = { met, cs, off }; p += 46 + ln + lx + lc;
+    }
+    async function stream(nombre) {
+      const e = ent[nombre]; const h = await buf(e.off, e.off + 30), hv = new DataView(h.buffer);
+      const ini = e.off + 30 + hv.getUint16(26, true) + hv.getUint16(28, true);
+      let st = file.slice(ini, ini + e.cs).stream(); if (e.met === 8) st = st.pipeThrough(new DecompressionStream("deflate-raw"));
+      return st.pipeThrough(new TextDecoderStream());
+    }
+    const ent_ = s => s.replace(/&(lt|gt|amp|quot|apos|#\d+|#x[0-9a-f]+);/gi, (m, c) => ({ lt: "<", gt: ">", amp: "&", quot: '"', apos: "'" })[c.toLowerCase()] || String.fromCodePoint(c[1] === "x" || c[1] === "X" ? parseInt(c.slice(2), 16) : +c.slice(1)));
+    const textoDe = x => { let t = "", m; const re = /<t\b[^>]*>([\s\S]*?)<\/t>/g; while ((m = re.exec(x))) t += m[1]; return ent_(t); };
+    let ss = [];
+    if (ent["xl/sharedStrings.xml"]) { let txt = ""; for await (const ch of await stream("xl/sharedStrings.xml")) txt += ch; const re = /<si>([\s\S]*?)<\/si>/g; let m; while ((m = re.exec(txt))) ss.push(textoDe(m[1])); }
+    const hoja = ent["xl/worksheets/sheet1.xml"] ? "xl/worksheets/sheet1.xml" : Object.keys(ent).filter(k => /^xl\/worksheets\/sheet\d+\.xml$/.test(k)).sort()[0];
+    const col = r => { let c = 0; for (const ch of r) { const k = ch.charCodeAt(0); if (k < 65) break; c = c * 26 + (k - 64); } return c - 1; };
+    const filas = []; let keep = null, resto = "";
+    const fila = x => {
+      const r = []; const re = /<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g; let m;
+      while ((m = re.exec(x))) {
+        const at = m[1], rr = /\br="([A-Z]+)/.exec(at), t = (/\bt="(\w+)"/.exec(at) || [])[1], ci = rr ? col(rr[1]) : r.length, inner = m[2] || "";
+        let v = null;
+        if (t === "inlineStr") v = textoDe(inner);
+        else { const vv = /<v>([\s\S]*?)<\/v>/.exec(inner); if (vv) v = t === "s" ? ss[+vv[1]] : t === "str" || t === "e" ? ent_(vv[1]) : t === "b" ? vv[1] === "1" : +vv[1]; }
+        r[ci] = v;
+      }
+      for (let i = 0; i < r.length; i++) if (r[i] === undefined) r[i] = null;
+      if (!filas.length) { const h = r.map(limpio); if (USA_CP.every(c => h.includes(c))) keep = USA_CP.map(c => h.indexOf(c)); }
+      filas.push(keep ? keep.map(i => r[i] ?? null) : r);
+    };
+    for await (const ch of await stream(hoja)) {
+      resto += ch; const fin = resto.lastIndexOf("</row>"); if (fin < 0) continue;
+      const bloque = resto.slice(0, fin + 6); resto = resto.slice(fin + 6);
+      const re = /<row\b[^>]*>([\s\S]*?)<\/row>/g; let m; while ((m = re.exec(bloque))) fila(m[1]);
+    }
+    return filas;
+  }
+
   async function leerTabla(file) {      // → matriz de celdas (array de filas)
     const nom = file.name.toLowerCase();
+    if (/\.(xlsx|xlsm)$/.test(nom) && file.size > 4e6 && window.DecompressionStream) {
+      try { return await leerXlsxGrande(file); } catch (e) { console.error("lector rápido", e); }
+    }
     if (/\.(xlsx|xlsm|xls)$/.test(nom)) {
       const X = await xlsx(); const wb = X.read(await file.arrayBuffer(), { type: "array", cellDates: true });
       return X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: true, defval: null });
@@ -234,7 +287,13 @@
     // 4) compra/venta de especies (Compra_Venta_Contrapartes_)
     if ((!forzar || forzar === "compraventa") && idx("Operación_Numero") >= 0 && idx("Tipo de Especie") >= 0) return compraventa(tab);
     if (forzar === "compraventa") return compraventa(tab);
-    // 5) cantidad de cuotapartistas
+    // 5) serie de facturación (carpeta Serie Facturación: Fecha, Facturación)
+    if ((!forzar || forzar === "serie_facturacion") && cols.length <= 3 && idx("Fecha") >= 0 && (idx("Facturación") >= 0 || idx("Facturacion") >= 0)) {
+      const iv = idx("Facturación") >= 0 ? idx("Facturación") : idx("Facturacion"), meses = {};
+      for (const r of tab.slice(1)) { const mes = aMes(r[idx("Fecha")]); if (!mes || r[iv] == null || r[iv] === "") continue; const [y, mm] = mes.split("-").map(Number); meses[mes] = [[finMes(y, mm), num(r[iv])]]; }
+      return { tipo: "serie_facturacion", meses };
+    }
+    // 6) cantidad de cuotapartistas
     if ((!forzar || forzar === "cuotapartistas") && idx("Tipo Inversor") >= 0 && idx("Cuotapartista") >= 0) return cuotapartistas(tab, nombre);
     if (forzar === "cuotapartistas") return cuotapartistas(tab, nombre);
     // 6) plantillas Excel de Claude
@@ -334,11 +393,13 @@
     };
     I.comisiones = mezclar(base.comisiones, "com_unidad", "unidad");
     I.comisiones_fondo = mezclar(base.comisiones_fondo, "com_fondo", "fondo");
-    const su = datos("com_unidad");
-    if (su.length) {
-      const meses = new Set(su.map(d => d.mes));
-      const se = base.serie_facturacion.filter(r => !meses.has(String(r.fecha).slice(0, 7)));
-      for (const d of su) { const [y, m] = d.mes.split("-").map(Number); se.push({ fecha: finMes(y, m), facturacion: Math.round(d.filas.reduce((a, r) => a + r[1], 0)) }); }
+    // serie de facturación: la cargada (archivo Serie Facturación) y, para los meses que no trae, la suma de la facturación por unidad cargada
+    const ss = datos("serie_facturacion"), su = datos("com_unidad");
+    if (ss.length || su.length) {
+      const deSerie = new Set(ss.map(d => d.mes)), deUnidad = new Set(su.filter(d => !deSerie.has(d.mes)).map(d => d.mes));
+      const se = base.serie_facturacion.filter(r => !deSerie.has(String(r.fecha).slice(0, 7)) && !deUnidad.has(String(r.fecha).slice(0, 7)));
+      for (const d of ss) for (const [f, v] of d.filas) se.push({ fecha: f, facturacion: v });
+      for (const d of su) if (deUnidad.has(d.mes)) { const [y, m] = d.mes.split("-").map(Number); se.push({ fecha: finMes(y, m), facturacion: Math.round(d.filas.reduce((a, r) => a + r[1], 0)) }); }
       I.serie_facturacion = se.sort((a, b) => a.fecha < b.fecha ? -1 : 1);
     } else I.serie_facturacion = base.serie_facturacion;
     const cv = datos("compraventa");
@@ -365,11 +426,11 @@
   const mesTxt = m => { if (m === "fijo") return "sin mes"; const [y, mm] = m.split("-"); return ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"][+mm - 1] + "-" + y.slice(2); };
   const rango = ms => (ms.length ? mesTxt(ms[0]) + (ms.length > 1 ? " a " + mesTxt(ms[ms.length - 1]) : "") : "–");
   function total(tipo, filas) {
-    const c = { com_unidad: 1, com_fondo: 1, aum_unidad: 1, aum_unidad_fondo: 2, clientes: 2, inversores: 3, terceros: 2, emisiones: 2, cerrados: 2, compraventa: 19, cuotapartistas: 2 }[tipo];
+    const c = { com_unidad: 1, com_fondo: 1, aum_unidad: 1, aum_unidad_fondo: 2, clientes: 2, inversores: 3, terceros: 2, emisiones: 2, cerrados: 2, compraventa: 19, cuotapartistas: 2, serie_facturacion: 1 }[tipo];
     return c == null ? filas.length : filas.reduce((a, r) => a + (+r[c] || 0), 0);
   }
   const queMide = t => ({ com_unidad: "Facturación USD", com_fondo: "Facturación USD", inversores: "AUM", clientes: "AUM USD",
-    terceros: "AUM ARS", emisiones: "Facturación USD", cerrados: "Facturación USD", exclusiones: "Clientes", textos: "Textos", compraventa: "Monto USD mill.", cuotapartistas: "AUM USD mill." })[t] || "AUM USD";
+    terceros: "AUM ARS", emisiones: "Facturación USD", cerrados: "Facturación USD", exclusiones: "Clientes", textos: "Textos", compraventa: "Monto USD mill.", cuotapartistas: "AUM USD mill.", serie_facturacion: "Facturación USD" })[t] || "AUM USD";
   const nuevoId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   // partes de hasta ~180 KB (límite de 256 KB por documento)
   function partir(filas) {
@@ -390,8 +451,9 @@
         <li><b>Facturación</b>: Power BI Service › <i>Rporte de Comision por Fondos v2</i> › página <i>Fondos YTD</i>. En la matriz grande: <i>Más opciones › Exportar datos › Datos con diseño actual</i> (.xlsx), una vez con <i>Analisis por = Unidad Negocio</i> y otra con <i>Fondos</i>. También sirven los Excel mensuales de las carpetas (<i>comisiones_fci_*.xlsx</i>, <i>comisiones_fondo_*.xlsx</i>).</li>
         <li><b>AUM interno, clientes e inversores</b>: modelo <i>DS Fondos - AM - Comisiones - Volumen - CuotaPartes</i> (área SelfService_Fondos) › <i>Abrir en la vista de consulta DAX</i>. Corré las 4 consultas de <code>informe/comite/consultas_dax.dax</code> y copiá cada resultado con <i>Copia › Toda la tabla</i>: pegalo abajo o guardalo como .txt.</li>
         <li><b>Plantillas de Excel</b> (<a href="https://github.com/mfriedB/cafci/tree/main/informe/plantillas" target="_blank" rel="noopener">bajarlas del repo</a>; cada una tiene una hoja de instrucciones): AUM y flujo por área comercial y fondo, clientes, inversores PH/PJ, fondos de terceros, emisiones primarias, fondos fuera de CAFCI, clientes excluidos (Ex Meli) y textos del mes.</li>
+        <li><b>Serie de facturación</b>: el Excel de la carpeta <i>Serie Facturación</i> (Fecha, Facturación). Se guardan todos sus meses; los meses que no trae se completan con la facturación por unidad cargada.</li>
         <li><b>Cantidad de cuotapartistas</b> (hoja Tipo de Inversor): el Excel de la carpeta <i>Cantidad de Cuotapartistas</i>. No trae fecha: toma el mes del nombre del archivo si lo tiene (por ejemplo <i>cuotapartistas_2026-10.xlsx</i>) o el último mes cerrado, y lo podés cambiar antes de guardar. El AUM en pesos se pasa a dólares al dólar oficial vendedor del BCRA de esa fecha (cierre del mes, o la fecha del nombre del archivo), que el tablero baja solo todos los días. También arma la base de inversores (personas humanas y jurídicas) de la presentación del comité, sin correr la consulta DAX.</li>
-        <li><b>Compra/venta de especies</b> (slides de contrapartes): el mismo Excel que va a la carpeta <i>Compra_Venta_Contrapartes_</i>. Los montos en pesos se pasan a dólares al oficial vendedor del BCRA del día de cada operación.</li>
+        <li><b>Compra/venta de especies</b> (slides de contrapartes): el mismo Excel que va a la carpeta <i>Compra_Venta_Contrapartes_</i> (se guardan todos los meses que trae). Los montos en pesos se pasan a dólares al oficial vendedor del BCRA del día de cada operación.</li>
         <li>El tipo de archivo se reconoce solo; si se equivoca, cambialo en la lista antes de guardar.</li>
         <li>Si un archivo trae varios meses (por ejemplo el acumulado del año), se guarda solo el último. Para cargar el histórico de una vez, destildá <i>Guardar solo el último mes de cada archivo</i>.</li></ol></details>
       <div class="ci-zona" tabindex="0"><b>Arrastrá los archivos acá</b> o <label class="ci-btn">elegilos<input type="file" multiple accept=".xlsx,.xls,.xlsm,.txt,.csv,.tsv" hidden></label><div class="ci-sub">.xlsx, .txt, .csv – varios a la vez</div></div>
@@ -412,7 +474,10 @@
     zona.addEventListener("drop", e => { e.preventDefault(); zona.classList.remove("on"); archivos([...e.dataTransfer.files]); });
     w.querySelector(".ci-pegar button").addEventListener("click", () => { if (ta.value.trim()) { agregar("pegado " + new Date().toLocaleString("es-AR"), textoATabla(ta.value)); ta.value = ""; } });
 
-    const aGuardar = p => { const ms = Object.keys(p.meses).sort(); return soloUltimo && ms.length > 1 ? ms.slice(-1) : ms; };
+    // de los archivos acumulados (facturación YTD, consultas DAX, plantillas) se guarda el último mes; la compraventa y la serie
+    // de facturación traen meses distintos que no se repiten en el archivo siguiente: se guardan enteros
+    const TODOS = new Set(["compraventa", "serie_facturacion"]);
+    const aGuardar = p => { const ms = Object.keys(p.meses).sort(); return soloUltimo && ms.length > 1 && !TODOS.has(p.tipo) ? ms.slice(-1) : ms; };
     const cargadoDe = (tipo, mes) => datos(tipo).find(d => d.mes === mes);
     const ultimoCargado = tipo => { const ms = C.docs.filter(d => d.tipo === tipo).map(d => d.mes).filter(m => m !== "fijo").sort(); return ms[ms.length - 1]; };
 
@@ -473,7 +538,20 @@
           // copia del archivo (como CSV de su primera hoja) para el histórico
           let copia = null;
           if (C.assets && p.tab) {
-            try { const r = await C.assets.upload(new Blob(["\ufeff" + aCsv(p.tab)], { type: "text/csv" }), { type: "text/csv" }); copia = { id: r.id, bytes: r.sizeBytes }; }
+            try {
+              let tab = p.tab, csv = aCsv(tab);
+              if (csv.length > 18e6) {   // archivos muy grandes (ej. cuotapartistas): la copia guarda solo las columnas que usa el tablero
+                const usa = ["Fondo", "Clase", "Tipo Inversor", "Cuotapartista", "Importe", "Moneda"], ix = usa.map(c => tab[0].indexOf(c)).filter(i => i >= 0);
+                if (ix.length) csv = aCsv(tab.map(r => ix.map(i => r[i])));
+              }
+              // si no entra en un archivo (límite ~20 MB), la copia se guarda en partes, cada una con su encabezado
+              const lineas = csv.split("\r\n"), enc = lineas.shift(), partes = []; let cur = [], tam = 0;
+              for (const l of lineas) { if (cur.length && tam + l.length > 18e6) { partes.push(cur); cur = []; tam = 0; } cur.push(l); tam += l.length + 2; }
+              partes.push(cur);
+              const ids = [];
+              for (const pt of partes) { const r = await C.assets.upload(new Blob(["\ufeff" + enc + "\r\n" + pt.join("\r\n")], { type: "text/csv" }), { type: "text/csv" }); ids.push(r.id); }
+              copia = { id: ids[0], ids, bytes: csv.length };
+            }
             catch (e) { console.error(e); sinCopia++; }
           } else sinCopia++;
           const ult = meses[meses.length - 1];
@@ -524,7 +602,7 @@
           const usado = x.enUso.length, estado = usado === x.meses.length ? "en uso" : usado ? `en uso ${usado} de ${x.meses.length}` : "reemplazado";
           h += `<tr${usado ? "" : ' class="ci-off"'}><td>${esc(x.archivo)}</td><td>${TIPOS[x.tipo] ? TIPOS[x.tipo].nombre : esc(x.tipo)}</td><td>${rango(x.meses)}</td>
             <td class="n">${x.ultimo ? queMide(x.tipo) + " " + fmt(x.total) : ""}</td><td>${x.at ? new Date(x.at).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" }) : "–"}</td>
-            <td>${estado}</td><td class="ci-acc">${x.copia && x.copia.id ? `<a class="ci-lnk" href="/_blob/${esc(x.copia.id)}" download="${esc(x.archivo.replace(/\.[^.]+$/, "") + ".csv")}" target="_blank" rel="noopener">Bajar</a>` : ""}
+            <td>${estado}</td><td class="ci-acc">${x.copia && x.copia.id ? (x.copia.ids || [x.copia.id]).map((id, k, a) => `<a class="ci-lnk" href="/_blob/${esc(id)}" download="${esc(x.archivo.replace(/\.[^.]+$/, "") + (a.length > 1 ? "_parte" + (k + 1) : "") + ".csv")}" target="_blank" rel="noopener">Bajar${a.length > 1 ? " " + (k + 1) + "/" + a.length : ""}</a>`).join("") : ""}
             <button class="ci-btn ci-borrar" data-i="${i}" type="button">Eliminar</button></td></tr>`;
         });
         h += `</tbody></table><p class="ci-sub">Eliminar saca el archivo y sus datos: cada mes vuelve a la versión anterior que se haya subido o, si no hay, a los archivos de la carpeta (data/internos.json).
@@ -543,7 +621,7 @@
           for (const d of docs) await C.db.doc("cargas/" + d.id).delete();
           const ids = new Set(docs.map(d => d.id)); C.docs = C.docs.filter(d => !ids.has(d.id));
           if (!x.viejo) {
-            if (x.copia && x.copia.id && C.assets) { try { await C.assets.delete(x.copia.id); } catch (e) { console.error(e); } }
+            if (x.copia && x.copia.id && C.assets) for (const id of (x.copia.ids || [x.copia.id])) { try { await C.assets.delete(id); } catch (e) { console.error(e); } }
             await C.db.doc("cargas/" + x.id).delete(); C.regs = C.regs.filter(r => r.id !== x.id);
           }
           aplicar(); dibujarEstado(`Eliminado ${x.archivo}.`);
@@ -555,5 +633,5 @@
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 
   window.CARGAS.conectar = conectar;
-  window.CARGAS.procesar = procesar; window.CARGAS.textoATabla = textoATabla;   // para pruebas
+  window.CARGAS.procesar = procesar; window.CARGAS.textoATabla = textoATabla; window.CARGAS.leerTabla = leerTabla;   // para pruebas
 })();

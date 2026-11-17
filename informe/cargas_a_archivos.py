@@ -92,6 +92,13 @@ def main():
                 se = [r for r in I.get("serie_facturacion", []) if str(r["fecha"])[:7] not in meses]
                 se += [{"fecha": fin_mes(d["mes"]), "facturacion": round(sum(float(v) for _, v in d["filas"]))} for d in ds]
                 I["serie_facturacion"] = sorted(se, key=lambda r: r["fecha"])
+        ds = por.get("serie_facturacion")   # serie de facturacion cargada: reemplaza esos meses (gana sobre la suma por unidad)
+        if ds:
+            meses = {d["mes"] for d in ds}
+            se = [r for r in I.get("serie_facturacion", []) if str(r["fecha"])[:7] not in meses]
+            se += [{"fecha": f, "facturacion": float(v)} for d in ds for f, v in d["filas"]]
+            I["serie_facturacion"] = sorted(se, key=lambda r: r["fecha"])
+            print(f"serie_facturacion: meses de la carga manual {sorted(meses)}")
         ds = por.get("compraventa")   # compra/venta de especies: reemplaza en contrapartes los meses cargados a mano
         if ds:
             meses = {d["mes"] for d in ds}
