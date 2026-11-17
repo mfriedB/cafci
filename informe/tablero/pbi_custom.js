@@ -144,7 +144,7 @@
         // un color fijo por área, con tonos bien distintos entre las que andan cerca (la misma área tiene siempre el mismo color)
         const COLA = { "IFA": "#0B1F5C", "Corporate": "#3B6CFF", "Individuos": "#008856", "Wealth Management": "#0067A5", "Otros": "#848482",
           "Sales & Trading": "#F38400", "Institucionales": "#222222", "Pyme": "#8DB600", "Private Wealth": "#604E97", "Institucionales No Regulados2": "#BE0032",
-          "Productores Exclusivos": "#00A3A3", "Canales": "#882D17", "IR": "#D6336C", "Banca de Inversión": "#E0A000", "Banca Privada": "#4DABF7" };
+          "Productores Exclusivos": "#00A3A3", "Canales": "#882D17", "IR": "#2F9E44", "Banca de Inversión": "#E0A000", "Banca Privada": "#4DABF7" };
         const EXTRA = ["#F08C00", "#1098AD", "#862E9C", "#364FC7", "#A61E4D", "#2F9E44"];
         let ke = 0; xs.forEach(x => { x.c = COLA[x.n] || EXTRA[ke++ % EXTRA.length]; });
         const ymin = Math.min(0.01, Math.floor(Math.min(...vs) * 1000 * 0.92) / 1000), ymax = 0.35;
