@@ -128,7 +128,7 @@ def contrapartes(base):
     o["agente_norm"] = o.agente.map(agente_norm)
     f = pd.to_datetime(o.fecha_txt.str[:10], format="%d/%m/%Y", errors="coerce")
     o["fecha"] = f.dt.date.astype(str); o["trimestre"] = "Qtr " + f.dt.quarter.astype("Int64").astype(str); o["anio"] = f.dt.year
-    es_pesos = o.moneda.str.contains(r"\$", regex=True) & ~o.moneda.str.contains("U", regex=False)
+    es_pesos = o.moneda.str.contains(r"\$", regex=True) & ~o.moneda.str.upper().str.contains("U", regex=False)   # "u$s" y "Usc" son dólares
     # pesos a USD al dolar oficial vendedor del BCRA del dia de la operacion (1400 si no hay dato, como el Power BI)
     tc = tc_oficial_serie(o.fecha[o.fecha != "NaT"].min(), o.fecha[o.fecha != "NaT"].max()) if (o.fecha != "NaT").any() else None
     if tc is not None and len(tc):

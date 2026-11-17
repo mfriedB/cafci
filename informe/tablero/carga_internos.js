@@ -23,39 +23,137 @@
     "moneda", "bruto", "gastos", "neto", "agente", "agente_norm", "tipo_especie", "monto_usd_mill"];
   const TIPO_ESPECIE = {"Acciones": "Acciones", "Acciones ADR": "Acciones", "Acciones CEDEAR": "CEDEARs", "Amortizaciones a Cobrar": "Rentas", "Apertura Colocadora": "Cauciones", "Bono Dual": "Bonos AR$", "Bono Provincial CER": "Bonos AR$", "Bono Soberano CER": "Bonos AR$", "Bono Soberano Dolar Link": "Bonos AR$", "Bono Tasa Fija Provincial": "Bonos U$S", "Bono Tasa Fija Soberano": "Bonos U$S", "Cheque de Pago Diferido": "Cheques", "Cheque de Pago Diferido a Cobrar": "Cheques", "CUENTA CORRIENTE": "Cuentas Corrientes", "CUENTA CORRIENTE REMUNERADA": "Cuentas Corrientes", "Derivado Agropecuario (SOJA)": "ROFEX", "Derivado Dólar Futuro": "ROFEX", "Deudores por Operaciones a Liquidar": "Deudores", "Dividendos en Efectivo a Cobrar": "Dividendos", "ETF": "CEDEARs", "Fideicomiso Financiero": "ONs AR$", "Fideicomiso Financiero Badlar ($)": "ONs AR$", "Fideicomiso Financiero TAMAR": "ONs AR$", "Fondo Común de Inversión": "FCI", "Garantía por Operaciones": "Garantías", "Intereses a Cobrar": "Intereses", "Letra Provincial Tasa Fija": "Bonos AR$", "LETRAS DEL TESORO": "Bonos AR$", "Letras del tesoro TAMAR": "Bonos AR$", "Letras Provinciales TAMAR": "Bonos AR$", "Obligación Negociable Badlar": "ONs AR$", "Obligación Negociable Dólar Linked": "ONs AR$", "Obligación Negociable TAMAR": "ONs AR$", "Obligación Negociable Tasa Fija": "ONs U$S", "Obligaciones Negociables UVA": "ONs AR$", "Obligaciones por Garantía": "Garantías", "Plazo Fijo": "Plazos Fijos", "Provisión de Gastos Varios": "Provisiones", "Renta Fija Soberana Paraguay": "Bonos U$S", "Renta Fija Soberana Uruguay": "Bonos U$S", "Rentas a Cobrar": "Rentas", "Títulos Entregados en Garantía": "Garantías", "Renta Fija Corporativa Agro": "ONs U$S", "Renta Fija Corporativa Brasil": "ONs U$S", "Renta Fija Corporativa Chile": "ONs U$S", "Renta Fija Corporativa Consumo": "ONs U$S", "Renta Fija Corporativa Energía": "ONs U$S", "Renta Fija Corporativa Financiera": "ONs U$S", "Renta Fija Corporativa Mexico": "ONs U$S", "Renta Fija Corporativa Oil y Gas": "ONs U$S", "Renta Fija Corporativa Paraguay": "ONs U$S", "Renta Fija Corporativa Telco": "ONs U$S"};
   for (const s of ["Agro", "Brasil", "Chile", "Consumo", "Energía", "Financiera", "Mexico", "Oil y Gas", "Paraguay", "Telco"]) TIPO_ESPECIE["Renta Fija Corporativa " + s] = "ONs U$S";
+  /* ---- lectura flexible de planillas (compra/venta y posición de cuotapartistas) ----
+     Busca la fila (o las 2-3 filas) de encabezados en las primeras filas, une los encabezados de varios niveles
+     ("Operación" + "Número" → "Operación Número"), reconoce cada columna por sinónimos y revisa que el contenido
+     tenga sentido (fechas, números, moneda). Si falta algo, arma una alarma con lo que hay que cambiar en el archivo. */
+  const ESQ = {
+    compraventa: { nombre: "compra/venta de especies", campos: [
+      { k: "fondo", req: 1, ej: "Fondo", al: ["fondonombre", "fondo", "fondocodigo", "fondoabreviatura", "nombrefondo"] },
+      { k: "op", req: 1, ej: "Operación Número", tipo: "num", al: ["operacionnumero", "numerooperacion", "nrooperacion", "nrodeoperacion", "numerodeoperacion", "operacionnro", "nroop", "operacion"] },
+      { k: "tipo_op", req: 1, ej: "Operación Tipo (Compra / Venta)", tipo: "txt", al: ["operaciontipo", "tipooperacion", "tipodeoperacion", "tipoop", "compraventa"] },
+      { k: "especie", req: 1, ej: "Especie", tipo: "txt", al: ["especiedescripcion", "especie", "especienombre", "descripcionespecie", "instrumento"] },
+      { k: "tipo_especie", req: 1, ej: "Tipo de Especie", tipo: "txt", al: ["tipodeespecie", "tipoespecie", "tipodeinstrumento", "tipoinstrumento"] },
+      { k: "fecha", req: 1, ej: "Fecha Concertación", tipo: "fecha", al: ["fechaconcertacion", "fechadeconcertacion", "concertacion", "fechaoperacion", "fecha"] },
+      { k: "vn", req: 1, ej: "Valor Nominal", tipo: "num", al: ["valornominal", "vn", "nominales", "nominal", "cantidad"] },
+      { k: "moneda", req: 1, ej: "Moneda de Concertación (Símbolo: $ / u$s)", tipo: "mon", al: ["monedadeconcertacionsimbolo", "monedadeconcertacion", "monedasimbolo", "moneda"] },
+      { k: "bruto", req: 1, ej: "Bruto (Moneda de Concertación)", tipo: "num", al: ["monedadeconcertacionbruto", "brutoconcertacion", "brutodeconcertacion", "bruto", "importebruto", "montobruto", "monto", "importe"] },
+      { k: "gastos", ej: "Gastos", tipo: "num", al: ["monedadeconcertaciongastos", "gastosconcertacion", "gastos"] },
+      { k: "neto", ej: "Neto", tipo: "num", al: ["monedadeconcertacionneto", "netoconcertacion", "neto", "importeneto"] },
+      { k: "agente", req: 1, ej: "Agente", tipo: "txt", al: ["agentedescripcion", "agente", "agentenombre", "contraparte", "contraparteagente"] },
+      { k: "ticker", ej: "Ticker", al: ["ticker", "especieticker", "codigoespecie", "simboloespecie"] }] },
+    cuotapartistas: { nombre: "posición de cuotapartistas", campos: [
+      { k: "fondo", req: 1, ej: "Fondo", al: ["fondonombre", "fondo", "fondocodigo", "fondoabreviatura", "nombrefondo"] },
+      { k: "clase", ej: "Tipo de Valor Cuotaparte (clase)", al: ["tipodevalorcuotaparte", "tipovalorcuotaparte", "clase", "clasecuotaparte"] },
+      { k: "tipo", req: 1, ej: "Tipo de Inversor", tipo: "txt", al: ["tipodeinversor", "tipoinversor", "tipodeinversornombre", "tipoinversornombre", "categoriainversor"] },
+      { k: "cp", req: 1, ej: "Cuotapartista (Número o Nombre)", al: ["cuotapartistanumero", "numerocuotapartista", "nrocuotapartista", "cuotapartistanro", "cuotapartista", "cuotapartistanombre", "comitente", "cliente"] },
+      { k: "importe", req: 1, ej: "Inversión (importe)", tipo: "num", al: ["importe", "inversion", "importeinversion", "monto", "valuacion", "saldo", "tenencia"] },
+      { k: "moneda", req: 1, ej: "Moneda (Símbolo: $ / u$s)", tipo: "mon", al: ["monedasimbolo", "moneda", "monedadelfondo"] }] }
+  };
+  const RE_MON = /^(\$|ars|\$ar|ar\$|pesos?|u\$s|us\$|u\$d|usd|usc|dolar(es)?|d[oó]lar(es)?|eur|€)$/i;
+  const esNum = v => typeof v === "number" ? isFinite(v) : (typeof v === "string" && /^\s*-?[\d.,]+\s*$/.test(v) && /\d/.test(v));
+  const esPesos = v => { const u = limpio(v).toUpperCase(); return u === "ARS" || u === "PESOS" || u === "PESO" || (u.includes("$") && !u.includes("U")); };
+  function aFecha(v) {          // → "AAAA-MM-DD" o null
+    if (v instanceof Date && !isNaN(v)) return `${v.getUTCFullYear()}-${pad(v.getUTCMonth() + 1)}-${pad(v.getUTCDate())}`;
+    if (typeof v === "number") return v > 20000 && v < 80000 ? aFecha(new Date(Date.UTC(1899, 11, 30) + Math.round(v) * 864e5)) : null;
+    const s = limpio(v); let m;
+    if ((m = s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})/))) return +m[2] >= 1 && +m[2] <= 12 ? `${m[3]}-${pad(+m[2])}-${pad(+m[1])}` : null;
+    if ((m = s.match(/^(\d{4})-(\d{2})-(\d{2})/))) return `${m[1]}-${m[2]}-${m[3]}`;
+    return null;
+  }
+  const VALIDA = { num: esNum, fecha: v => !!aFecha(v), mon: v => RE_MON.test(limpio(v)), txt: v => !esNum(v) };
+  const pareceEncabezado = r => { const ne = (r || []).filter(v => v != null && limpio(v) !== ""); return ne.length > 0 && ne.filter(v => esNum(v) || v instanceof Date || aFecha(v)).length <= ne.length * 0.3; };
+  function unirEncabezados(tab, h, d) {
+    const filas = tab.slice(h, h + d).map(r => (r || []).map(limpio)), n = Math.max(...filas.map(r => r.length));
+    const niv = filas.map(r => Array.from({ length: n }, (_, j) => r[j] || ""));
+    for (let i = 0; i < d - 1; i++) for (let j = 1; j < n; j++)   // celdas combinadas: el grupo de arriba vale para las columnas de abajo
+      if (!niv[i][j] && niv.slice(i + 1).some(r => r[j]) && niv[i][j - 1] && niv.slice(i + 1).some(r => r[j - 1])) niv[i][j] = niv[i][j - 1];
+    return Array.from({ length: n }, (_, j) => niv.map(r => r[j]).filter((x, i, a) => x && x !== a[i - 1]).join(" "));
+  }
+  function asignar(nombres, tab, ini, esq) {
+    const hn = nombres.map(norm), muestra = tab.slice(ini, ini + 300), cand = [];
+    esq.campos.forEach((c, fi) => hn.forEach((h, j) => { if (!h) return;
+      c.al.forEach((a, ai) => { const p = h === a ? 1000 - ai : h.includes(a) && a.length >= 4 ? 500 + a.length - ai : 0; if (p) cand.push({ c, j, p, fi }); }); }));
+    cand.sort((a, b) => b.p - a.p || a.fi - b.fi);
+    const cols = {}, usada = new Set(), exactos = new Set(), malas = {};
+    const sirve = (c, j) => { if (!c.tipo) return true; const vs = muestra.map(r => r && r[j]).filter(v => v != null && limpio(v) !== "");
+      return vs.length > 0 && vs.filter(VALIDA[c.tipo]).length >= vs.length * 0.8; };
+    for (const x of cand) {
+      if (cols[x.c.k] != null || usada.has(x.j)) continue;
+      if (!sirve(x.c, x.j)) { malas[x.c.k] = malas[x.c.k] || nombres[x.j]; continue; }
+      cols[x.c.k] = x.j; usada.add(x.j); if (x.p >= 900) exactos.add(x.c.k);
+    }
+    // por contenido: moneda y fecha se reconocen aunque el encabezado no se parezca
+    for (const c of esq.campos) if (cols[c.k] == null && (c.tipo === "mon" || c.tipo === "fecha"))
+      for (let j = 0; j < nombres.length; j++) if (!usada.has(j) && muestra.length && sirve(c, j)) { cols[c.k] = j; usada.add(j); break; }
+    const req = esq.campos.filter(c => c.req), faltan = req.filter(c => cols[c.k] == null);
+    return { cols, faltan, malas, ok: req.length - faltan.length, exactos: exactos.size };
+  }
+  function mapear(tab, esq) {
+    let mejor = null;
+    for (let h = 0; h < Math.min(15, tab.length); h++) {
+      for (let d = 1; d <= 3 && h + d <= tab.length; d++) {
+        if (!pareceEncabezado(tab[h + d - 1])) break;
+        const nombres = unirEncabezados(tab, h, d), a = asignar(nombres, tab, h + d, esq);
+        const x = Object.assign(a, { h, d, datos: h + d, nombres });
+        if (!mejor || x.ok > mejor.ok || (x.ok === mejor.ok && (x.exactos > mejor.exactos || (x.exactos === mejor.exactos && x.datos > mejor.datos)))) mejor = x;
+      }
+    }
+    if (!mejor) mejor = { cols: {}, faltan: esq.campos.filter(c => c.req), malas: {}, ok: 0, exactos: 0, h: 0, d: 1, datos: 1, nombres: (tab[0] || []).map(limpio) };
+    // fecha escrita arriba de los encabezados (ej. "Posición de Cuotapartista al 30/10/2026")
+    for (const r of tab.slice(0, mejor.h)) for (const v of r || []) { const m = limpio(v).match(/(\d{1,2}\/\d{1,2}\/20\d{2}|20\d{2}-\d{2}-\d{2})/); if (m && !mejor.fechaTitulo) mejor.fechaTitulo = aFecha(m[1]); }
+    mejor.hoja = tab.hoja;
+    return mejor;
+  }
+  const cabeza = tab => { const t = tab.slice(0, 400); t.hoja = tab.hoja; return t; };
+  function puntaje(tab) {         // qué tan bien encaja una hoja con alguno de los formatos flexibles (0 a 1)
+    let b = 0; for (const e of Object.values(ESQ)) { const m = mapear(tab.slice(0, 60), e); b = Math.max(b, m.ok / e.campos.filter(c => c.req).length); } return b;
+  }
+  // alarma: qué no encontré y cómo dejar el archivo para que se pueda cargar
+  function alarma(esq, m, extra) {
+    const vistos = (m.nombres || []).filter(Boolean);
+    const err = new Error(extra || `No pude leer el archivo como ${esq.nombre}: no encuentro ${m.faltan.map(c => "«" + c.ej + "»").join(", ")}.`);
+    err.ayuda = { titulo: `No se pudo cargar como ${esq.nombre}`, hoja: m.hoja, fila: m.h + 1,
+      faltan: m.faltan.map(c => ({ ej: c.ej, malo: m.malas[c.k] || null, tipo: c.tipo })),
+      vistos: vistos.slice(0, 25),
+      pasos: [
+        "Dejá los datos en la primera hoja (o en una hoja que tenga estos encabezados), con los encabezados arriba de todo: una fila, o hasta 3 filas como sale del sistema (por ejemplo «Operación» arriba y «Número» abajo).",
+        "A la columna que tiene cada dato faltante ponele de encabezado el nombre indicado (no importan mayúsculas, acentos, espacios ni guiones bajos).",
+        "Fechas como fecha de Excel o texto dd/mm/aaaa; importes y valores nominales como número (sin texto); moneda con el símbolo ($ o u$s).",
+        "Sin filas vacías entre los encabezados y los datos. Las filas de totales, títulos o columnas de más no molestan."] };
+    return err;
+  }
+
   function compraventa(tab) {
-    const hn = tab[0].map(c => limpio(c)), ix = n => hn.indexOf(n);
-    const need = ["Fondo", "Operación_Numero", "Tipo_Operación", "Especie", "Tipo de Especie", "Fecha_Concertacion", "Valor Nominal", "Moneda de Concertación", "Bruto_Concertación", "Agente"];
-    const falta = need.filter(n => ix(n) < 0); if (falta.length) throw new Error("Faltan columnas de compra/venta: " + falta.join(", "));
-    const g = (r, n) => (ix(n) < 0 ? null : r[ix(n)]);
-    const txtFecha = v => { if (v instanceof Date && !isNaN(v)) return `${pad(v.getUTCDate())}/${pad(v.getUTCMonth() + 1)}/${v.getUTCFullYear()}`;
-      if (typeof v === "number" && v > 20000 && v < 80000) return txtFecha(new Date(Date.UTC(1899, 11, 30) + v * 864e5)); return limpio(v); };
+    const m = mapear(tab, ESQ.compraventa); if (m.faltan.length) throw alarma(ESQ.compraventa, m);
+    const g = (r, k) => (m.cols[k] == null ? null : r[m.cols[k]]);
+    const txtFecha = v => { const f = aFecha(v); return f ? f.split("-").reverse().join("/") : limpio(v); };
     const vistos = new Set(), o = [];
-    for (const r of tab.slice(1)) {
-      if (!r || !limpio(g(r, "Fondo"))) continue;
+    for (const r of tab.slice(m.datos)) {
+      const fondo = limpio(g(r, "fondo")); if (!r || !fondo || /^total/i.test(fondo) || !aFecha(g(r, "fecha"))) continue;
       const clave = JSON.stringify(r); if (vistos.has(clave)) continue; vistos.add(clave);   // filas repetidas
-      const tipo = limpio(g(r, "Tipo de Especie")), tu = tipo.toUpperCase(), esp = limpio(g(r, "Especie")).toUpperCase(), f0 = esp.slice(0, 1);
+      const tipo = limpio(g(r, "tipo_especie")), tu = tipo.toUpperCase(), esp = limpio(g(r, "especie")).toUpperCase(), f0 = esp.slice(0, 1);
       let cp;
       if (esp.includes("B 10032026")) cp = "Bonos U$S"; else if (esp.includes("BF34O")) cp = "Bonos AR$";
       else if (esp.includes("PDCAR29M") || esp.includes("REPUBLIC CHILE") || esp.includes("REP BRAZIL")) cp = "Bonos U$S";
       else if (esp.includes("PSSYO") || esp.includes("PS38O")) cp = "ONs AR$"; else if (esp.includes("TLCRO")) cp = "ONS AR$";
       else if (tu.includes("BONO TASA FIJA SOBERANO") && (f0 === "S" || f0 === "T")) cp = "Bonos AR$";
       else if (esp.includes("TREASURY BILL")) cp = "Bonos U$S"; else cp = TIPO_ESPECIE[tipo] || tipo;
-      const mon = limpio(g(r, "Moneda de Concertación"));
+      const mon = limpio(g(r, "moneda"));
       const cat = mon === "$" ? ({ "Bonos U$S": "Bonos U$S en AR$", "ONs U$S": "ONs U$S en AR$" })[cp] || cp : cp;
-      const ft = txtFecha(g(r, "Fecha_Concertacion")), m = ft.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
-      const fecha = m ? `${m[3]}-${pad(+m[2])}-${pad(+m[1])}` : null;
-      const opv = g(r, "Operación_Numero"), op = opv == null || opv === "" ? null : num(opv);
-      const bruto = num(g(r, "Bruto_Concertación")), pesos = mon.includes("$") && !mon.includes("U");
-      const ag = limpio(g(r, "Agente")), au = ag.toUpperCase();
+      const fecha = aFecha(g(r, "fecha")), ft = txtFecha(g(r, "fecha"));
+      const opv = g(r, "op"), op = opv == null || opv === "" ? null : num(opv);
+      const bruto = num(g(r, "bruto"));
+      const ag = limpio(g(r, "agente")), au = ag.toUpperCase();
       const agn = !ag || ag.toLowerCase() === "nan" ? null : au.startsWith("MAX") ? "Max Capital"
         : [["ALLARIA", "Allaria"], ["ADCAP", "AdCap"], ["COMAFI", "Banco Comafi"], ["BALANZ", "Balanz"]].find(([k]) => au.includes(k))?.[1] || ag;
-      const tick = limpio(g(r, "Ticker"));
-      o.push({ fondo: limpio(g(r, "Fondo")), op, tipo_op: limpio(g(r, "Tipo_Operación")), especie: limpio(g(r, "Especie")), ticker: tick || null, fecha_txt: ft, fecha,
-        anio: fecha ? +fecha.slice(0, 4) : null, trimestre: fecha ? "Qtr " + Math.ceil(+fecha.slice(5, 7) / 3) : null, categoria: cat, vn: num(g(r, "Valor Nominal")),
-        moneda: mon, bruto, gastos: num(g(r, "Gastos_Concertación")), neto: num(g(r, "Neto_Concertación")), agente: ag, agente_norm: agn, tipo_especie: tipo,
-        monto_usd_mill: (pesos ? bruto / ((fecha && window.M && M.tcAl && M.tcAl(fecha) || [0, 1400])[1]) : bruto) / 1e6, _u: limpio(g(r, "Tipo_Operación")).toUpperCase() });
+      const tick = limpio(g(r, "ticker"));
+      o.push({ fondo, op, tipo_op: limpio(g(r, "tipo_op")), especie: limpio(g(r, "especie")), ticker: tick || null, fecha_txt: ft, fecha,
+        anio: +fecha.slice(0, 4), trimestre: "Qtr " + Math.ceil(+fecha.slice(5, 7) / 3), categoria: cat, vn: num(g(r, "vn")),
+        moneda: mon, bruto, gastos: num(g(r, "gastos")), neto: num(g(r, "neto")), agente: ag, agente_norm: agn, tipo_especie: tipo,
+        monto_usd_mill: (esPesos(mon) ? bruto / ((window.M && M.tcAl && M.tcAl(fecha) || [0, 1400])[1]) : bruto) / 1e6, _u: limpio(g(r, "tipo_op")).toUpperCase() });
     }
+    if (!o.length) throw alarma(ESQ.compraventa, m, "Encontré los encabezados pero ninguna fila con fondo y fecha de concertación válida (dd/mm/aaaa).");
     // Categoría_Pase: hay una operación opuesta (compra/venta) del mismo fondo, especie, VN y agente a menos de 5 números
     const opu = { COMPRA: "VENTA", VENTA: "COMPRA" }, grp = new Map();
     for (const x of o) { const k = [x.fondo, x.especie, x.vn, x.agente].join("|"); (grp.get(k) || grp.set(k, []).get(k)).push(x); }
@@ -67,7 +165,7 @@
       if (!x.fecha) continue;
       (meses[x.fecha.slice(0, 7)] = meses[x.fecha.slice(0, 7)] || []).push(CV_COLS.map(c => x[c] === undefined ? null : x[c]));
     }
-    return { tipo: "compraventa", meses };
+    return { tipo: "compraventa", hoja: tab.hoja, meses };
   }
 
   /* Cantidad de Cuotapartistas (foto del momento, sin fecha): mismas reglas que internos.py → cuotapartistas().
@@ -89,27 +187,31 @@
     return null;
   }
   // AUM en pesos → USD al dólar oficial vendedor del BCRA de la fecha de la planilla (o del cierre del mes)
-  function tcPara(mes, nombre) {
-    const fn = fechaDeNombre(nombre), [y, m] = mes.split("-").map(Number);
+  function tcPara(mes, nombre, fecha) {
+    const fn = fecha || fechaDeNombre(nombre), [y, m] = mes.split("-").map(Number);
     const ref = fn && fn.slice(0, 7) === mes ? fn : finMes(y, m);
     const x = window.M && M.tcAl ? M.tcAl(ref) : null;
     return x ? { fecha: x[0], valor: x[1], fuente: "BCRA" } : { fecha: null, valor: 1535, fuente: "fijo" };
   }
   function cuotapartistas(tab, nombre, mesF) {
-    const hn = tab[0].map(c => limpio(c)), ix = n => hn.indexOf(n);
-    const falta = ["Fondo", "Tipo Inversor", "Importe", "Moneda", "Cuotapartista"].filter(n => ix(n) < 0);
-    if (falta.length) throw new Error("Faltan columnas de cuotapartistas: " + falta.join(", "));
-    const acc = new Map(), inv = new Map(), mes = mesF || mesDeNombre(nombre), tc = tcPara(mes, nombre);
-    for (const r of tab.slice(1)) {
-      if (!r || !limpio(r[ix("Fondo")])) continue;
-      const f = limpio(r[ix("Fondo")]), t = limpio(r[ix("Tipo Inversor")]), cat = TIPO_INV[t] || t, k = f + "|" + cat, cp = limpio(r[ix("Cuotapartista")]);
-      const imp = num(r[ix("Importe")]), usd = (limpio(r[ix("Moneda")]) !== "$" ? imp : imp / tc.valor) / 1e6;
+    const m = mapear(tab, ESQ.cuotapartistas); if (m.faltan.length) throw alarma(ESQ.cuotapartistas, m);
+    const g = (r, k) => (m.cols[k] == null ? null : r[m.cols[k]]);
+    // fecha de la foto: la del título de la planilla ("Posición de Cuotapartista al 30/10/2026") o la del nombre del archivo
+    const fecha = m.fechaTitulo || fechaDeNombre(nombre);
+    const acc = new Map(), inv = new Map(), mes = mesF || (fecha ? fecha.slice(0, 7) : mesDeNombre(nombre)), tc = tcPara(mes, nombre, fecha);
+    let filas = 0;
+    for (const r of tab.slice(m.datos)) {
+      const f = limpio(g(r, "fondo")), iv = g(r, "importe");
+      if (!r || !f || /^total/i.test(f) || iv == null || iv === "" || !esNum(iv)) continue;
+      const t = limpio(g(r, "tipo")), cat = TIPO_INV[t] || t, k = f + "|" + cat, cp = limpio(g(r, "cp"));
+      const imp = num(iv), usd = (esPesos(g(r, "moneda")) ? imp / tc.valor : imp) / 1e6; filas++;
       const x = acc.get(k) || { f, c: cat, v: 0, n: new Set() }; x.v += usd; x.n.add(cp); acc.set(k, x);
       // también arma "Inversores por tipo y fondo" (la consulta DAX 4 del comité): persona humana (PF) o jurídica (PJ)
       const tp = /personas humanas/i.test(t) ? "PF" : "PJ", ki = cat + "|" + tp + "|" + f;
       const y = inv.get(ki) || { c: cat, tp, f, v: 0, n: new Set() }; y.v += usd * 1e6; y.n.add(cp); inv.set(ki, y);
     }
-    return { tipo: "cuotapartistas", sinFecha: true, tc, meses: { [mes]: [...acc.values()].map(x => [x.f, x.c, x.v, x.n.size]) },
+    if (!filas) throw alarma(ESQ.cuotapartistas, m, "Encontré los encabezados pero ninguna fila con fondo e importe numérico.");
+    return { tipo: "cuotapartistas", sinFecha: true, tc, hoja: tab.hoja, meses: { [mes]: [...acc.values()].map(x => [x.f, x.c, x.v, x.n.size]) },
       extra: { tipo: "inversores", meses: { [mes]: [...inv.values()].map(y => [y.c, y.tp, y.f, Math.round(y.v), y.n.size]) } } };
   }
 
@@ -164,7 +266,8 @@
 
   const limpio = s => String(s == null ? "" : s).replace(/ /g, " ").trim();
   const num = v => { if (v == null || v === "") return 0; if (typeof v === "number") return v;
-    const s = String(v).trim(); const x = Number(s.includes(",") && !s.includes(".") ? s.replace(",", ".") : s.replace(/,/g, "")); return isFinite(x) ? x : 0; };
+    const s = String(v).trim();
+    const x = Number(s.includes(",") && (!s.includes(".") || s.lastIndexOf(",") > s.lastIndexOf(".")) ? s.replace(/\./g, "").replace(",", ".") : s.replace(/,/g, "")); return isFinite(x) ? x : 0; };
   const pad = n => String(n).padStart(2, "0");
   const finMes = (y, m) => `${y}-${pad(m)}-${pad(new Date(Date.UTC(y, m, 0)).getUTCDate())}`;
   function aMes(v) {           // cualquier fecha → "AAAA-MM"
@@ -182,9 +285,9 @@
   const xlsx = () => xlsxP || (xlsxP = new Promise((ok, mal) => { if (window.XLSX) return ok(window.XLSX);
     const s = document.createElement("script"); s.src = XLSX_URL; s.onload = () => ok(window.XLSX); s.onerror = () => mal(new Error("no se pudo cargar el lector de Excel")); document.head.appendChild(s); }));
 
-  /* Lector rápido para .xlsx grandes (ej. la planilla de cuotapartistas, 300 mil filas): descomprime la hoja en streaming
-     y la recorre fila por fila sin armar el libro entero. Si la hoja es de cuotapartistas, guarda solo las columnas que se usan. */
-  const USA_CP = ["Fondo", "Clase", "Tipo Inversor", "Cuotapartista", "Importe", "Moneda"];
+  /* Lector rápido para .xlsx grandes (ej. la posición de cuotapartistas, 300 mil filas y varias hojas): descomprime cada hoja
+     en streaming y la recorre fila por fila sin armar el libro entero. Mira las primeras filas de cada hoja, elige la que
+     tiene los encabezados que se reconocen y lee completa solo esa. */
   async function leerXlsxGrande(file) {
     const buf = async (a, b) => new Uint8Array(await file.slice(a, b).arrayBuffer());
     const tail = await buf(Math.max(0, file.size - 70000), file.size), dv = new DataView(tail.buffer);
@@ -202,13 +305,17 @@
       let st = file.slice(ini, ini + e.cs).stream(); if (e.met === 8) st = st.pipeThrough(new DecompressionStream("deflate-raw"));
       return st.pipeThrough(new TextDecoderStream());
     }
+    const texto = async nombre => { if (!ent[nombre]) return ""; let t = ""; for await (const ch of await stream(nombre)) t += ch; return t; };
     const ent_ = s => s.replace(/&(lt|gt|amp|quot|apos|#\d+|#x[0-9a-f]+);/gi, (m, c) => ({ lt: "<", gt: ">", amp: "&", quot: '"', apos: "'" })[c.toLowerCase()] || String.fromCodePoint(c[1] === "x" || c[1] === "X" ? parseInt(c.slice(2), 16) : +c.slice(1)));
     const textoDe = x => { let t = "", m; const re = /<t\b[^>]*>([\s\S]*?)<\/t>/g; while ((m = re.exec(x))) t += m[1]; return ent_(t); };
-    let ss = [];
-    if (ent["xl/sharedStrings.xml"]) { let txt = ""; for await (const ch of await stream("xl/sharedStrings.xml")) txt += ch; const re = /<si>([\s\S]*?)<\/si>/g; let m; while ((m = re.exec(txt))) ss.push(textoDe(m[1])); }
-    const hoja = ent["xl/worksheets/sheet1.xml"] ? "xl/worksheets/sheet1.xml" : Object.keys(ent).filter(k => /^xl\/worksheets\/sheet\d+\.xml$/.test(k)).sort()[0];
+    const ss = [];
+    { const txt = await texto("xl/sharedStrings.xml"); const re = /<si>([\s\S]*?)<\/si>/g; let m; while ((m = re.exec(txt))) ss.push(textoDe(m[1])); }
+    // hojas en el orden del libro, con su nombre
+    const wbx = await texto("xl/workbook.xml"), rels = await texto("xl/_rels/workbook.xml.rels"), destino = {};
+    { const re = /<Relationship\b[^>]*>/g; let m; while ((m = re.exec(rels))) { const id = (/\bId="([^"]+)"/.exec(m[0]) || [])[1], t = (/\bTarget="([^"]+)"/.exec(m[0]) || [])[1]; if (id && t) destino[id] = t.replace(/^\/?(xl\/)?/, "xl/"); } }
+    const hojas = []; { const re = /<sheet\b[^>]*>/g; let m; while ((m = re.exec(wbx))) { const nm = ent_((/\bname="([^"]*)"/.exec(m[0]) || [])[1] || ""), id = (/\br:id="([^"]+)"/.exec(m[0]) || [])[1]; if (destino[id] && ent[destino[id]]) hojas.push({ nombre: nm, path: destino[id] }); } }
+    if (!hojas.length) Object.keys(ent).filter(k => /^xl\/worksheets\/sheet\d+\.xml$/.test(k)).sort().forEach(k => hojas.push({ nombre: k.split("/").pop(), path: k }));
     const col = r => { let c = 0; for (const ch of r) { const k = ch.charCodeAt(0); if (k < 65) break; c = c * 26 + (k - 64); } return c - 1; };
-    const filas = []; let keep = null, resto = "";
     const fila = x => {
       const r = []; const re = /<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g; let m;
       while ((m = re.exec(x))) {
@@ -219,25 +326,39 @@
         r[ci] = v;
       }
       for (let i = 0; i < r.length; i++) if (r[i] === undefined) r[i] = null;
-      if (!filas.length) { const h = r.map(limpio); if (USA_CP.every(c => h.includes(c))) keep = USA_CP.map(c => h.indexOf(c)); }
-      filas.push(keep ? keep.map(i => r[i] ?? null) : r);
+      return r;
     };
-    for await (const ch of await stream(hoja)) {
-      resto += ch; const fin = resto.lastIndexOf("</row>"); if (fin < 0) continue;
-      const bloque = resto.slice(0, fin + 6); resto = resto.slice(fin + 6);
-      const re = /<row\b[^>]*>([\s\S]*?)<\/row>/g; let m; while ((m = re.exec(bloque))) fila(m[1]);
+    async function leerHoja(path, max) {
+      const filas = [], rd = (await stream(path)).getReader(); let resto = "";
+      while (true) {
+        const { done, value } = await rd.read(); if (done) break;
+        resto += value; const fin = resto.lastIndexOf("</row>"); if (fin < 0) continue;
+        const bloque = resto.slice(0, fin + 6); resto = resto.slice(fin + 6);
+        const re = /<row\b[^>]*>([\s\S]*?)<\/row>/g; let m; while ((m = re.exec(bloque))) filas.push(fila(m[1]));
+        if (max && filas.length >= max) { try { await rd.cancel(); } catch (e) {} break; }
+      }
+      return max ? filas.slice(0, max) : filas;
     }
-    return filas;
+    let elegida = hojas[0];
+    if (hojas.length > 1) {
+      let mejor = -1;
+      for (const h of hojas) { const p = puntaje(await leerHoja(h.path, 40)); if (p > mejor + 1e-9) { mejor = p; elegida = h; } }
+      if (mejor < 0.5) elegida = hojas[0];
+    }
+    const tab = await leerHoja(elegida.path); tab.hoja = elegida.nombre; return tab;
   }
 
-  async function leerTabla(file) {      // → matriz de celdas (array de filas)
+  async function leerTabla(file) {      // → matriz de celdas (array de filas) de la hoja que tiene los datos
     const nom = file.name.toLowerCase();
     if (/\.(xlsx|xlsm)$/.test(nom) && file.size > 4e6 && window.DecompressionStream) {
       try { return await leerXlsxGrande(file); } catch (e) { console.error("lector rápido", e); }
     }
     if (/\.(xlsx|xlsm|xls)$/.test(nom)) {
       const X = await xlsx(); const wb = X.read(await file.arrayBuffer(), { type: "array", cellDates: true });
-      return X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: true, defval: null });
+      const hojas = wb.SheetNames.map(nm => { const t = X.utils.sheet_to_json(wb.Sheets[nm], { header: 1, raw: true, defval: null }); t.hoja = nm; return t; });
+      if (hojas.length === 1) return hojas[0];
+      const pts = hojas.map(puntaje), mx = Math.max(...pts);
+      return mx >= 0.5 ? hojas[pts.indexOf(mx)] : hojas[0];
     }
     return textoATabla(await file.text());
   }
@@ -285,8 +406,7 @@
       return { tipo, meses };
     }
     // 4) compra/venta de especies (Compra_Venta_Contrapartes_)
-    if ((!forzar || forzar === "compraventa") && idx("Operación_Numero") >= 0 && idx("Tipo de Especie") >= 0) return compraventa(tab);
-    if (forzar === "compraventa") return compraventa(tab);
+    if (forzar === "compraventa" || (!forzar && !mapear(cabeza(tab), ESQ.compraventa).faltan.length)) return compraventa(tab);
     // 5) serie de facturación (carpeta Serie Facturación: Fecha, Facturación)
     if ((!forzar || forzar === "serie_facturacion") && cols.length <= 3 && idx("Fecha") >= 0 && (idx("Facturación") >= 0 || idx("Facturacion") >= 0)) {
       const iv = idx("Facturación") >= 0 ? idx("Facturación") : idx("Facturacion"), meses = {};
@@ -294,8 +414,7 @@
       return { tipo: "serie_facturacion", meses };
     }
     // 6) cantidad de cuotapartistas
-    if ((!forzar || forzar === "cuotapartistas") && idx("Tipo Inversor") >= 0 && idx("Cuotapartista") >= 0) return cuotapartistas(tab, nombre);
-    if (forzar === "cuotapartistas") return cuotapartistas(tab, nombre);
+    if (forzar === "cuotapartistas" || (!forzar && !mapear(cabeza(tab), ESQ.cuotapartistas).faltan.length)) return cuotapartistas(tab, nombre);
     // 6) plantillas Excel de Claude
     const hn = (tab[0] || []).map(norm);
     const pos = alias => { for (const a of alias) { const i = hn.indexOf(a); if (i >= 0) return i; } return -1; };
@@ -314,8 +433,12 @@
       if (p.tipo === "aum_unidad_fondo") return { tipo: "aum_unidad_fondo", meses, extra: aUnidad(meses) };
       return { tipo: p.tipo, meses };
     }
+    // se parece a una compra/venta o a una posición de cuotapartistas pero le falta algo: alarma con cómo arreglarlo
+    if (!forzar) { const cs = Object.entries(ESQ).map(([t, e]) => ({ e, m: mapear(cabeza(tab), e), n: e.campos.filter(c => c.req).length })).sort((a, b) => b.m.ok / b.n - a.m.ok / a.n);
+      if (cs[0].m.ok / cs[0].n >= 0.5) throw alarma(cs[0].e, cs[0].m); }
     throw new Error("No reconozco el archivo. Formatos aceptados: la matriz exportada del Power BI de comisiones (Datos con diseño actual), "
-      + "los Excel mensuales de comisiones (FechaFinMes, Unidad Negocio, ComisionYTM) o el resultado de las consultas DAX.");
+      + "los Excel mensuales de comisiones (FechaFinMes, Unidad Negocio, ComisionYTM), el resultado de las consultas DAX, la compra/venta de especies, "
+      + "la posición de cuotapartistas, la serie de facturación o las plantillas. Si es uno de esos, elegí el tipo en la lista para ver qué columnas le faltan.");
   }
   function aUnidad(meses) {      // la plantilla de AUM por área y fondo también arma el total por área (DAX 1)
     const out = {};
@@ -451,9 +574,10 @@
         <li><b>Facturación</b>: Power BI Service › <i>Rporte de Comision por Fondos v2</i> › página <i>Fondos YTD</i>. En la matriz grande: <i>Más opciones › Exportar datos › Datos con diseño actual</i> (.xlsx), una vez con <i>Analisis por = Unidad Negocio</i> y otra con <i>Fondos</i>. También sirven los Excel mensuales de las carpetas (<i>comisiones_fci_*.xlsx</i>, <i>comisiones_fondo_*.xlsx</i>).</li>
         <li><b>AUM interno, clientes e inversores</b>: modelo <i>DS Fondos - AM - Comisiones - Volumen - CuotaPartes</i> (área SelfService_Fondos) › <i>Abrir en la vista de consulta DAX</i>. Corré las 4 consultas de <code>informe/comite/consultas_dax.dax</code> y copiá cada resultado con <i>Copia › Toda la tabla</i>: pegalo abajo o guardalo como .txt.</li>
         <li><b>Plantillas de Excel</b> (<a href="https://github.com/mfriedB/cafci/tree/main/informe/plantillas" target="_blank" rel="noopener">bajarlas del repo</a>; cada una tiene una hoja de instrucciones): AUM y flujo por área comercial y fondo, clientes, inversores PH/PJ, fondos de terceros, emisiones primarias, fondos fuera de CAFCI, clientes excluidos (Ex Meli) y textos del mes.</li>
-        <li><b>Serie de facturación</b>: el Excel de la carpeta <i>Serie Facturación</i> (Fecha, Facturación). Se guardan todos sus meses; los meses que no trae se completan con la facturación por unidad cargada.</li>
-        <li><b>Cantidad de cuotapartistas</b> (hoja Tipo de Inversor): el Excel de la carpeta <i>Cantidad de Cuotapartistas</i>. No trae fecha: toma el mes del nombre del archivo si lo tiene (por ejemplo <i>cuotapartistas_2026-10.xlsx</i>) o el último mes cerrado, y lo podés cambiar antes de guardar. El AUM en pesos se pasa a dólares al dólar oficial vendedor del BCRA de esa fecha (cierre del mes, o la fecha del nombre del archivo), que el tablero baja solo todos los días. También arma la base de inversores (personas humanas y jurídicas) de la presentación del comité, sin correr la consulta DAX.</li>
-        <li><b>Compra/venta de especies</b> (slides de contrapartes): el mismo Excel que va a la carpeta <i>Compra_Venta_Contrapartes_</i> (se guardan todos los meses que trae). Los montos en pesos se pasan a dólares al oficial vendedor del BCRA del día de cada operación.</li>
+        <li><b>Serie de facturación</b>: no hace falta subirla todos los meses. Los meses que no trae se completan solos con el total de la facturación por unidad de negocio (los archivos de comisiones). Si subís el Excel de la carpeta <i>Serie Facturación</i> (Fecha, Facturación), sus meses tienen prioridad.</li>
+        <li><b>Posición de cuotapartistas</b> (hoja Tipo de Inversor y base de inversores): el Excel <i>Posición CP TODOS los fondos dd-mm-aaaa.xlsx</i> tal como sale del sistema (título, encabezados en varias filas y varias hojas: se usa la que tiene Fondo, Tipo de Inversor, Cuotapartista, Inversión y Moneda). La fecha sale del título (<i>Posición de Cuotapartista al 30/10/2026</i>) o del nombre del archivo, y la podés cambiar antes de guardar. El AUM en pesos se pasa a dólares al dólar oficial vendedor del BCRA de esa fecha, que el tablero baja solo todos los días. También arma la base de inversores (personas humanas y jurídicas) de la presentación del comité.</li>
+        <li><b>Compra/venta de especies</b> (slides de contrapartes): el Excel de operaciones de los fondos (<i>compra_vta_*.xls</i> o .xlsx), con los encabezados de dos o tres filas como sale del sistema. Se guardan todos los meses que trae. Los montos en pesos se pasan a dólares al oficial vendedor del BCRA del día de cada operación; u$s y Usc quedan en dólares.</li>
+        <li>Las columnas se reconocen por nombre y por contenido, aunque cambien de lugar, de nombre o haya columnas de más. Si falta algo aparece una alarma con lo que no encontré y cómo modificar el archivo.</li>
         <li>El tipo de archivo se reconoce solo; si se equivoca, cambialo en la lista antes de guardar.</li>
         <li>Si un archivo trae varios meses (por ejemplo el acumulado del año), se guarda solo el último. Para cargar el histórico de una vez, destildá <i>Guardar solo el último mes de cada archivo</i>.</li></ol></details>
       <div class="ci-zona" tabindex="0"><b>Arrastrá los archivos acá</b> o <label class="ci-btn">elegilos<input type="file" multiple accept=".xlsx,.xls,.xlsm,.txt,.csv,.tsv" hidden></label><div class="ci-sub">.xlsx, .txt, .csv – varios a la vez</div></div>
@@ -464,7 +588,7 @@
 
     async function agregar(nombre, tab) {
       try { const r = procesar(tab, null, nombre); pendientes.push(Object.assign({ archivo: nombre, tab }, r)); }
-      catch (e) { pendientes.push({ archivo: nombre, error: e.message }); }
+      catch (e) { pendientes.push({ archivo: nombre, error: e.message, ayuda: e.ayuda, tab }); }
       dibujarPrev();
     }
     async function archivos(fs) { for (const f of fs) { try { await agregar(f.name, await leerTabla(f)); } catch (e) { pendientes.push({ archivo: f.name, error: e.message }); dibujarPrev(); } } inp.value = ""; }
@@ -487,13 +611,13 @@
       let h = `<h3>Para guardar</h3><label class="ci-sub"><input type="checkbox" class="ci-ult"${soloUltimo ? " checked" : ""}> Guardar solo el último mes de cada archivo</label>
         <table class="ci-t"><thead><tr><th>Archivo</th><th>Tipo</th><th>Trae</th><th>Se guarda</th><th class="n">Total del último mes</th><th></th></tr></thead><tbody>`;
       pendientes.forEach((p, i) => {
-        if (p.error) { h += `<tr class="err"><td>${esc(p.archivo)}</td><td colspan="4">${esc(p.error)}</td><td><button class="ci-x" data-i="${i}" type="button" aria-label="Quitar">✕</button></td></tr>`; return; }
+        if (p.error) { h += `<tr class="err"><td>${esc(p.archivo)}</td><td colspan="4">${p.tab ? `<select data-i="${i}"><option value="">elegir tipo…</option>${ORDEN.map(t => `<option value="${t}">${TIPOS[t].nombre}</option>`).join("")}</select>` : ""}${p.ayuda ? alarmaHtml(p) : esc(p.error)}</td><td><button class="ci-x" data-i="${i}" type="button" aria-label="Quitar">✕</button></td></tr>`; return; }
         const ms = Object.keys(p.meses).sort(), ult = ms[ms.length - 1], g = aGuardar(p);
         const reemp = g.filter(m => cargadoDe(p.tipo, m)), uc = ultimoCargado(p.tipo);
         const nota = (reemp.length ? `<div class="ci-sub">reemplaza ${reemp.length === 1 ? mesTxt(reemp[0]) : reemp.length + " meses"} ya cargado${reemp.length === 1 ? "" : "s"}</div>` : "")
           + (uc && ult && ult !== "fijo" && ult < uc ? `<div class="mal">es anterior al último mes cargado (${mesTxt(uc)})</div>` : "");
         h += `<tr><td>${esc(p.archivo)}</td><td><select data-i="${i}">${ORDEN.map(t => `<option value="${t}"${t === p.tipo ? " selected" : ""}>${TIPOS[t].nombre}</option>`).join("")}</select></td>
-          <td>${p.sinFecha ? `<input type="month" class="ci-mes" data-i="${i}" value="${ult}" title="El archivo no trae fecha: elegí a qué mes corresponde">` : rango(ms)}</td><td>${rango(g)}${nota}${p.extra ? `<div class="ci-sub">también arma: ${TIPOS[p.extra.tipo].nombre}</div>` : ""}${p.tc ? (p.tc.fuente === "BCRA"
+          <td>${p.sinFecha ? `<input type="month" class="ci-mes" data-i="${i}" value="${ult}" title="El archivo no trae fecha: elegí a qué mes corresponde">` : rango(ms)}</td><td>${rango(g)}${nota}${p.extra ? `<div class="ci-sub">también arma: ${TIPOS[p.extra.tipo].nombre}</div>` : ""}${p.hoja ? `<div class="ci-sub">hoja «${esc(p.hoja)}»</div>` : ""}${p.tipo === "com_unidad" ? `<div class="ci-sub">también completa la serie de facturación (total ${g.length === 1 ? mesTxt(g[0]) : rango(g)}${datos("serie_facturacion").some(d => g.includes(d.mes)) ? ", salvo los meses que ya trae la serie subida" : ""})</div>` : ""}${p.tc ? (p.tc.fuente === "BCRA"
             ? `<div class="ci-sub">pesos a USD al dólar oficial vendedor BCRA del ${p.tc.fecha.split("-").reverse().join("/")}: ${fmt(p.tc.valor, 2)}</div>`
             : `<div class="mal">sin dólar oficial del BCRA para esa fecha: se usa ${fmt(p.tc.valor)}</div>`) : ""}</td>
           <td class="n">${ult ? queMide(p.tipo) + " " + mesTxt(ult) + ": " + fmt(total(p.tipo, p.meses[ult])) : ""}</td><td><button class="ci-x" data-i="${i}" type="button" aria-label="Quitar">✕</button></td></tr>`;
@@ -504,11 +628,18 @@
       prev.innerHTML = h;
       prev.querySelector(".ci-ult").addEventListener("change", e => { soloUltimo = e.target.checked; dibujarPrev(); });
       prev.querySelectorAll("select").forEach(s => s.addEventListener("change", () => { const p = pendientes[+s.dataset.i];
-        try { Object.assign(p, { sinFecha: false, extra: null }, procesar(p.tab, s.value, p.archivo)); delete p.error; } catch (e) { p.error = e.message; } dibujarPrev(); }));
+        try { Object.assign(p, { sinFecha: false, extra: null, tc: null }, procesar(p.tab, s.value, p.archivo)); delete p.error; delete p.ayuda; } catch (e) { p.error = e.message; p.ayuda = e.ayuda; } dibujarPrev(); }));
       prev.querySelectorAll(".ci-mes").forEach(m => m.addEventListener("change", () => { const p = pendientes[+m.dataset.i]; if (!/^\d{4}-\d{2}$/.test(m.value)) return;
-        try { Object.assign(p, cuotapartistas(p.tab, p.archivo, m.value)); } catch (e) { p.error = e.message; } dibujarPrev(); }));
+        try { Object.assign(p, cuotapartistas(p.tab, p.archivo, m.value)); } catch (e) { p.error = e.message; p.ayuda = e.ayuda; } dibujarPrev(); }));
       prev.querySelectorAll(".ci-x").forEach(b => b.addEventListener("click", () => { pendientes.splice(+b.dataset.i, 1); dibujarPrev(); }));
       const g = prev.querySelector(".ci-guardar"); if (g) g.addEventListener("click", guardar);
+    }
+    function alarmaHtml(p) {
+      const a = p.ayuda;
+      return `<div class="ci-alarma" role="alert"><b>⚠ ${esc(a.titulo)}</b><div>${esc(p.error)}</div>
+        <div class="ci-sub">Leí ${a.hoja ? `la hoja «${esc(a.hoja)}», ` : ""}encabezados desde la fila ${a.fila}${a.vistos.length ? ": " + a.vistos.map(v => "«" + esc(v) + "»").join(", ") : " (no encontré encabezados)"}.</div>
+        <div><b>Falta:</b><ul>${a.faltan.map(f => `<li>«${esc(f.ej)}»${f.malo ? ` – la columna «${esc(f.malo)}» tiene ese nombre pero su contenido no es ${f.tipo === "num" ? "numérico" : f.tipo === "fecha" ? "una fecha" : f.tipo === "mon" ? "un símbolo de moneda ($, u$s)" : "texto"}` : ""}</li>`).join("")}</ul></div>
+        <div><b>Cómo arreglar el archivo:</b><ol>${a.pasos.map(x => `<li>${esc(x)}</li>`).join("")}</ol></div></div>`;
     }
     function controles(ok) {   // facturación por unidad y por fondo del mismo mes tienen que sumar lo mismo
       const u = ok.find(p => p.tipo === "com_unidad"), f = ok.find(p => p.tipo === "com_fondo"); if (!u || !f) return "";
