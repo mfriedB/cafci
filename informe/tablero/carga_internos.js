@@ -200,18 +200,22 @@
     const fecha = m.fechaTitulo || fechaDeNombre(nombre);
     const acc = new Map(), inv = new Map(), mes = mesF || (fecha ? fecha.slice(0, 7) : mesDeNombre(nombre)), tc = tcPara(mes, nombre, fecha);
     let filas = 0;
+    // copia para el histórico SIN datos personales: ni nombres, ni número de cuenta, ni oficial de cuenta; cada cuotapartista pasa a un código anónimo
+    const anon = new Map(), copia = [["Fondo", "Clase", "Tipo de Inversor", "Cuotapartista (código anónimo)", "Inversión", "Moneda"]];
     for (const r of tab.slice(m.datos)) {
       const f = limpio(g(r, "fondo")), iv = g(r, "importe");
       if (!r || !f || /^total/i.test(f) || iv == null || iv === "" || !esNum(iv)) continue;
       const t = limpio(g(r, "tipo")), cat = TIPO_INV[t] || t, k = f + "|" + cat, cp = limpio(g(r, "cp"));
       const imp = num(iv), usd = (esPesos(g(r, "moneda")) ? imp / tc.valor : imp) / 1e6; filas++;
+      if (!anon.has(cp)) anon.set(cp, "C" + String(anon.size + 1).padStart(6, "0"));
+      copia.push([f, limpio(g(r, "clase")), t, anon.get(cp), imp, limpio(g(r, "moneda"))]);
       const x = acc.get(k) || { f, c: cat, v: 0, n: new Set() }; x.v += usd; x.n.add(cp); acc.set(k, x);
       // también arma "Inversores por tipo y fondo" (la consulta DAX 4 del comité): persona humana (PF) o jurídica (PJ)
       const tp = /personas humanas/i.test(t) ? "PF" : "PJ", ki = cat + "|" + tp + "|" + f;
       const y = inv.get(ki) || { c: cat, tp, f, v: 0, n: new Set() }; y.v += usd * 1e6; y.n.add(cp); inv.set(ki, y);
     }
     if (!filas) throw alarma(ESQ.cuotapartistas, m, "Encontré los encabezados pero ninguna fila con fondo e importe numérico.");
-    return { tipo: "cuotapartistas", sinFecha: true, tc, hoja: tab.hoja, meses: { [mes]: [...acc.values()].map(x => [x.f, x.c, x.v, x.n.size]) },
+    return { tipo: "cuotapartistas", sinFecha: true, tc, hoja: tab.hoja, copia, meses: { [mes]: [...acc.values()].map(x => [x.f, x.c, x.v, x.n.size]) },
       extra: { tipo: "inversores", meses: { [mes]: [...inv.values()].map(y => [y.c, y.tp, y.f, Math.round(y.v), y.n.size]) } } };
   }
 
@@ -631,7 +635,7 @@
       prev.innerHTML = h;
       prev.querySelector(".ci-ult").addEventListener("change", e => { soloUltimo = e.target.checked; dibujarPrev(); });
       prev.querySelectorAll("select").forEach(s => s.addEventListener("change", () => { const p = pendientes[+s.dataset.i];
-        try { Object.assign(p, { sinFecha: false, extra: null, tc: null }, procesar(p.tab, s.value, p.archivo)); delete p.error; delete p.ayuda; } catch (e) { p.error = e.message; p.ayuda = e.ayuda; } dibujarPrev(); }));
+        try { Object.assign(p, { sinFecha: false, extra: null, tc: null, copia: null }, procesar(p.tab, s.value, p.archivo)); delete p.error; delete p.ayuda; } catch (e) { p.error = e.message; p.ayuda = e.ayuda; } dibujarPrev(); }));
       prev.querySelectorAll(".ci-mes").forEach(m => m.addEventListener("change", () => { const p = pendientes[+m.dataset.i]; if (!/^\d{4}-\d{2}$/.test(m.value)) return;
         try { Object.assign(p, cuotapartistas(p.tab, p.archivo, m.value)); } catch (e) { p.error = e.message; p.ayuda = e.ayuda; } dibujarPrev(); }));
       prev.querySelectorAll(".ci-x").forEach(b => b.addEventListener("click", () => { pendientes.splice(+b.dataset.i, 1); dibujarPrev(); }));
@@ -673,8 +677,8 @@
           let copia = null;
           if (C.assets && p.tab) {
             try {
-              let tab = p.tab, csv = aCsv(tab);
-              if (csv.length > 18e6) {   // archivos muy grandes (ej. cuotapartistas): la copia guarda solo las columnas que usa el tablero
+              let tab = p.copia || p.tab, csv = aCsv(tab);   // la Posición CP se guarda anonimizada (ver cuotapartistas)
+              if (!p.copia && csv.length > 18e6) {   // archivos muy grandes (ej. cuotapartistas): la copia guarda solo las columnas que usa el tablero
                 const usa = ["Fondo", "Clase", "Tipo Inversor", "Cuotapartista", "Importe", "Moneda"], ix = usa.map(c => tab[0].indexOf(c)).filter(i => i >= 0);
                 if (ix.length) csv = aCsv(tab.map(r => ix.map(i => r[i])));
               }
