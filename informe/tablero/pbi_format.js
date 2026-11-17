@@ -83,8 +83,9 @@
     if (fmt === "M" || fmt === "m") return `${d} de ${MES[m - 1]}`;
     if (fmt === "D") fmt = "Long Date";
     if (fmt === "Long Date") { const wd = new Date(Date.UTC(y, m - 1, d)).getUTCDay(); return `${DIA[wd]}, ${d} de ${MES[m - 1]} de ${y}`; }
-    return fmt.replace(/"([^"]*)"|\\(.)|[mM]{4}|[mM]{3}|[mM]{2}|[mM]|yyyy|yy|dd|d/g, (t, q, e) => {
+    return fmt.replace(/"([^"]*)"|'([^']*)'|\\(.)|[mM]{4}|[mM]{3}|[mM]{2}|[mM]|yyyy|yy|dd|d/g, (t, q, q2, e) => {   // texto fijo entre comillas dobles o simples
       if (q != null) return q;
+      if (q2 != null) return q2;
       if (e != null) return e;
       switch (t.length === 1 && t !== "d" ? "m" : t.replace(/M/g, "m")) { case "mmmm": return MES[m - 1]; case "mmm": return MES[m - 1].slice(0, 3); case "mm": return String(m).padStart(2, "0"); case "m": return String(m);
         case "yyyy": return String(y); case "yy": return String(y).slice(2); case "dd": return String(d).padStart(2, "0"); case "d": return String(d); }
