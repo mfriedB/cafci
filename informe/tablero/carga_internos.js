@@ -233,7 +233,7 @@
     aum_unidad: { nombre: "AUM interno por unidad (DAX 1)", cols: ["unidad", "aum_orig", "ten", "fact", "flujo"], unidad: "USD" },
     aum_unidad_fondo: { nombre: "AUM interno por unidad y fondo (DAX 2)", cols: ["unidad", "fondo", "aum", "fact", "flujo"], unidad: "USD" },
     clientes: { nombre: "Clientes: top facturación y ACDIs (DAX 3)", cols: ["nombre", "unidad", "aum", "fact", "flujo"], unidad: "USD" },
-    inversores: { nombre: "Inversores por tipo y fondo (DAX 4)", cols: ["categoria", "tipopersona", "fondo", "aum", "n"], unidad: "" },
+    inversores: { nombre: "Posición CP: inversores por tipo y fondo", cols: ["categoria", "tipopersona", "fondo", "aum", "n"], unidad: "" },
     terceros: { nombre: "Fondos de terceros colocados vía Balanz", cols: ["fondo", "gerente", "aum_ars"], unidad: "ARS" },
     emisiones: { nombre: "Facturación por emisiones primarias", cols: ["emision", "emisor", "fact"], unidad: "USD" },
     cerrados: { nombre: "Fondos fuera de CAFCI (cerrados, FCICC)", cols: ["fondo", "aum", "fact"], unidad: "USD" },
@@ -241,7 +241,7 @@
     textos: { nombre: "Textos del mes (acciones, destacados, ratings, follow-ups)", cols: ["seccion", "texto"], unidad: "" },
     compraventa: { nombre: "Compra/venta de especies de los fondos (contrapartes)", cols: CV_COLS, unidad: "USD" },
     serie_facturacion: { nombre: "Serie de facturación mensual (Serie Facturación)", cols: ["fecha", "facturacion"], unidad: "USD" },
-    cuotapartistas: { nombre: "Cantidad de cuotapartistas por fondo y tipo de inversor", cols: ["Fondo", "categoria_tipo_inversor", "importe_usd_mill", "cuotapartistas"], unidad: "USD" }
+    cuotapartistas: { nombre: "Posición CP: cuotapartistas por fondo y tipo de inversor", cols: ["Fondo", "categoria_tipo_inversor", "importe_usd_mill", "cuotapartistas"], unidad: "USD" }
   };
   /* Plantillas Excel (una hoja, encabezados en la primera fila). Las de AUM, clientes e inversores reemplazan a las
      consultas DAX y se guardan con el mismo formato. Columnas: nombre normalizado → posibles encabezados. */
@@ -260,7 +260,7 @@
   ];
   const TXT = new Set(["area", "fondo", "cliente", "cat", "tp", "ger", "emision", "emisor", "motivo", "seccion", "texto"]);
   const norm = s => limpio(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
-  const ORDEN = Object.keys(TIPOS);
+  const ORDEN = Object.keys(TIPOS).filter(t => t !== "inversores").flatMap(t => t === "cuotapartistas" ? [t, "inversores"] : [t]);   // las dos bases de la Posición CP juntas
   const MESES_EN = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12,
     ene: 1, abr: 4, ago: 8, dic: 12 };
 
@@ -575,10 +575,10 @@
       y todo lo que no depende de CAFCI se actualiza enseguida. Si un mes ya estaba cargado, vale el archivo más nuevo (el anterior queda guardado en el histórico).</p>
       <details class="ci-ayuda"><summary>Qué bajar y de dónde</summary><ol>
         <li><b>Facturación</b>: Power BI Service › <i>Rporte de Comision por Fondos v2</i> › página <i>Fondos YTD</i>. En la matriz grande: <i>Más opciones › Exportar datos › Datos con diseño actual</i> (.xlsx), una vez con <i>Analisis por = Unidad Negocio</i> y otra con <i>Fondos</i>. También sirven los Excel mensuales de las carpetas (<i>comisiones_fci_*.xlsx</i>, <i>comisiones_fondo_*.xlsx</i>).</li>
-        <li><b>AUM interno, clientes e inversores</b>: modelo <i>DS Fondos - AM - Comisiones - Volumen - CuotaPartes</i> (área SelfService_Fondos) › <i>Abrir en la vista de consulta DAX</i>. Corré las 4 consultas de <code>informe/comite/consultas_dax.dax</code> y copiá cada resultado con <i>Copia › Toda la tabla</i>: pegalo abajo o guardalo como .txt.</li>
+        <li><b>AUM interno y clientes</b>: modelo <i>DS Fondos - AM - Comisiones - Volumen - CuotaPartes</i> (área SelfService_Fondos) › <i>Abrir en la vista de consulta DAX</i>. Corré las consultas 1 a 3 de <code>informe/comite/consultas_dax.dax</code> y copiá cada resultado con <i>Copia › Toda la tabla</i>: pegalo abajo o guardalo como .txt.</li>
         <li><b>Plantillas de Excel</b> (<a href="https://github.com/mfriedB/cafci/tree/main/informe/plantillas" target="_blank" rel="noopener">bajarlas del repo</a>; cada una tiene una hoja de instrucciones): AUM y flujo por área comercial y fondo, clientes, inversores PH/PJ, fondos de terceros, emisiones primarias, fondos fuera de CAFCI, clientes excluidos (Ex Meli) y textos del mes.</li>
         <li><b>Serie de facturación</b>: no hace falta subirla todos los meses. Los meses que no trae se completan solos con el total de la facturación por unidad de negocio (los archivos de comisiones). Si subís el Excel de la carpeta <i>Serie Facturación</i> (Fecha, Facturación), sus meses tienen prioridad.</li>
-        <li><b>Posición de cuotapartistas</b> (hoja Tipo de Inversor y base de inversores): el Excel <i>Posición CP TODOS los fondos dd-mm-aaaa.xlsx</i> tal como sale del sistema (título, encabezados en varias filas y varias hojas: se usa la que tiene Fondo, Tipo de Inversor, Cuotapartista, Inversión y Moneda). La fecha sale del título (<i>Posición de Cuotapartista al 30/10/2026</i>) o del nombre del archivo, y la podés cambiar antes de guardar. El AUM en pesos se pasa a dólares al dólar oficial vendedor del BCRA de esa fecha, que el tablero baja solo todos los días. También arma la base de inversores (personas humanas y jurídicas) de la presentación del comité.</li>
+        <li><b>Posición CP</b> (cuotapartistas por fondo y tipo de inversor, e inversores por tipo y fondo: los dos salen de este archivo): el Excel <i>Posición CP TODOS los fondos dd-mm-aaaa.xlsx</i> tal como sale del sistema (título, encabezados en varias filas y varias hojas: se usa la que tiene Fondo, Tipo de Inversor, Cuotapartista, Inversión y Moneda). La fecha sale del título (<i>Posición de Cuotapartista al 30/10/2026</i>) o del nombre del archivo, y la podés cambiar antes de guardar. El AUM en pesos se pasa a dólares al dólar oficial vendedor del BCRA de esa fecha, que el tablero baja solo todos los días. También arma la base de inversores (personas humanas y jurídicas) de la presentación del comité.</li>
         <li><b>Compra/venta de especies</b> (slides de contrapartes): el Excel de operaciones de los fondos (<i>compra_vta_*.xls</i> o .xlsx), con los encabezados de dos o tres filas como sale del sistema. Se guardan todos los meses que trae. Los montos en pesos se pasan a dólares al oficial vendedor del BCRA del día de cada operación; u$s y Usc quedan en dólares.</li>
         <li>Las columnas se reconocen por nombre y por contenido, aunque cambien de lugar, de nombre o haya columnas de más. Si falta algo aparece una alarma con lo que no encontré y cómo modificar el archivo.</li>
         <li>El tipo de archivo se reconoce solo; si se equivoca, cambialo en la lista antes de guardar.</li>
@@ -712,7 +712,10 @@
       for (const x of viejos.values()) { x.meses.sort(); x.enUso.sort(); const u = x.meses[x.meses.length - 1]; x.ultimo = u; x.total = total(x.tipo, versiones(x.tipo).find(d => d.mes === u && !d.archivoId && d.at === x.at)?.filas || []); out.push(x); }
       return out.sort((a, b) => ((b.at || "") < (a.at || "") ? -1 : 1));
     }
-    let filtro = "";
+    const abiertos = new Set();
+    // grupos del histórico: un botón por tipo de archivo (la Posición CP arma cuotapartistas e inversores)
+    const grupoDe = t => (t === "cuotapartistas" || t === "inversores" ? "Posición CP" : TIPOS[t] ? TIPOS[t].nombre : t);
+    const ordenGrupo = g => { const i = ORDEN.findIndex(t => grupoDe(t) === g); return i < 0 ? 99 : i; };
     function dibujarEstado(msg) {
       let h = `<h3>Histórico cargado</h3>${msg ? `<div class="bien">${esc(msg)}</div>` : ""}`;
       if (C.estado === "cargando") h += `<p class="ci-sub">Leyendo la base del tablero…</p>`;
@@ -728,25 +731,34 @@
         }
         h += `</tbody></table>`;
         // archivos subidos
-        const lista = listaArchivos(), tipos = [...new Set(lista.map(x => x.tipo))];
-        h += `<h3>Archivos subidos</h3><div class="ci-fil"><label class="ci-sub">Ver <select class="ci-ft"><option value="">todos los tipos</option>${tipos.map(t => `<option value="${t}"${t === filtro ? " selected" : ""}>${TIPOS[t] ? TIPOS[t].nombre : t}</option>`).join("")}</select></label></div>
-          <table class="ci-t"><thead><tr><th>Archivo</th><th>Tipo</th><th>Mes guardado</th><th class="n">Total</th><th>Subido</th><th>Estado</th><th></th></tr></thead><tbody>`;
-        lista.forEach((x, i) => {
-          if (filtro && x.tipo !== filtro) return;
-          const usado = x.enUso.length, estado = usado === x.meses.length ? "en uso" : usado ? `en uso ${usado} de ${x.meses.length}` : "reemplazado";
-          h += `<tr${usado ? "" : ' class="ci-off"'}><td>${esc(x.archivo)}</td><td>${TIPOS[x.tipo] ? TIPOS[x.tipo].nombre : esc(x.tipo)}</td><td>${rango(x.meses)}</td>
-            <td class="n">${x.ultimo ? queMide(x.tipo) + " " + fmt(x.total) : ""}</td><td>${x.at ? new Date(x.at).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" }) : "–"}</td>
-            <td>${estado}</td><td class="ci-acc">${x.copia && x.copia.id ? (x.copia.ids || [x.copia.id]).map((id, k, a) => `<a class="ci-lnk" href="/_blob/${esc(id)}" download="${esc(x.archivo.replace(/\.[^.]+$/, "") + (a.length > 1 ? "_parte" + (k + 1) : "") + ".csv")}" target="_blank" rel="noopener">Bajar${a.length > 1 ? " " + (k + 1) + "/" + a.length : ""}</a>`).join("") : ""}
-            <button class="ci-btn ci-borrar" data-i="${i}" type="button">Eliminar</button></td></tr>`;
-        });
-        h += `</tbody></table><p class="ci-sub">Eliminar saca el archivo y sus datos: cada mes vuelve a la versión anterior que se haya subido o, si no hay, a los archivos de la carpeta (data/internos.json).
+        const lista = listaArchivos(), grupos = new Map();
+        lista.forEach((x, i) => { const g = grupoDe(x.tipo); (grupos.get(g) || grupos.set(g, []).get(g)).push(i); });
+        const orden = [...grupos.keys()].sort((a, b) => ordenGrupo(a) - ordenGrupo(b));
+        h += `<h3>Archivos subidos</h3><p class="ci-sub">Un botón por tipo de archivo: tocalo para ver, bajar o eliminar sus archivos.</p><div class="ci-grupos">`;
+        for (const g of orden) {
+          const is = grupos.get(g), xs = is.map(i => lista[i]), meses = [...new Set(xs.flatMap(x => x.meses))].sort();
+          const enUso = xs.filter(x => x.enUso.length).length;
+          h += `<details class="ci-grupo" data-g="${esc(g)}"${abiertos.has(g) ? " open" : ""}><summary><b>${esc(g)}</b><span class="ci-sub">${xs.length} archivo${xs.length === 1 ? "" : "s"} · ${rango(meses)}${enUso < xs.length ? ` · ${xs.length - enUso} reemplazado${xs.length - enUso === 1 ? "" : "s"}` : ""}</span></summary>
+            <table class="ci-t"><thead><tr><th>Archivo</th><th>Mes guardado</th><th class="n">Total</th><th>Subido</th><th>Estado</th><th></th></tr></thead><tbody>`;
+          for (const i of is) {
+            const x = lista[i];
+            const usado = x.enUso.length, estado = usado === x.meses.length ? "en uso" : usado ? `en uso ${usado} de ${x.meses.length}` : "reemplazado";
+            h += `<tr${usado ? "" : ' class="ci-off"'}><td>${esc(x.archivo)}${x.tipo === "cuotapartistas" ? `<div class="ci-sub">arma cuotapartistas por fondo y tipo de inversor, e inversores por tipo y fondo</div>` : x.tipo === "inversores" ? `<div class="ci-sub">inversores por tipo y fondo</div>` : ""}</td><td>${rango(x.meses)}</td>
+              <td class="n">${x.ultimo ? queMide(x.tipo) + " " + fmt(x.total) : ""}</td><td>${x.at ? new Date(x.at).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" }) : "–"}</td>
+              <td>${estado}</td><td class="ci-acc">${x.copia && x.copia.id ? (x.copia.ids || [x.copia.id]).map((id, k, a) => `<a class="ci-lnk" href="/_blob/${esc(id)}" download="${esc(x.archivo.replace(/\.[^.]+$/, "") + (a.length > 1 ? "_parte" + (k + 1) : "") + ".csv")}" target="_blank" rel="noopener">Bajar${a.length > 1 ? " " + (k + 1) + "/" + a.length : ""}</a>`).join("") : ""}
+              <button class="ci-btn ci-borrar" data-i="${i}" type="button">Eliminar</button></td></tr>`;
+          }
+          h += `</tbody></table></details>`;
+        }
+        h += `</div>`;
+        h += `<p class="ci-sub">Eliminar saca el archivo y sus datos: cada mes vuelve a la versión anterior que se haya subido o, si no hay, a los archivos de la carpeta (data/internos.json).
           Un archivo "reemplazado" no se usa porque después se subió otro del mismo mes; si eliminás el más nuevo, vuelve a usarse el anterior.</p>`;
         est._lista = lista;
       }
       const fi = M.I.comisiones || [], ult = fi.length ? fi[fi.length - 1].mes : null;
       if (ult) h += `<p class="ci-sub">Facturación que usa hoy el tablero: hasta ${mesTxt(ult.slice(0, 7))}.</p>`;
       est.innerHTML = h;
-      const ft = est.querySelector(".ci-ft"); if (ft) ft.addEventListener("change", () => { filtro = ft.value; dibujarEstado(); });
+      est.querySelectorAll(".ci-grupo").forEach(d => d.addEventListener("toggle", () => { d.open ? abiertos.add(d.dataset.g) : abiertos.delete(d.dataset.g); }));
       est.querySelectorAll(".ci-borrar").forEach(b => b.addEventListener("click", async () => {
         const x = est._lista[+b.dataset.i]; if (b.dataset.ok !== "1") { b.dataset.ok = "1"; b.textContent = "¿Seguro?"; return; }
         b.disabled = true; b.textContent = "Eliminando…";
