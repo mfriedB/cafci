@@ -142,9 +142,9 @@
       if (modo === "log") {   // escala logarítmica de ~1% a 35%, sin la línea "Resto"; grilla en valores redondos
         const xs = orden.filter(x => !x.resto), vs = xs.flatMap(x => x.a).filter(z => z > 0);
         // un color fijo por área, con tonos bien distintos entre las que andan cerca (la misma área tiene siempre el mismo color)
-        const COLA = { "IFA": "#0B1F5C", "Corporate": "#3B6CFF", "Individuos": "#00897B", "Wealth Management": "#E8590C", "Otros": "#6C757D",
-          "Sales & Trading": "#7B2CBF", "Institucionales": "#C92A2A", "Pyme": "#2B8A3E", "Private Wealth": "#AE3EC9", "Institucionales No Regulados2": "#1971C2",
-          "Productores Exclusivos": "#D6336C", "Canales": "#6F4E37", "IR": "#F08C00", "Banca de Inversión": "#5F3DC4", "Banca Privada": "#0C8599" };
+        const COLA = { "IFA": "#0B1F5C", "Corporate": "#3B6CFF", "Individuos": "#008856", "Wealth Management": "#0067A5", "Otros": "#848482",
+          "Sales & Trading": "#F38400", "Institucionales": "#222222", "Pyme": "#8DB600", "Private Wealth": "#604E97", "Institucionales No Regulados2": "#BE0032",
+          "Productores Exclusivos": "#00A3A3", "Canales": "#882D17", "IR": "#D6336C", "Banca de Inversión": "#E0A000", "Banca Privada": "#4DABF7" };
         const EXTRA = ["#F08C00", "#1098AD", "#862E9C", "#364FC7", "#A61E4D", "#2F9E44"];
         let ke = 0; xs.forEach(x => { x.c = COLA[x.n] || EXTRA[ke++ % EXTRA.length]; });
         const ymin = Math.min(0.01, Math.floor(Math.min(...vs) * 1000 * 0.92) / 1000), ymax = 0.35;
