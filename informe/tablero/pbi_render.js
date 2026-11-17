@@ -295,8 +295,12 @@
 
   function echart(body, opt) {
     const d = el("div", "pv-chart"); body.appendChild(d);
-    const c = echarts.init(d, null, { renderer: R.CMP ? "svg" : "canvas" });
+    const c = echarts.init(d, null, { renderer: "svg" });
     opt.animation = false;
+    if (R.LEY && opt.legend && opt.legend.show !== false && opt.legend.orient !== "vertical") {
+      const ts = Object.assign({}, opt.legend.textStyle || {}, R.LEY.textStyle || {}); delete opt.legend.bottom;
+      Object.assign(opt.legend, R.LEY, { textStyle: ts });
+    }
     opt.textStyle = Object.assign({ fontFamily: FONT, color: TH.foregroundNeutralSecondary || "#605E5C" }, opt.textStyle || {});
     c.setOption(opt); charts.push(c);
     return c;
@@ -862,9 +866,11 @@
     const chart = echart(body, opt);
     if (ends.length && !horizontal) {   // nombres de serie al final de cada linea, separados y con linea guia (seriesLabels del Power BI)
       const pts = ends.map(e => {
-        let i = e.data.length - 1; while (i >= 0 && e.data[i] == null) i--;
+        const val = d => (d != null && typeof d === "object" && !Array.isArray(d) ? d.value : d);
+        let i = e.data.length - 1; while (i >= 0 && val(e.data[i]) == null) i--;
         if (i < 0) return null;
-        const [x, y] = chart.convertToPixel({ xAxisIndex: 0, yAxisIndex: e.yAxisIndex || 0 }, [i, e.data[i]]);
+        const [x, y] = chart.convertToPixel({ xAxisIndex: 0, yAxisIndex: e.yAxisIndex || 0 }, [i, val(e.data[i])]);
+        if (!isFinite(x) || !isFinite(y)) return null;
         return Object.assign({ x, y, ty: y }, e.__end);
       }).filter(Boolean).sort((a, b) => a.y - b.y);
       for (let k = 1; k < pts.length; k++) { const gap = (pts[k].fs + pts[k - 1].fs) / 2 + 1; if (pts[k].ty - pts[k - 1].ty < gap) pts[k].ty = pts[k - 1].ty + gap; }
@@ -1267,6 +1273,7 @@
     host.appendChild(stage);
     const env = { page, st, host: stage, rerender };
     const cambios = (window.PBI_CUSTOM || []).filter(c => c.hoja === page.name);
+    R.LEY = (cambios.find(c => c.leyenda) || {}).leyenda || null;   // leyendas con el mismo estilo y altura en toda la hoja
     page.visuals.forEach((v, i) => {
       if (v.hidden) return;
       const cb = cambios.find(c => c.id === v.id);

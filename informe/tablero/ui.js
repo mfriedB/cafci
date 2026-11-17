@@ -22,7 +22,7 @@
 
   const BASE_TXT = { fontFamily: "Barlow, Arial, sans-serif", color: "#1b2333" };
   U.chart = function (d, option) {
-    const c = echarts.init(d, null, { renderer: "canvas" });
+    const c = echarts.init(d, null, { renderer: "svg" });
     option.textStyle = Object.assign({}, BASE_TXT, option.textStyle || {});
     option.animation = false;
     if (!option.tooltip) option.tooltip = { trigger: "item", confine: true };

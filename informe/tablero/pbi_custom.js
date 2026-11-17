@@ -11,6 +11,9 @@
   /* Industria FCI - AUM Resumen: "AUM por Moneda de Suscripción" -> "Composición por Moneda según Gerente"
      (100% por tipo de gerente, ARS y USD, con el AUM total de cada fila y la industria abajo) */
   C.push({ hoja: "Industria FCI - AUM Resumen", id: "354eade8e481f50a7570", texto: "Composición por Moneda según Gerente" });
+  /* Industria FCI - AUM Resumen: las leyendas de los tres gráficos de abajo a la misma altura, con la misma letra y estilo */
+  const LEY_RESUMEN = { top: 6, left: 8, icon: "circle", itemWidth: 10, itemHeight: 10, itemGap: 18, textStyle: { fontFamily: "'Segoe UI', Arial, sans-serif", fontSize: 13, color: "#605E5C", padding: [0, 0, 0, 0] } };
+  C.push({ hoja: "Industria FCI - AUM Resumen", leyenda: LEY_RESUMEN });
   /* Compraventa a Contrapartes: los pesos se dolarizan al oficial vendedor del BCRA de cada fecha (antes, 1.400 fijo) */
   C.push({ hoja: "Compraventa a Contrapartes: Montos", id: "96ea618686bb0cb03467", texto: "Montos en millones de USD, los $ dolarizados al dólar oficial vendedor del BCRA de cada operación" });
   C.push({ hoja: "Industria FCI - AUM Resumen", id: "ed7a3bd05e7571b7549c", dibujar(v, env, R) {
@@ -24,11 +27,11 @@
     const pct = x => (x == null ? "" : F.num(x, "0.0 %;-0.0 %;0.0 %"));
     const monto = x => F.num(x, "\\$\\ #,0;-\\$\\ #,0;\\$\\ #,0", { units: 0, prec: 1 });
     const d = document.createElement("div"); d.className = "pv-chart"; body.appendChild(d);
-    const ch = echarts.init(d, null, { renderer: R.CMP ? "svg" : "canvas" }); R.track(ch);
+    const ch = echarts.init(d, null, { renderer: "svg" }); R.track(ch);
     const lbl = { show: true, position: "inside", color: "#FFFFFF", fontWeight: "bold", fontSize: 12, formatter: p => pct(p.value) };
     ch.setOption({
       animation: false, textStyle: { fontFamily: "'Segoe UI', Arial, sans-serif" },
-      legend: { top: 4, left: 4, icon: "circle", itemWidth: 10, itemHeight: 10, itemGap: 22, textStyle: { fontSize: 13, color: "#605E5C" } },
+      legend: Object.assign({}, LEY_RESUMEN, { top: LEY_RESUMEN.top + 3, textStyle: Object.assign({}, LEY_RESUMEN.textStyle) }),   // este visual arranca 3 px más arriba en el .pbix
       grid: { left: 10, right: 10, top: 40, bottom: 8, containLabel: true },
       xAxis: { type: "value", show: false, max: 1 },
       yAxis: [{ type: "category", inverse: true, data: data.map(x => x.n), axisLine: { show: false }, axisTick: { show: false },
