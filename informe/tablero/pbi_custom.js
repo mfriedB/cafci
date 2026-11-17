@@ -141,6 +141,12 @@
       const nota = t => g.push({ type: "text", left: 8, bottom: 2, style: { text: t + (chicos.length ? "  Resto (<1%): " + chicos.sort().join(", ") + "." : ""), width: W - 16, overflow: "truncate", fill: "#8A8F9C", fontSize: 9.5, fontFamily: font }, silent: true });
       if (modo === "log") {   // escala logarítmica de ~1% a 35%, sin la línea "Resto"; grilla en valores redondos
         const xs = orden.filter(x => !x.resto), vs = xs.flatMap(x => x.a).filter(z => z > 0);
+        // un color fijo por área, con tonos bien distintos entre las que andan cerca (la misma área tiene siempre el mismo color)
+        const COLA = { "IFA": "#0B1F5C", "Corporate": "#3B6CFF", "Individuos": "#00897B", "Wealth Management": "#E8590C", "Otros": "#6C757D",
+          "Sales & Trading": "#7B2CBF", "Institucionales": "#C92A2A", "Pyme": "#2B8A3E", "Private Wealth": "#AE3EC9", "Institucionales No Regulados2": "#1971C2",
+          "Productores Exclusivos": "#D6336C", "Canales": "#6F4E37", "IR": "#F08C00", "Banca de Inversión": "#5F3DC4", "Banca Privada": "#0C8599" };
+        const EXTRA = ["#F08C00", "#1098AD", "#862E9C", "#364FC7", "#A61E4D", "#2F9E44"];
+        let ke = 0; xs.forEach(x => { x.c = COLA[x.n] || EXTRA[ke++ % EXTRA.length]; });
         const ymin = Math.min(0.01, Math.floor(Math.min(...vs) * 1000 * 0.92) / 1000), ymax = 0.35;
         grids.push({ left: L, right: RT, top: 18, bottom: 46 }); xAxes.push(ejeX(0, true));
         yAxes.push({ type: "log", logBase: 10, gridIndex: 0, min: ymin, max: ymax, axisLabel: { show: false }, splitLine: { show: false }, axisLine: { show: false }, axisTick: { show: false } });
