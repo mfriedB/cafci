@@ -1,15 +1,15 @@
 {
  "functions": {
   "api/*.js": {
-   "maxDuration": 30,
+   "maxDuration": 60,
    "memory": 1024
   }
  },
  "rewrites": [
-  {
-   "source": "/",
-   "destination": "/api"
-  }
+  { "source": "/", "destination": "/docs/" },
+  { "source": "/llms.txt", "destination": "/api/guia" },
+  { "source": "/openapi.json", "destination": "/api/openapi" },
+  { "source": "/api/openapi.json", "destination": "/api/openapi" }
  ],
  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- api public vercel.json package.json"
 }

@@ -5,6 +5,6 @@ const { bajar, parseCSV, contiene, responder, manejar } = require("../_lib");
 module.exports = manejar(async (req, res) => {
   const q = req.query;
   const datos = parseCSV(await bajar("taxonomia.csv")).filter(f => contiene(f.Tipo_1816, q.tipo) && contiene(f.Subtipo_1816, q.subtipo)
-    && contiene(f.Gerente_1816, q.gerente) && contiene(f.Tipo_Gerente_1816, q.tipo_gerente) && contiene(f.fuente_tax, q.fuente));
+    && contiene(f.Gerente_1816, q.gerente) && (!q.codigo || String(q.codigo).split(",").map(Number).includes(f.Codigo_CNV)) && contiene(f.Tipo_Gerente_1816, q.tipo_gerente) && contiene(f.fuente_tax, q.fuente));
   responder(req, res, datos);
 });

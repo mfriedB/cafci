@@ -58,6 +58,17 @@ Base: `https://raw.githubusercontent.com/mfriedB/cafci/datos/procesado/`
 
 ## API con filtros (Vercel)
 
+**Guía para usuarios: https://cafci.vercel.app/docs** (conceptos, cómo conectarse desde Power BI / Excel / Google Sheets /
+Python, constructor de consultas y referencia de cada endpoint con sus columnas). La misma guía en texto para asistentes de
+IA en `/llms.txt`, en JSON en `/api/docs` y como OpenAPI en `/openapi.json`. Todo se genera desde `api/_spec.js`: al agregar o
+cambiar un endpoint o un parámetro, actualizarlo ahí (el router usa esa lista para avisar de parámetros mal escritos).
+
+Endpoints agregados en nov-2026 para compartir la API: `/api/estado` (frescura de la base), `/api/catalogo` (buscador de
+fondos y clases con sus códigos), `/api/cuotapartistas`, `/api/archivos` (links a CSV y Parquet de la base completa).
+Parámetros comunes a todas las tablas: `columnas`, `ordenar`, `limite`/`offset`, `formato=csv`, `excel=1`, `descargar=1`.
+`moneda=usd` en fondos, serie, industria y ranking (usa `procesado/informe/industria_usd.csv`). `/api/vcp` lee las series
+precalculadas por clase de `procesado/vcp/` (`scripts/series_vcp.py`) y así admite toda la historia.
+
 Carpeta `api/` (funciones serverless de Vercel, sin dependencias). Lee la misma base de `procesado/` y devuelve JSON
 (o CSV con `formato=csv`), con filtros. Endpoints:
 

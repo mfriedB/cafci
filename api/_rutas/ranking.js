@@ -1,8 +1,12 @@
 // GET /api/ranking?mes=2026-10&por=gerente&metrica=AUM_promedio&top=30
-const { mensual, contiene, responder, manejar } = require("../_lib");
+const { mensualMoneda, monedaMensual, unidadMon, contiene, responder, manejar } = require("../_lib");
+const METRICAS = ["AUM_promedio", "AUM_Inicial", "AUM_Final", "Susc_Netas", "Rendimiento", "Facturacion_Gerente", "Facturacion_Depo"];
 module.exports = manejar(async (req, res) => {
   const q = req.query, por = (q.por || "gerente").toLowerCase(), met = q.metrica || "AUM_promedio", top = Number(q.top || 30);
-  const { meta, filas } = await mensual(q.mes);
+  if (!METRICAS.includes(met)) throw Object.assign(new Error("metrica = " + METRICAS.join(" | ")), { status: 400 });
+  if (!["gerente", "fondo"].includes(por)) throw Object.assign(new Error("por = gerente | fondo"), { status: 400 });
+  const mon = monedaMensual(q);
+  const { meta, filas } = await mensualMoneda(q.mes, mon);
   const g = new Map(); let total = 0;
   for (const f of filas) {
     if (!contiene(f.Categoria, q.categoria) || !contiene(f.Subcategoria, q.subcategoria) || !contiene(f.Tipo_Gerente, q.tipo_gerente)) continue;
@@ -14,5 +18,5 @@ module.exports = manejar(async (req, res) => {
     return por === "fondo" ? { Puesto: i + 1, Fondo: n, Gerente: ger, Codigo_CNV: Number(cod), [met]: v, Participacion: v / total }
                            : { Puesto: i + 1, Gerente: n, [met]: v, Participacion: v / total };
   });
-  responder(req, res, datos, { mes: meta.mes, hasta: meta.hasta, metrica: met, total, unidad: "millones de ARS" });
+  responder(req, res, datos, { mes: meta.mes, hasta: meta.hasta, metrica: met, total, unidad: unidadMon(mon) });
 });

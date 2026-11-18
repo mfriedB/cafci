@@ -1,10 +1,11 @@
 // GET /api/industria?desde=2026-01&por=categoria   (por = total | categoria | subcategoria | gerente | tipo_gerente)
-const { indice, mensual, meses, contiene, responder, manejar } = require("../_lib");
+const { indice, mensualMoneda, monedaMensual, unidadMon, meses, contiene, responder, manejar } = require("../_lib");
 const M = ["AUM_promedio", "AUM_Inicial", "AUM_Final", "Susc_Netas", "Rendimiento", "Facturacion_Gerente", "Facturacion_Depo"];
 module.exports = manejar(async (req, res) => {
-  const q = req.query, por = (q.por || "total").toLowerCase();
+  const q = req.query, por = (q.por || "total").toLowerCase(), mon = monedaMensual(q);
+  if (!["total", "categoria", "subcategoria", "gerente", "tipo_gerente"].includes(por)) throw Object.assign(new Error("por = total | categoria | subcategoria | gerente | tipo_gerente"), { status: 400 });
   const idx = await indice();
-  const partes = await Promise.all(meses(idx, q.desde, q.hasta).map(m => mensual(m)));
+  const partes = await Promise.all(meses(idx, q.desde, q.hasta).map(m => mensualMoneda(m, mon)));
   const datos = [];
   for (const { meta, filas } of partes) {
     const g = new Map();
@@ -16,5 +17,5 @@ module.exports = manejar(async (req, res) => {
     }
     datos.push(...[...g.values()].map(a => (M.forEach(m => a[m] = Math.round(a[m] * 1000) / 1000), a)));
   }
-  responder(req, res, datos, { unidad: "millones de ARS" });
+  responder(req, res, datos, { unidad: unidadMon(mon) });
 });

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guía de la API de FCI · CAFCI/CNV</title>
+<meta name="description" content="API de fondos comunes de inversión de Argentina con datos oficiales CAFCI/CNV: guía, ejemplos y constructor de consultas.">
+<style>
+  :root { --navy:#0b2545; --azul:#1f5fa8; --celeste:#e8f0fa; --gris:#6b7280; --borde:#e5e7eb; --fondo:#f6f7f9;
+          --rojo:#c0392b; --verde:#1e8449; --codigo:#0f172a; }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; scroll-padding-top:14px; }
+  body { margin:0; font-family:"Segoe UI", system-ui, -apple-system, Roboto, sans-serif; color:#111827; background:var(--fondo); font-size:14.5px; line-height:1.55; }
+  header { background:var(--navy); color:#fff; padding:18px 28px; display:flex; flex-wrap:wrap; gap:10px 24px; align-items:center; justify-content:space-between; }
+  header h1 { margin:0; font-size:20px; font-weight:600; }
+  header .sub { font-size:13px; opacity:.85; margin-top:2px; max-width:820px; }
+  .estado { font-size:12.5px; background:rgba(255,255,255,.1); border-radius:6px; padding:8px 12px; line-height:1.5; }
+  .estado b { font-weight:600; }
+  .punto { display:inline-block; width:8px; height:8px; border-radius:50%; background:#9ca3af; margin-right:6px; vertical-align:middle; }
+  .punto.ok { background:#4ade80; } .punto.revisar { background:#fbbf24; }
+  .layout { display:grid; grid-template-columns:230px minmax(0,1fr); gap:0; max-width:1440px; margin:0 auto; }
+  aside { position:sticky; top:0; align-self:start; max-height:100vh; overflow:auto; padding:18px 10px 30px 22px; font-size:13px; }
+  aside a { display:block; color:#374151; text-decoration:none; padding:3px 8px; border-radius:4px; }
+  aside a:hover { background:#e9edf3; }
+  aside .g { margin:14px 0 4px 8px; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:var(--gris); font-weight:600; }
+  aside code { font-size:12px; }
+  main { padding:18px 28px 60px 18px; min-width:0; }
+  .card { background:#fff; border:1px solid var(--borde); border-radius:8px; padding:18px 22px; margin-bottom:18px; }
+  h2 { font-size:18px; color:var(--navy); margin:0 0 10px; }
+  h3 { font-size:15px; color:var(--navy); margin:18px 0 6px; }
+  h4 { font-size:14px; margin:14px 0 6px; }
+  p { margin:6px 0 10px; }
+  ul { margin:6px 0 12px; padding-left:22px; } li { margin:3px 0; }
+  a { color:var(--azul); }
+  code { font-family:ui-monospace, "Cascadia Code", Consolas, monospace; font-size:12.5px; background:#f1f4f8; padding:1px 5px; border-radius:4px; }
+  pre { background:var(--codigo); color:#e5e7eb; padding:12px 14px; border-radius:6px; overflow:auto; font-size:12.5px; line-height:1.5; position:relative; margin:8px 0 14px; }
+  pre code { background:none; padding:0; color:inherit; font-size:inherit; }
+  .copiar { position:absolute; top:6px; right:6px; font-size:11px; padding:3px 8px; border-radius:4px; border:1px solid #334155; background:#1e293b; color:#cbd5e1; cursor:pointer; }
+  .copiar:hover { background:#334155; }
+  .ep { border-top:1px solid var(--borde); padding-top:16px; margin-top:16px; }
+  .ep:first-of-type { border-top:0; padding-top:0; margin-top:0; }
+  .ep h3 { margin-top:0; display:flex; flex-wrap:wrap; gap:6px 10px; align-items:baseline; }
+  .ruta { font-family:ui-monospace, Consolas, monospace; background:var(--celeste); color:var(--navy); padding:2px 8px; border-radius:4px; font-size:13.5px; }
+  .ep .unidad { font-size:12.5px; color:var(--gris); }
+  table { border-collapse:collapse; width:100%; font-size:13px; margin:6px 0 10px; }
+  th { text-align:left; background:#f1f4f8; color:var(--navy); font-weight:600; padding:6px 8px; border-bottom:1px solid var(--borde); white-space:nowrap; }
+  td { padding:5px 8px; border-bottom:1px solid #f0f1f3; vertical-align:top; }
+  td:first-child { white-space:nowrap; }
+  .vals { color:var(--gris); font-size:12px; }
+  details { margin:6px 0; } summary { cursor:pointer; color:var(--azul); font-size:13px; }
+  .ejemplos .vals { margin-left:4px; }
+  .ejemplos a { display:inline-block; margin:2px 6px 2px 0; font-family:ui-monospace, Consolas, monospace; font-size:12.5px; word-break:break-all; }
+  .btn { border:1px solid var(--azul); background:var(--azul); color:#fff; padding:6px 12px; border-radius:5px; cursor:pointer; font-size:13px; }
+  .btn.sec { background:#fff; color:var(--azul); }
+  .btn:disabled { opacity:.5; cursor:default; }
+  .mini { font-size:11.5px; padding:2px 8px; margin-left:4px; }
+  /* constructor */
+  .cons { display:grid; grid-template-columns:minmax(260px,340px) minmax(0,1fr); gap:20px; }
+  .cons label { display:block; font-size:12px; color:#374151; margin:8px 0 2px; font-weight:600; }
+  .cons label span { font-weight:400; color:var(--gris); }
+  .cons input, .cons select { width:100%; padding:6px 8px; border:1px solid #d1d5db; border-radius:5px; font-size:13px; font-family:inherit; }
+  .cons .param-desc { font-size:11.5px; color:var(--gris); margin-top:1px; }
+  .url { font-family:ui-monospace, Consolas, monospace; font-size:12.5px; background:#f1f4f8; padding:8px 10px; border-radius:5px; word-break:break-all; margin:4px 0 10px; }
+  .tabs { display:flex; gap:2px; border-bottom:1px solid var(--borde); margin:10px 0 0; flex-wrap:wrap; }
+  .tabs button { border:0; background:none; padding:7px 12px; cursor:pointer; color:var(--gris); border-bottom:2px solid transparent; font-size:13px; }
+  .tabs button.on { color:var(--navy); border-bottom-color:var(--azul); font-weight:600; }
+  .resultado { overflow:auto; max-height:430px; border:1px solid var(--borde); border-radius:6px; margin-top:8px; }
+  .resultado table { margin:0; font-size:12px; }
+  .resultado th { position:sticky; top:0; }
+  .resultado td { white-space:nowrap; }
+  .resultado td.n { text-align:right; font-variant-numeric:tabular-nums; }
+  .meta { font-size:12.5px; color:var(--gris); margin-top:8px; }
+  .aviso { background:#fff7e6; border:1px solid #f5d08a; color:#7a4b00; padding:6px 10px; border-radius:5px; font-size:12.5px; margin-top:8px; }
+  .error { background:#fdecea; border:1px solid #f3b5ad; color:var(--rojo); padding:6px 10px; border-radius:5px; font-size:12.5px; margin-top:8px; }
+  .cargando { color:var(--gris); padding:14px 0; }
+  footer { color:var(--gris); font-size:12px; text-align:center; padding:10px 0 30px; }
+  @media (max-width: 900px) { .layout { grid-template-columns:1fr; } aside { display:none; } main { padding:14px; } .cons { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1 id="titulo">API de Fondos Comunes de Inversión — CAFCI / CNV</h1>
+    <div class="sub" id="resumen">Datos oficiales de toda la industria de FCI de Argentina, listos para tableros.</div>
+  </div>
+  <div class="estado" id="estado"><span class="punto"></span>Consultando estado…</div>
+</header>
+<div class="layout">
+  <aside id="menu"></aside>
+  <main>
+    <div id="guia"><div class="card cargando">Cargando la guía…</div></div>
+
+    <div class="card" id="constructor">
+      <h2>Constructor de consultas</h2>
+      <p>Elegí un endpoint y completá los filtros que quieras. El link se arma solo; con <b>Probar</b> ves el resultado y abajo tenés el código para copiar en Power BI, Excel, Google Sheets o Python.</p>
+      <div class="cons">
+        <div>
+          <label>Endpoint</label>
+          <select id="c-ep"></select>
+          <div class="param-desc" id="c-desc"></div>
+          <div id="c-params"></div>
+          <details style="margin-top:12px"><summary>Opciones de salida (formato, columnas, orden, filas)</summary><div id="c-comunes"></div></details>
+          <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap">
+            <button class="btn" id="c-probar">Probar</button>
+            <button class="btn sec" id="c-abrir">Abrir en otra pestaña</button>
+            <button class="btn sec" id="c-limpiar">Limpiar</button>
+          </div>
+        </div>
+        <div style="min-width:0">
+          <label>Link</label>
+          <div class="url" id="c-url"></div>
+          <div class="tabs" id="c-tabs"></div>
+          <pre id="c-codigo"><code></code></pre>
+          <div id="c-salida"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="comunes"><h2>Parámetros comunes</h2><div id="comunes-tabla"></div></div>
+    <div class="card" id="referencia"><h2>Referencia de endpoints</h2><div id="endpoints"></div></div>
+    <div class="card" id="cambios"><h2>Cambios</h2><div id="cambios-lista"></div></div>
+    <footer id="pie">Datos públicos de CAFCI y la CNV. Herramienta interna, sin garantía de disponibilidad.</footer>
+  </main>
+</div>
+
+<script>
+const ORIGEN = location.protocol.startsWith("http") ? location.origin : "https://cafci.vercel.app";
+const API = ORIGEN + "/api";
+let DOCS = null;
+
+// ---------------------------------------------------------------- utilidades
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function inline(t) {
+  return esc(t)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<b>$1</b>")
+    .replace(/(^|[\s(])\*([^*\s][^*]*)\*/g, "$1<i>$2</i>")
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (m, txt, url) => `<a href="${url.startsWith("/") ? ORIGEN + url : url}"${url.startsWith("/api") ? ' data-api="1"' : ""}>${txt}</a>`);
+}
+// markdown simple: ###, listas con -, bloques ```, parrafos
+function md(texto) {
+  const L = texto.replace(/^\n+|\n+$/g, "").split("\n"); let h = "", lista = false, par = [];
+  const cerrarPar = () => { if (par.length) { h += `<p>${inline(par.join(" "))}</p>`; par = []; } };
+  const cerrarLista = () => { if (lista) { h += "</ul>"; lista = false; } };
+  for (let i = 0; i < L.length; i++) {
+    const l = L[i];
+    if (l.startsWith("```")) {
+      cerrarPar(); cerrarLista(); const cod = [];
+      for (i++; i < L.length && !L[i].startsWith("```"); i++) cod.push(L[i]);
+      h += `<pre><button class="copiar">Copiar</button><code>${esc(cod.join("\n"))}</code></pre>`; continue;
+    }
+    const m = l.match(/^(#{3,4})\s+(.*)/);
+    if (m) { cerrarPar(); cerrarLista(); h += `<h${m[1].length}>${inline(m[2])}</h${m[1].length}>`; continue; }
+    if (/^\s*-\s+/.test(l)) { cerrarPar(); if (!lista) { h += "<ul>"; lista = true; } h += `<li>${inline(l.replace(/^\s*-\s+/, ""))}</li>`; continue; }
+    if (!l.trim()) { cerrarPar(); cerrarLista(); continue; }
+    if (lista) { h = h.replace(/<\/li>$/, " " + inline(l.trim()) + "</li>"); continue; }
+    par.push(l.trim());
+  }
+  cerrarPar(); cerrarLista(); return h;
+}
+function copiar(txt, btn) {
+  navigator.clipboard.writeText(txt).then(() => { const t = btn.textContent; btn.textContent = "Copiado"; setTimeout(() => btn.textContent = t, 1200); });
+}
+document.addEventListener("click", e => {
+  if (e.target.classList.contains("copiar")) copiar(e.target.parentElement.querySelector("code").textContent, e.target);
+  const a = e.target.closest("a[data-api]");
+  if (a && !e.ctrlKey && !e.metaKey) { e.preventDefault(); cargarEnConstructor(a.getAttribute("href")); }
+});
+
+// ---------------------------------------------------------------- estado
+async function estado() {
+  const el = document.getElementById("estado");
+  try {
+    const s = await (await fetch(API + "/estado")).json();
+    const act = s.actualizado ? new Date(s.actualizado).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" }) : "-";
+    el.innerHTML = `<span class="punto ${esc(s.estado)}"></span><b>Datos al ${esc(fecha(s.ultima_planilla))}</b> · ${esc(s.meses)} meses desde ${esc(s.primer_mes)} · ${esc(s.fondos_ultimo_mes)} fondos<br>` +
+      `Actualizado ${esc(act)} · se actualiza ${esc(s.actualizacion)}` + (s.estado !== "ok" ? `<br>${esc(s.detalle)}` : "");
+  } catch (e) { el.innerHTML = `<span class="punto revisar"></span>No se pudo consultar /api/estado`; }
+}
+const fecha = f => f ? f.split("-").reverse().join("/") : "-";
+
+// ---------------------------------------------------------------- guia y referencia
+function render() {
+  const d = DOCS;
+  document.getElementById("titulo").textContent = d.info.titulo;
+  document.getElementById("resumen").textContent = d.info.resumen;
+  document.getElementById("guia").innerHTML = d.guia.map(s => `<div class="card" id="${s.id}"><h2>${esc(s.titulo)}</h2>${md(s.md)}</div>`).join("");
+  // menu
+  let m = `<div class="g">Guía</div>` + d.guia.map(s => `<a href="#${s.id}">${esc(s.titulo)}</a>`).join("") +
+    `<a href="#constructor">Constructor de consultas</a><a href="#comunes">Parámetros comunes</a>`;
+  let g = "";
+  for (const e of d.endpoints) { if (e.grupo !== g) { g = e.grupo; m += `<div class="g">${esc(g)}</div>`; } m += `<a href="#${e.ruta}"><code>/api/${e.ruta}</code></a>`; }
+  m += `<div class="g">Más</div><a href="#cambios">Cambios</a><a href="${ORIGEN}/insights">Tablero de insights</a><a href="${esc(d.info.codigo)}">Código (GitHub)</a>`;
+  document.getElementById("menu").innerHTML = m;
+  // comunes
+  document.getElementById("comunes-tabla").innerHTML = `<p>Funcionan en todos los endpoints que devuelven tablas.</p>` + tablaParams(d.parametros_comunes);
+  // endpoints
+  g = ""; let h = "";
+  for (const e of d.endpoints) {
+    if (e.grupo !== g) { g = e.grupo; h += `<h3 style="margin-top:26px; font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:var(--gris)">${esc(g)}</h3>`; }
+    const cols = Object.entries(e.columnas || {});
+    h += `<div class="ep" id="${e.ruta}">
+      <h3><span class="ruta">/api/${e.ruta}</span> ${esc(e.titulo)} <button class="btn sec mini" data-probar="${e.ruta}">Probar</button></h3>
+      <p>${inline(e.descripcion)}</p>
+      ${e.unidad ? `<div class="unidad">Unidad: ${esc(e.unidad)}</div>` : ""}
+      ${e.parametros.length ? tablaParams(e.parametros) : ""}
+      ${e.ejemplos.length ? `<div class="ejemplos"><b style="font-size:12.5px">Ejemplos:</b><br>${e.ejemplos.map(x => `<a href="${ORIGEN + x.url}" data-api="${x.url.startsWith("/api") ? 1 : ""}">${esc(decodeURIComponent(x.url))}</a>${x.d ? `<span class="vals">${esc(x.d)}</span>` : ""}`).join("<br>")}</div>` : ""}
+      ${cols.length ? `<details><summary>Columnas (${cols.length})</summary><table><tr><th>Columna</th><th>Descripción</th></tr>${cols.map(([k, v]) => `<tr><td><code>${esc(k)}</code></td><td>${inline(v)}</td></tr>`).join("")}</table></details>` : ""}
+      ${(e.notas || []).map(n => `<p class="vals">${inline(n)}</p>`).join("")}
+    </div>`;
+  }
+  document.getElementById("endpoints").innerHTML = h;
+  document.querySelectorAll("[data-probar]").forEach(b => b.onclick = () => { elegir(b.dataset.probar); document.getElementById("constructor").scrollIntoView(); });
+  document.getElementById("cambios-lista").innerHTML = d.cambios.map(c => `<h4>${esc(c.fecha)}</h4><ul>${c.cambios.map(x => `<li>${inline(x)}</li>`).join("")}</ul>`).join("");
+  armarConstructor();
+  if (location.hash) { const t = document.getElementById(location.hash.slice(1)); if (t) t.scrollIntoView(); }
+}
+function tablaParams(ps) {
+  return `<table><tr><th>Parámetro</th><th>Descripción</th></tr>${ps.map(p =>
+    `<tr><td><code>${esc(p.n)}</code>${p.oblig ? " <b style='color:var(--rojo)'>*</b>" : ""}</td><td>${inline(p.d)}${p.valores ? `<div class="vals">Valores: ${p.valores.map(v => `<code>${esc(v)}</code>`).join(" ")}</div>` : ""}${p.ej ? `<div class="vals">Ej: <code>${esc(p.n)}=${esc(p.ej)}</code></div>` : ""}</td></tr>`).join("")}</table>`;
+}
+
+// ---------------------------------------------------------------- constructor
+const SIN_TABLA = new Set(["docs", "guia", "openapi", "script", "estado"]);
+let actual = null, pestana = "pbi";
+function armarConstructor() {
+  const sel = document.getElementById("c-ep");
+  let g = "", h = "";
+  for (const e of DOCS.endpoints) {
+    if (["docs", "guia", "openapi"].includes(e.ruta)) continue;
+    if (e.grupo !== g) { if (g) h += "</optgroup>"; g = e.grupo; h += `<optgroup label="${esc(g)}">`; }
+    h += `<option value="${e.ruta}">/api/${e.ruta} — ${esc(e.titulo)}</option>`;
+  }
+  sel.innerHTML = h + "</optgroup>";
+  sel.onchange = () => elegir(sel.value);
+  document.getElementById("c-tabs").innerHTML = [["pbi", "Power BI"], ["excel", "Excel"], ["sheets", "Google Sheets"], ["python", "Python"], ["curl", "Link CSV"]]
+    .map(([k, t]) => `<button data-t="${k}" class="${k === pestana ? "on" : ""}">${t}</button>`).join("");
+  document.querySelectorAll("#c-tabs button").forEach(b => b.onclick = () => { pestana = b.dataset.t; document.querySelectorAll("#c-tabs button").forEach(x => x.classList.toggle("on", x === b)); actualizar(); });
+  document.getElementById("c-probar").onclick = probar;
+  document.getElementById("c-abrir").onclick = () => window.open(urlActual(), "_blank");
+  document.getElementById("c-limpiar").onclick = () => elegir(actual.ruta);
+  const pre = document.getElementById("c-codigo"); const b = document.createElement("button"); b.className = "copiar"; b.textContent = "Copiar"; pre.prepend(b);
+  elegir("fondos", { mes: "", gerente: "balanz" });
+}
+function campo(p, val) {
+  const id = "p-" + p.n;
+  const ctrl = p.valores
+    ? `<select id="${id}" data-n="${p.n}"><option value="">(default)</option>${p.valores.map(v => `<option${v === val ? " selected" : ""}>${esc(v)}</option>`).join("")}</select>`
+    : `<input id="${id}" data-n="${p.n}" value="${esc(val ?? "")}" placeholder="${esc(p.ej ? "ej. " + p.ej : "")}">`;
+  return `<label for="${id}">${esc(p.n)}${p.oblig ? " *" : ""}</label>${ctrl}<div class="param-desc">${inline(p.d)}</div>`;
+}
+function elegir(ruta, valores = {}) {
+  actual = DOCS.endpoints.find(e => e.ruta === ruta) || DOCS.endpoints[0];
+  document.getElementById("c-ep").value = actual.ruta;
+  document.getElementById("c-desc").innerHTML = inline(actual.descripcion);
+  document.getElementById("c-params").innerHTML = actual.parametros.map(p => campo(p, valores[p.n])).join("") || `<p class="vals">Sin parámetros.</p>`;
+  document.getElementById("c-comunes").innerHTML = SIN_TABLA.has(actual.ruta) ? `<p class="vals">No aplica a este endpoint.</p>`
+    : DOCS.parametros_comunes.filter(p => p.n !== "descargar").map(p => campo(p, valores[p.n])).join("");
+  document.querySelectorAll("#c-params input, #c-params select, #c-comunes input, #c-comunes select").forEach(x => x.oninput = actualizar);
+  document.getElementById("c-salida").innerHTML = "";
+  actualizar();
+}
+function valores() {
+  const v = {};
+  document.querySelectorAll("#c-params [data-n], #c-comunes [data-n]").forEach(x => { if (x.value.trim()) v[x.dataset.n] = x.value.trim(); });
+  return v;
+}
+function qs(v) { const s = new URLSearchParams(v).toString(); return s ? "?" + s : ""; }
+function urlActual(extra = {}) { return `${API}/${actual.ruta}${qs({ ...valores(), ...extra })}`; }
+function actualizar() {
+  document.getElementById("c-url").textContent = urlActual();
+  document.querySelector("#c-codigo code").textContent = codigo();
+}
+function codigo() {
+  const v = valores(), ruta = actual.ruta, tabla = !SIN_TABLA.has(ruta);
+  const sinFmt = { ...v }; delete sinFmt.formato; delete sinFmt.excel;
+  const csvUrl = `${API}/${ruta}${qs({ ...sinFmt, formato: "csv" })}`;
+  if (!tabla) return `${urlActual()}\n\n(Este endpoint no devuelve una tabla: abrir el link en el navegador.)`;
+  if (pestana === "pbi") {
+    const query = Object.entries({ ...sinFmt, formato: "csv" }).map(([k, x]) => `${k} = "${x.replace(/"/g, '""')}"`).join(", ");
+    return `// Power BI: Obtener datos > Consulta en blanco > Editor avanzado. Autenticación: Anónima.
+// Así escrita, la actualización programada funciona en el Service sin gateway.
+let
+    Datos = Csv.Document(
+        Web.Contents("${ORIGEN}", [RelativePath = "api/${ruta}", Query = [${query}]]),
+        [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+    Tabla = Table.PromoteHeaders(Datos, [PromoteAllScalars = true]),
+    // Tipos: detecta números y fechas con configuración regional en-US (punto decimal)
+    Columnas = Table.ColumnNames(Tabla),
+    Muestra = Table.FirstN(Tabla, 200),
+    EsNumero = (c) => List.MatchesAll(List.RemoveItems(Table.Column(Muestra, c), {"", null}), each (try Number.FromText(_, "en-US") otherwise null) <> null),
+    Tipos = Table.TransformColumnTypes(Tabla, List.Transform(List.Select(Columnas, EsNumero), each {_, type number}), "en-US")
+in
+    Tipos`;
+  }
+  if (pestana === "excel") return `Opción 1 — Power Query (se actualiza con "Actualizar todo"):
+  Datos > Obtener datos > Desde otras fuentes > Desde la Web > pegar:
+  ${csvUrl}
+  Al cambiar el tipo de columnas numéricas: "Usar configuración regional" > Inglés (Estados Unidos).
+
+Opción 2 — Bajar un CSV que Excel abre directo (punto y coma, coma decimal, acentos bien):
+  ${API}/${ruta}${qs({ ...sinFmt, formato: "csv", excel: "1", descargar: "1" })}`;
+  if (pestana === "sheets") return `=IMPORTDATA("${csvUrl}"; ","; "en_US")
+
+(Si tu planilla usa coma como separador de argumentos: =IMPORTDATA("${csvUrl}", ",", "en_US"))`;
+  if (pestana === "python") {
+    const params = JSON.stringify(sinFmt, null, 4).replace(/\n}/, "\n}");
+    return `import pandas as pd, requests
+
+r = requests.get("${API}/${ruta}", params=${params}, timeout=90)
+r.raise_for_status()
+j = r.json()
+df = pd.DataFrame(j["datos"])
+print(j.get("unidad"), j.get("actualizado"), j.get("avisos"))
+
+# o directo en CSV
+df = pd.read_csv("${csvUrl}")`;
+  }
+  return `${csvUrl}\n\ncurl -sL "${csvUrl}" -o ${ruta}.csv`;
+}
+function cargarEnConstructor(href) {
+  const u = new URL(href, ORIGEN), ruta = u.pathname.replace(/^\/api\/?/, "");
+  if (!DOCS.endpoints.some(e => e.ruta === ruta) || ["docs", "guia", "openapi"].includes(ruta)) { window.open(href, "_blank"); return; }
+  elegir(ruta, Object.fromEntries(u.searchParams)); document.getElementById("constructor").scrollIntoView(); probar();
+}
+async function probar() {
+  const out = document.getElementById("c-salida"), btn = document.getElementById("c-probar");
+  const v = valores(); delete v.formato; delete v.excel;
+  if (!SIN_TABLA.has(actual.ruta) && !v.limite) v.limite = "200";
+  const url = `${API}/${actual.ruta}${qs(v)}`;
+  out.innerHTML = `<div class="cargando">Consultando…</div>`; btn.disabled = true;
+  const t0 = performance.now();
+  try {
+    const r = await fetch(url); const txt = await r.text(); const seg = ((performance.now() - t0) / 1000).toFixed(1);
+    let j; try { j = JSON.parse(txt); } catch (_) { out.innerHTML = `<div class="meta">${r.status} · ${seg} s</div><pre><code>${esc(txt.slice(0, 5000))}</code></pre>`; return; }
+    if (!r.ok) { out.innerHTML = `<div class="error"><b>Error ${r.status}:</b> ${esc(j.error)}${j.sugerencias ? "<ul>" + j.sugerencias.map(s => `<li>${esc(s)}</li>`).join("") + "</ul>" : ""}</div>`; return; }
+    let h = "";
+    if (j.avisos) h += `<div class="aviso">${j.avisos.map(esc).join("<br>")}</div>`;
+    if (Array.isArray(j.datos)) {
+      const meta = Object.entries(j).filter(([k]) => !["datos", "avisos"].includes(k)).map(([k, x]) => `${esc(k)}: <b>${esc(typeof x === "object" ? JSON.stringify(x) : x)}</b>`).join(" · ");
+      h += `<div class="meta">${seg} s · ${meta}${j.total_filas > j.filas ? " · (vista previa: el link completo trae todas las filas)" : ""}</div>` + tablaDatos(j.datos);
+    } else h += `<div class="meta">${seg} s</div><pre><code>${esc(JSON.stringify(j, null, 2).slice(0, 20000))}</code></pre>`;
+    out.innerHTML = h;
+  } catch (e) { out.innerHTML = `<div class="error">No se pudo consultar: ${esc(e.message)}</div>`; }
+  finally { btn.disabled = false; }
+}
+function tablaDatos(filas) {
+  if (!filas.length) return `<div class="meta">Sin filas: revisá los filtros.</div>`;
+  const cols = Object.keys(filas[0]);
+  const fmt = x => typeof x === "number" ? (Math.abs(x) >= 1000 ? x.toLocaleString("es-AR", { maximumFractionDigits: 2 }) : x.toLocaleString("es-AR", { maximumFractionDigits: 6 })) : x;
+  return `<div class="resultado"><table><tr>${cols.map(c => `<th>${esc(c)}</th>`).join("")}</tr>${filas.slice(0, 200).map(f =>
+    `<tr>${cols.map(c => `<td class="${typeof f[c] === "number" ? "n" : ""}">${esc(fmt(f[c]))}</td>`).join("")}</tr>`).join("")}</table></div>`;
+}
+
+// ---------------------------------------------------------------- arranque
+estado();
+fetch(API + "/docs").then(r => r.json()).then(d => { DOCS = d; render(); })
+  .catch(e => { document.getElementById("guia").innerHTML = `<div class="card error">No se pudo cargar la guía (${esc(e.message)}). Probá ${esc(API)}/guia</div>`; });
+</script>
+</body>
+</html>

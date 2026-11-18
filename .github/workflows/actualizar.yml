@@ -76,6 +76,9 @@ jobs:
       - name: Insights (alertas, liquidez, estacionalidad, fees, cambios) y serie diaria por fondo
         continue-on-error: true
         run: python -u scripts/insights.py
+      - name: Series de valor de cuotaparte por clase (API /api/vcp)
+        continue-on-error: true
+        run: python -u scripts/series_vcp.py
       - name: Parquet (consultas SQL por HTTP)
         run: python -u scripts/parquet.py
       - name: Guardar planillas originales (cache)
