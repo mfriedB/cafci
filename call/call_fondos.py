@@ -10,6 +10,11 @@ Uso:  python call_fondos.py --pptx "Call de Fondos -13.11.2026.pptx" --salida "C
       python call_fondos.py --auto CARPETA
       (toma la "Call de Fondos -DD.MM.AAAA.pptx" mas nueva de CARPETA como modelo y guarda en la misma carpeta la del
        viernes siguiente; si ya existe, la actualiza. Es lo que corre la tarea programada semanal)
+
+No pisa ediciones ajenas: cada archivo que guarda queda con lastModifiedBy = "Call automatica". Si la salida ya
+existe y la guardo por ultima vez una persona (PowerPoint pone su nombre), o cambio mientras corria el script
+(OneDrive sincronizo otra version), o esta bloqueada, guarda en "<salida> - HD.pptx" e imprime una linea AVISO.
+--forzar pisa igual. Si hay una Call con fecha posterior a la del viernes, no la usa para pisar la de este viernes.
 """
 import argparse, io, json, os, re, sys, urllib.request
 from datetime import date
@@ -464,7 +469,7 @@ def slide10(D, out, W=3000, H=1726):
 # ---------------------------------------------------------------- PowerPoint
 def fecha_larga(d): return f"{d.day} de {MESES_L[d.month-1]} de {d.year}"
 
-def actualizar_pptx(ruta, salida, imgs, corte, info4, cajas9, corte10=None):
+def actualizar_pptx(ruta, salida, imgs, corte, info4, cajas9, corte10=None, forzar=False):
     from pptx import Presentation
     from pptx.util import Emu
     prs = Presentation(ruta)
@@ -529,12 +534,60 @@ def actualizar_pptx(ruta, salida, imgs, corte, info4, cajas9, corte10=None):
                         if t2 != t:
                             p.runs[0].text = t2
                             for r in p.runs[1:]: r.text = ""
-    prs.save(salida)
+    return guardar_seguro(prs, salida, forzar)
+
+# ---- Control para no pisar ediciones de otros usuarios (OneDrive / SharePoint) ----
+MARCA = "Call automatica"   # lastModifiedBy que deja este script; si PowerPoint guarda, pone el nombre de la persona
+
+def editado_por_persona(ruta):
+    """(True, quien, cuando) si el ultimo que guardo el archivo no fue este script."""
+    from pptx import Presentation
+    try:
+        cp = Presentation(ruta).core_properties
+        quien, cuando = (cp.last_modified_by or "").strip(), cp.modified
+    except Exception as e:
+        return True, f"no se pudo leer ({e})", None
+    return quien != MARCA, quien or "desconocido", cuando
+
+def ruta_hd(salida):
+    base, ext = os.path.splitext(salida)
+    return base + " - HD" + ext
+
+def guardar_seguro(prs, salida, forzar=False):
+    """Guarda sin pisar cambios ajenos. Devuelve la ruta donde quedo guardado."""
+    from datetime import datetime, timezone
+    prs.core_properties.last_modified_by = MARCA
+    prs.core_properties.modified = datetime.now(timezone.utc).replace(tzinfo=None)
+    motivo = None
+    if os.path.exists(salida) and not forzar:
+        persona, quien, cuando = editado_por_persona(salida)
+        if persona:
+            motivo = f"lo modifico por ultima vez '{quien}'" + (f" el {cuando:%d/%m/%Y %H:%M} UTC" if cuando else "")
+        mt = MTIME_LECTURA.get(os.path.abspath(salida))
+        if motivo is None and mt is not None and os.path.getmtime(salida) != mt:
+            motivo = "cambio mientras corria el script (OneDrive sincronizo otra version)"
+    destino = salida
+    if motivo:
+        destino = ruta_hd(salida)
+        print(f"AVISO: no se piso '{os.path.basename(salida)}': {motivo}. "
+              f"La version nueva quedo en '{os.path.basename(destino)}'. Revisar y decidir cual queda "
+              f"(para pisar igual: --forzar).")
+    try:
+        prs.save(destino)
+    except PermissionError:
+        destino = ruta_hd(salida)
+        print(f"AVISO: '{os.path.basename(salida)}' esta bloqueado (abierto en PowerPoint). "
+              f"Se guardo '{os.path.basename(destino)}'; cerrarlo sin guardar y volver a correr.")
+        prs.save(destino)
+    return destino
+
+MTIME_LECTURA = {}   # mtime del archivo de salida al empezar, para detectar sincronizaciones durante la corrida
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--pptx"); ap.add_argument("--salida"); ap.add_argument("--graficos", default=os.path.join(AQUI, "graficos"))
     ap.add_argument("--auto", help="carpeta con las Call de Fondos -DD.MM.AAAA.pptx")
+    ap.add_argument("--forzar", action="store_true", help="pisar la salida aunque la haya editado una persona")
     a = ap.parse_args()
     if a.auto:
         from datetime import datetime, timedelta
@@ -547,9 +600,16 @@ def main():
         viernes = hoy + timedelta(days=(4 - hoy.weekday()) % 7)
         destino = f"Call de Fondos -{viernes:%d.%m.%Y}.pptx"
         modelo = max(decks)[1]
+        if max(decks)[0] > viernes:
+            print(f"AVISO: hay una Call con fecha posterior al viernes {viernes:%d.%m.%Y} ({modelo}); "
+                  f"se usa como modelo la de este viernes si existe.")
+            if os.path.exists(os.path.join(a.auto, destino)): modelo = destino
         a.pptx = os.path.join(a.auto, modelo); a.salida = os.path.join(a.auto, destino)
         print("modelo:", modelo, "-> salida:", destino)
     os.makedirs(a.graficos, exist_ok=True)
+    sal = a.salida or a.pptx
+    if sal and os.path.exists(sal):   # foto del archivo al empezar, para detectar cambios durante la corrida
+        MTIME_LECTURA[os.path.abspath(sal)] = os.path.getmtime(sal)
     D, idx = cargar()
     corte = pd.Timestamp(D[D.mes == D.mes.max()].Fecha.iloc[0]).date()
     g = lambda n: os.path.join(a.graficos, f"slide{n}.png")
@@ -557,8 +617,8 @@ def main():
     corte10 = slide10(D, g(10))
     print("corte", corte, "| total AUM prom", round(info4["total"], 2), "bill. | Balanz puesto", info4["puesto_balanz"], "| fondos Balanz en top flujo:", len(cajas9), "| slide 10 al", corte10.date())
     if a.pptx:
-        actualizar_pptx(a.pptx, a.salida or a.pptx, {n: g(n) for n in range(4, 11)}, corte, info4, cajas9, corte10)
-        print("presentacion:", a.salida or a.pptx)
+        final = actualizar_pptx(a.pptx, sal, {n: g(n) for n in range(4, 11)}, corte, info4, cajas9, corte10, a.forzar)
+        print("presentacion:", final)
 
 if __name__ == "__main__":
     main()
