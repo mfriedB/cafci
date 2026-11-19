@@ -123,6 +123,27 @@ def limpiar(D):
     print("datos puntuales descartados:", total)
     return D
 
+def superposicion_clases(D):
+    """Clase nueva de un fondo que ya informa (migracion de clase, ej. Lombard Renta en Pesos 17/11/2026 Clase A ->
+    Clase B): la planilla en que aparece la clase nueva trae en "dia anterior" el traspaso ya hecho (B con casi todo,
+    A con el resto), pero el dato de la clase vieja de ese dia viene de su propia planilla (todavia con todo). Mezclar
+    las dos versiones cuenta el fondo dos veces ese dia en el patrimonio y el AUM promedio (1816 no lo hace).
+    Se descarta el dato reconstruido de la clase nueva para un dia anterior a su primera planilla propia cuando otra
+    clase del mismo fondo ya informo ese dia en su propia planilla: la clase nueva entra el dia en que aparece."""
+    cnv = D.codigo_cnv
+    propio = D[D.prio == 1]
+    primera = propio.groupby("codigo_cafci").fecha.min()
+    rec = D[(D.prio == 0) & cnv.notna()]
+    p = rec.codigo_cafci.map(primera)
+    rec = rec[p.notna() & (pd.to_datetime(rec.fecha) < pd.to_datetime(p))]
+    otras = propio[propio.codigo_cnv.notna()][["codigo_cnv", "fecha", "codigo_cafci"]]
+    m = rec.reset_index().merge(otras, on=["codigo_cnv", "fecha"], suffixes=("", "_otra"))
+    m = m[m.codigo_cafci != m.codigo_cafci_otra]
+    fuera = set(m["index"])
+    if fuera:
+        print("dias reconstruidos de clases nuevas descartados (superposicion con otra clase del fondo):", len(fuera))
+    return D.drop(index=list(fuera))
+
 def migraciones(D):
     """Bajas de clases: se agrega un dato con cuotapartes y patrimonio en 0 el dia siguiente al ultimo informado.
     - Clase que deja de informar mientras el fondo sigue con otras clases (migracion, ej. Galicia 28/08/2026 Clase I ->
@@ -210,6 +231,7 @@ def main():
     orden = pd.DataFrame({"c": D.codigo_cafci.values, "f": D.fecha.values, "n": cn.values}).dropna(subset=["n"]).sort_values("f")
     mapa = orden.drop_duplicates("c", keep="last").set_index("c").n
     D["codigo_cnv"] = D.codigo_cafci.map(mapa).where(D.codigo_cafci.isin(mapa.index), cn).round().astype("Int64")
+    D = superposicion_clases(D)
     D = limpiar(D)
     D = migraciones(D)
     for c in ["vcp", "vcp_ant", "vcp_reexp_ars", "ccp", "ccp_ant", "patrimonio", "patrimonio_ant", "hon_sg", "hon_sd"]:
