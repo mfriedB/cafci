@@ -150,8 +150,39 @@ plt.rcParams.update({"font.family": ["Inter", "DejaVu Sans"], "font.size": 15, "
 NAVY, BLUE, SOFT, NEG, INK, POS, MUT = "#07153A", "#4AA4E2", "#d5ddea", "#d65a4a", "#07153A", "#1f8a4c", "#5b6577"
 
 
+SVGD = os.path.join(OUT, "svg"); os.makedirs(SVGD, exist_ok=True)
+
+
 def sv(fig, n):
-    fig.savefig(os.path.join(PNG, n), dpi=150, bbox_inches="tight", transparent=True); plt.close(fig)
+    fig.savefig(os.path.join(PNG, n), dpi=150, bbox_inches="tight", transparent=True)
+    # versión vectorial (texto como texto) para insertar inline en Slides: editable y liviana
+    with plt.rc_context({"svg.fonttype": "path", "svg.hashsalt": "bz"}):
+        fig.savefig(os.path.join(SVGD, n.replace(".png", ".svg")), bbox_inches="tight", transparent=True, metadata={"Date": None})
+    plt.close(fig)
+
+
+def svg_inline(n, cls, alt):
+    """SVG de matplotlib -> <svg> inline apto para Slides: sin metadata ni <style>, números redondeados, ancho/alto = viewBox."""
+    t = open(os.path.join(SVGD, n.replace(".png", ".svg"))).read()
+    t = t[t.index("<svg"):]
+    t = re.sub(r"<metadata>.*?</metadata>\s*", "", t, flags=re.S)
+    t = re.sub(r"<style[^>]*>.*?</style>\s*", "", t, flags=re.S)
+    t = re.sub(r"<defs>\s*</defs>\s*", "", t)
+    t = re.sub(r"<!--.*?-->", "", t, flags=re.S)
+    t = re.sub(r'(d="[^"]*"|translate\([^)]*\))', lambda m: re.sub(r"(\d+\.\d)\d+", r"\1", m.group(0)), t)  # redondeo (no toca scale())
+    t = re.sub(r"\s*\n\s*", " ", t)
+    t = re.sub(r'd="([^"]*)"', lambda m: 'd="' + re.sub(r" ?([MLCQZz]) ", r"\1", m.group(1)).strip() + '"', t)  # path compacto
+    t = re.sub(r">\s+<", "><", t)
+    refs = sorted(set(re.findall(r'(?:href="#|url\(#)([^")]+)', t)))       # ids referenciados -> cortos
+    px = re.sub(r"[^a-z]", "", n.replace(".png", ""))[:6]                   # prefijo único por gráfico (ids globales en el deck)
+    for i_, r_ in enumerate(refs):
+        t = t.replace(f'id="{r_}"', f'id="{px}{i_}"').replace(f'href="#{r_}"', f'href="#{px}{i_}"').replace(f'url(#{r_})', f'url(#{px}{i_})')
+    t = re.sub(r' id="(?!' + px + r'\d)[^"]*"', "", t)
+    vb = re.search(r'viewBox="0 0 ([\d.]+) ([\d.]+)"', t)
+    w, h = vb.group(1), vb.group(2)
+    t = re.sub(r'<svg [^>]*>', f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="{cls}" '
+               f'width="{w}" height="{h}" viewBox="0 0 {w} {h}" aria-label="{esc(alt)}" stroke-linejoin="round" stroke-linecap="butt">', t, count=1)
+    return t
 
 
 def clean(ax):
@@ -690,7 +721,12 @@ deck = {"v": 5, "createdOnFiles": {"v": 1, "at": "2026-11-13T15:00:00Z"}, "lists
                   "source-serif-4": {"family": "Source Serif 4", "href": "https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400..800&display=swap"}},
         "designSystems": []}
 LOGO = '<img class="logo" src="ASSET:logo_navy.png" alt="Balanz, N°1 en inversiones">'
-for k_, v_ in S.items(): open(os.path.join(OUT, "project", "slides", f"{k_}.html"), "w").write(v_.replace("LOGO", LOGO))
+def con_svg(v):  # gráficos como <svg> inline (vectorial, sin assets): se regeneran con datos en cada corrida
+    return re.sub(r'<img class="(chart|mixchart)" src="ASSET:([a-z0-9_]+\.png)" alt="([^"]*)">',
+                  lambda m: svg_inline(m.group(2), m.group(1), m.group(3).replace("&amp;", "&")), v)
+
+
+for k_, v_ in S.items(): open(os.path.join(OUT, "project", "slides", f"{k_}.html"), "w").write(con_svg(v_).replace("LOGO", LOGO))
 json.dump(deck, open(os.path.join(OUT, "project", "deck.json"), "w"), ensure_ascii=False, indent=1)
 open(os.path.join(OUT, "project", "deck.css"), "w").write(open(os.path.join(AQUI, "deck.css")).read())
 # assets fijos de marca

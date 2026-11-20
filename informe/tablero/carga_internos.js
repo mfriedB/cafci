@@ -245,7 +245,9 @@
     textos: { nombre: "Textos del mes (acciones, destacados, ratings, follow-ups)", cols: ["seccion", "texto"], unidad: "" },
     compraventa: { nombre: "Compra/venta de especies de los fondos (contrapartes)", cols: CV_COLS, unidad: "USD" },
     serie_facturacion: { nombre: "Serie de facturación mensual (Serie Facturación)", cols: ["fecha", "facturacion"], unidad: "USD" },
-    cuotapartistas: { nombre: "Posición CP: cuotapartistas por fondo y tipo de inversor", cols: ["Fondo", "categoria_tipo_inversor", "importe_usd_mill", "cuotapartistas"], unidad: "USD" }
+    cuotapartistas: { nombre: "Posición CP: cuotapartistas por fondo y tipo de inversor", cols: ["Fondo", "categoria_tipo_inversor", "importe_usd_mill", "cuotapartistas"], unidad: "USD" },
+    fact_fondo_area: { nombre: "% de facturación por fondo de cada área (Power BI, slides 50 a 53)", cols: ["area", "fondo", "share"], unidad: "%" },
+    ratings: { nombre: "Ratings crediticios de los FCI (slide 44)", cols: ["fondo", "calificadora", "nota", "nota_anterior", "perspectiva", "fecha"], unidad: "" }
   };
   /* Plantillas Excel (una hoja, encabezados en la primera fila). Las de AUM, clientes e inversores reemplazan a las
      consultas DAX y se guardan con el mismo formato. Columnas: nombre normalizado → posibles encabezados. */
@@ -257,12 +259,17 @@
     { id: "p_inv", tipo: "inversores", req: { mes: ["mes", "fecha"], fondo: ["fondo"], tp: ["tipopersona", "phpj", "tipo"], n: ["cantidad", "cuotapartistas", "n"] },
       opc: { cat: ["categoria", "tipoinversor"], aum: ["aum", "aumusd", "monto"] }, fila: r => [r.cat || "", r.tp, r.fondo, r.aum, r.n] },
     { id: "p_ter", tipo: "terceros", req: { mes: ["mes", "fecha"], fondo: ["fondo"], aum: ["aumars", "aum", "monto"] }, opc: { ger: ["gerente", "sociedadgerente"] }, fila: r => [r.fondo, r.ger || "", r.aum] },
-    { id: "p_emi", tipo: "emisiones", req: { mes: ["mes", "fecha"], emision: ["emision", "instrumento", "especie"], fact: ["facturacionusd", "facturacion"] }, opc: { emisor: ["emisor"] }, fila: r => [r.emision, r.emisor || "", r.fact] },
+    { id: "p_emi", tipo: "emisiones", req: { mes: ["mes", "fecha"], emision: ["emision", "instrumento", "especie"], fact: ["facturacionusd", "facturacion"] },
+      opc: { emisor: ["emisor"], adj: ["montoadjudicado", "montoadjudicadousd", "adjudicado"], col: ["totalcolocadoporbalanz", "colocadobalanz", "totalcolocado", "colocado"] },
+      fila: r => [r.emision, r.emisor || "", r.fact, r.adj || 0, r.col || 0] },
+    { id: "p_rat", tipo: "ratings", req: { mes: ["mes", "fecha"], fondo: ["fondo"], nota: ["calificacion", "nota", "rating", "calificacionactual"] },
+      opc: { cal: ["calificadora", "agencia"], ant: ["calificacionanterior", "notaanterior", "anterior"], per: ["perspectiva", "outlook"], fec: ["fechacalificacion", "fechadecalificacion", "fechainforme"] },
+      fila: r => [r.fondo, r.cal || "", r.nota, r.ant || "", r.per || "", r.fec || ""] },
     { id: "p_cer", tipo: "cerrados", req: { mes: ["mes", "fecha"], fondo: ["fondo"], fact: ["facturacionusd", "facturacion"] }, opc: { aum: ["aumusd", "aum"] }, fila: r => [r.fondo, r.aum, r.fact] },
     { id: "p_exc", tipo: "exclusiones", req: { cliente: ["cliente", "cuotapartista", "nombre"] }, opc: { motivo: ["motivo", "comentario"] }, sinMes: true, fila: r => [r.cliente, r.motivo || ""] },
     { id: "p_txt", tipo: "textos", req: { mes: ["mes", "fecha"], seccion: ["seccion", "slide", "tema"], texto: ["texto", "comentario"] }, fila: r => [r.seccion, r.texto] }
   ];
-  const TXT = new Set(["area", "fondo", "cliente", "cat", "tp", "ger", "emision", "emisor", "motivo", "seccion", "texto"]);
+  const TXT = new Set(["area", "fondo", "cliente", "cat", "tp", "ger", "emision", "emisor", "motivo", "seccion", "texto", "nota", "cal", "ant", "per", "fec"]);
   const norm = s => limpio(s).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
   const ORDEN = Object.keys(TIPOS).filter(t => t !== "inversores").flatMap(t => t === "cuotapartistas" ? [t, "inversores"] : [t]);   // las dos bases de la Posición CP juntas
   const MESES_EN = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12,
@@ -386,6 +393,19 @@
       }
       return finCom(tipo, meses);
     }
+    // 1b) exportación del Power BI "Facturacion Share (por Fecha por Fondo)" filtrada por un área (slides 50 a 53):
+    //     filas de filtros arriba, después Fecha Mes · nombre_corto_fdo_ok · share. El área sale del filtro o del nombre del archivo.
+    const iCab = tab.slice(0, 8).findIndex(r => (r || []).some(c => /Facturacion Share/i.test(limpio(c))));
+    if (iCab >= 0 && (!forzar || forzar === "fact_fondo_area")) {
+      const filtros = tab.slice(0, iCab).map(r => (r || []).map(limpio).join(" ")).join(" ");
+      let area = (filtros.match(/\+\s*([^()+]+?)\s*\(unidad\)/) || [])[1] || (String(nombre || "").match(/fact_fondo_area_([^.]+)/i) || [])[1] || "";
+      area = limpio(area); if (!area) throw new Error("No encuentro el área en los filtros del archivo: renombralo fact_fondo_area_<Área>.xlsx");
+      const cab = tab[iCab].map(limpio), iF = cab.findIndex(c => /fecha/i.test(c)), iN = cab.findIndex(c => /fdo|fondo/i.test(c)), iS = cab.findIndex(c => /share/i.test(c));
+      const meses = {};
+      for (const r of tab.slice(iCab + 1)) { const mes = aMes(r[iF]), f = limpio(r[iN]); if (!mes || !f || f === "Total") continue;
+        let v = num(r[iS]); if (v <= 1.5) v *= 100; (meses[mes] = meses[mes] || []).push([area, f, Math.round(v * 1000) / 1000]); }
+      return { tipo: "fact_fondo_area", clave: area, meses };
+    }
     const cols = (tab[0] || []).map(colNom), idx = n => cols.indexOf(n);
     // 2) formato mensual de las carpetas (AnoMesCorto, FechaFinMes, Unidad Negocio, ComisionYTM)
     // (también "Exportar datos › Datos resumidos" de la matriz, por Unidad Negocio o por Fondos)
@@ -496,7 +516,7 @@
     const g = new Map();
     for (const d of C.docs) {
       if (tipo && d.tipo !== tipo) continue;
-      const k = d.tipo + "|" + d.mes + "|" + (d.archivoId || "previo:" + (d.at || "")); const x = g.get(k);
+      const k = d.tipo + "|" + d.mes + "|" + (d.clave || "") + "|" + (d.archivoId || "previo:" + (d.at || "")); const x = g.get(k);
       if (!x) g.set(k, Object.assign({}, d, { filas: d.filas.slice(), ids: [d.id], _p: d.parte || 1 }));
       else { x.filas = (d.parte || 1) < x._p ? d.filas.concat(x.filas) : x.filas.concat(d.filas); x.ids.push(d.id); }
     }
@@ -504,7 +524,7 @@
   }
   function datos(tipo) {
     const vig = new Map();
-    for (const v of versiones(tipo)) { const k = v.tipo + "|" + v.mes, x = vig.get(k); if (!x || (v.at || "") > (x.at || "")) vig.set(k, v); }
+    for (const v of versiones(tipo)) { const k = v.tipo + "|" + v.mes + "|" + (v.clave || ""), x = vig.get(k); if (!x || (v.at || "") > (x.at || "")) vig.set(k, v); }
     return [...vig.values()].sort((a, b) => (a.mes < b.mes ? -1 : 1));
   }
 
@@ -556,11 +576,11 @@
   const mesTxt = m => { if (m === "fijo") return "sin mes"; const [y, mm] = m.split("-"); return ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"][+mm - 1] + "-" + y.slice(2); };
   const rango = ms => (ms.length ? mesTxt(ms[0]) + (ms.length > 1 ? " a " + mesTxt(ms[ms.length - 1]) : "") : "–");
   function total(tipo, filas) {
-    const c = { com_unidad: 1, com_fondo: 1, aum_unidad: 1, aum_unidad_fondo: 2, clientes: 2, inversores: 3, terceros: 2, emisiones: 2, cerrados: 2, compraventa: 19, cuotapartistas: 2, serie_facturacion: 1 }[tipo];
+    const c = { com_unidad: 1, com_fondo: 1, aum_unidad: 1, aum_unidad_fondo: 2, clientes: 2, inversores: 3, terceros: 2, emisiones: 2, cerrados: 2, compraventa: 19, cuotapartistas: 2, serie_facturacion: 1, fact_fondo_area: 2 }[tipo];
     return c == null ? filas.length : filas.reduce((a, r) => a + (+r[c] || 0), 0);
   }
   const queMide = t => ({ com_unidad: "Facturación USD", com_fondo: "Facturación USD", inversores: "AUM", clientes: "AUM USD",
-    terceros: "AUM ARS", emisiones: "Facturación USD", cerrados: "Facturación USD", exclusiones: "Clientes", textos: "Textos", compraventa: "Monto USD mill.", cuotapartistas: "AUM USD mill.", serie_facturacion: "Facturación USD" })[t] || "AUM USD";
+    terceros: "AUM ARS", emisiones: "Facturación USD", cerrados: "Facturación USD", exclusiones: "Clientes", textos: "Textos", compraventa: "Monto USD mill.", cuotapartistas: "AUM USD mill.", serie_facturacion: "Facturación USD", fact_fondo_area: "Suma de % (≈100)", ratings: "Fondos calificados" })[t] || "AUM USD";
   const nuevoId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   // partes de hasta ~180 KB (límite de 256 KB por documento)
   function partir(filas) {
@@ -580,7 +600,8 @@
       <details class="ci-ayuda"><summary>Qué bajar y de dónde</summary><ol>
         <li><b>Facturación</b>: Power BI Service › <i>Rporte de Comision por Fondos v2</i> › página <i>Fondos YTD</i>. En la matriz grande: <i>Más opciones › Exportar datos › Datos con diseño actual</i> (.xlsx), una vez con <i>Analisis por = Unidad Negocio</i> y otra con <i>Fondos</i>. También sirven los Excel mensuales de las carpetas (<i>comisiones_fci_*.xlsx</i>, <i>comisiones_fondo_*.xlsx</i>).</li>
         <li><b>AUM interno y clientes</b>: modelo <i>DS Fondos - AM - Comisiones - Volumen - CuotaPartes</i> (área SelfService_Fondos) › <i>Abrir en la vista de consulta DAX</i>. Corré las consultas 1 a 3 de <code>informe/comite/consultas_dax.dax</code> y copiá cada resultado con <i>Copia › Toda la tabla</i>: pegalo abajo o guardalo como .txt.</li>
-        <li><b>Plantillas de Excel</b> (<a href="https://github.com/mfriedB/cafci/tree/main/informe/plantillas" target="_blank" rel="noopener">bajarlas del repo</a>; cada una tiene una hoja de instrucciones): AUM y flujo por área comercial y fondo, clientes, inversores PH/PJ, fondos de terceros, emisiones primarias, fondos fuera de CAFCI, clientes excluidos (Ex Meli) y textos del mes.</li>
+        <li><b>Plantillas de Excel</b> (<a href="https://github.com/mfriedB/cafci/tree/main/informe/plantillas" target="_blank" rel="noopener">bajarlas del repo</a>; cada una tiene una hoja de instrucciones): AUM y flujo por área comercial y fondo, clientes, inversores PH/PJ, fondos de terceros, emisiones primarias (con monto adjudicado y total colocado por Balanz), fondos fuera de CAFCI, clientes excluidos (Ex Meli), textos del mes y ratings crediticios de los FCI.</li>
+        <li><b>% de facturación por fondo de cada área</b> (slides 50 a 53 del informe): en el reporte de comisiones, el gráfico <i>Evolutivo Mensual % Facturación x Fondo del Área</i> filtrado por un área › <i>Exportar datos</i> (.xlsx). Uno por área (IFA, Individuos, Corporate, Institucionales): el área se lee de los filtros del archivo o del nombre <i>fact_fondo_area_&lt;Área&gt;.xlsx</i>.</li>
         <li><b>Serie de facturación</b>: no hace falta subirla todos los meses. Los meses que no trae se completan solos con el total de la facturación por unidad de negocio (los archivos de comisiones). Si subís el Excel de la carpeta <i>Serie Facturación</i> (Fecha, Facturación), sus meses tienen prioridad.</li>
         <li><b>Posición CP</b> (cuotapartistas por fondo y tipo de inversor, e inversores por tipo y fondo: los dos salen de este archivo): el Excel <i>Posición CP TODOS los fondos dd-mm-aaaa.xlsx</i> tal como sale del sistema (título, encabezados en varias filas y varias hojas: se usa la que tiene Fondo, Tipo de Inversor, Cuotapartista, Inversión y Moneda). La fecha sale del título (<i>Posición de Cuotapartista al 30/10/2026</i>) o del nombre del archivo, y la podés cambiar antes de guardar. El AUM en pesos se pasa a dólares al dólar oficial vendedor del BCRA de esa fecha, que el tablero baja solo todos los días. También arma la base de inversores (personas humanas y jurídicas) de la presentación del comité.</li>
         <li><b>Compra/venta de especies</b> (slides de contrapartes): el Excel de operaciones de los fondos (<i>compra_vta_*.xls</i> o .xlsx), con los encabezados de dos o tres filas como sale del sistema. Se guardan todos los meses que trae. Los montos en pesos se pasan a dólares al oficial vendedor del BCRA del día de cada operación; u$s y Usc quedan en dólares.</li>
@@ -669,6 +690,7 @@
             for (let k = 0; k < partes.length; k++) {
               const id = `${tipo}_${mes}_${archivoId}` + (k ? `__${k + 1}` : "");
               const doc = { tipo, mes, cols: TIPOS[tipo].cols, filas: partes[k], archivo: p.archivo, archivoId, at, parte: k + 1, partes: partes.length };
+              if (p.clave && tipo === p.tipo) doc.clave = p.clave;      // ej. el área en "% de facturación por fondo": un documento por área y mes
               await C.db.doc("cargas/" + id).set(doc); C.docs.push(Object.assign({ id }, doc));
             }
             n++;

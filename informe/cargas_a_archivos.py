@@ -56,7 +56,8 @@ def fin_mes(m):
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("cargas"); ap.add_argument("--dax"); ap.add_argument("--internos")
-    ap.add_argument("--extras", help="JSON con terceros, emisiones, cerrados, exclusiones y textos (plantillas 4 a 8)")
+    ap.add_argument("--extras", help="JSON con terceros, emisiones, cerrados, exclusiones, textos y ratings (plantillas 4 a 9)")
+    ap.add_argument("--fact-area", help="carpeta donde escribir fact_fondo_area_<Área>.csv (slides 50 a 53 del informe)")
     a = ap.parse_args()
     docs = leer_docs(a.cargas)
     por = {}
@@ -113,11 +114,27 @@ def main():
             print(f"cuotapartistas: carga manual de {u['mes']}")
         json.dump(I, open(a.internos, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"), default=str)
     if a.extras: extras(por, a.extras)
+    if a.fact_area: fact_area(por, a.fact_area)
+
+
+def fact_area(por, carpeta):
+    """% de facturación por fondo de cada área: un CSV por área (fecha, fondo, share en %), la última carga de cada mes."""
+    os.makedirs(carpeta, exist_ok=True)
+    vig = {}
+    for d in por.get("fact_fondo_area", []):
+        k = (d.get("clave") or "", d["mes"])
+        if k not in vig or (d.get("at") or "") > (vig[k].get("at") or ""): vig[k] = d
+    areas = {}
+    for (area, mes), d in vig.items():
+        for _, f, v in d["filas"]: areas.setdefault(area, []).append((mes + "-01", f, v))
+    for area, filas in areas.items():
+        pd.DataFrame(sorted(filas), columns=["fecha", "fondo", "share"]).to_csv(os.path.join(carpeta, f"fact_fondo_area_{area}.csv"), index=False)
+        print(f"fact_fondo_area_{area}.csv: {sorted({f[0][:7] for f in filas})}")
 
 
 def extras(por, path):
     out = {}
-    for tipo in ("terceros", "emisiones", "cerrados", "exclusiones", "textos"):
+    for tipo in ("terceros", "emisiones", "cerrados", "exclusiones", "textos", "ratings"):
         ds = sorted(por.get(tipo, []), key=lambda d: d["mes"])
         if ds: out[tipo] = [{"mes": d["mes"], "cols": d.get("cols"), "filas": d["filas"]} for d in ds]
     json.dump(out, open(path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
