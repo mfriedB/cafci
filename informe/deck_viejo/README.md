@@ -12,7 +12,7 @@ Cada slide es: fondo raster del PPT sin textos + textos editables + los gráfico
 | 32 | serie de facturación (`internos.json`) | `gen_internos.py` |
 | 50 a 53 | % de facturación por fondo de cada área (export del Power BI, se sube en "Datos internos") | `gen_internos.py` |
 
-| 41 | ACDIs: `dax_clientes.txt` (USD) x dólar MEP de fin de mes; cierres dic-19 a dic-24 fijos del informe anterior | `tablas/acdi.py` + `tablas/acdi_png.py` |
+| 41 | ACDIs: Posición CP del mes (subida en Datos internos; pesos + dólares x CCL) o, si falta, `dax_clientes.txt` x MEP; cierres dic-19 a dic-24 fijos del informe anterior | `tablas/acdi.py` + `tablas/acdi_png.py` |
 | 44 | Ratings: FIX SCR (fixscr.com, administradora id 3873) + columnas del informe (anterior, evolución, peers) | `tablas/ratings_png.py` |
 
 Los datos de estas tablas (`ratings.json`, `acdi_orig.json`, `acdi.csv`) no se versionan.

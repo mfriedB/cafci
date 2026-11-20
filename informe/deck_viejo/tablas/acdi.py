@@ -1,5 +1,7 @@
 """Tabla de AUM de fondos Balanz por ACDI (slide 41), en millones de ARS.
-Meses dic-25..mes: AUM USD de dax_clientes.txt (clientes con 'ACDI' en el nombre) x dólar MEP de fin de mes (procesado/dolar.csv).
+Fuente preferida, mes por mes: la Posición CP subida en "Datos internos" (acdis_<AAAA-MM>.csv: fondos en pesos tal cual +
+fondos en dólares x CCL de la fecha; validado contra el informe con la posición al 31/03/2026: -0,5% en el total).
+Si un mes no tiene Posición CP: AUM USD de dax_clientes.txt (clientes con 'ACDI' en el nombre) x dólar MEP de fin de mes.
 Cierres dic-19..dic-24: histórico fijo tomado del informe de sep-26 (acdi_orig.json)."""
 import json, re, sys, difflib, os
 import pandas as pd
@@ -7,6 +9,7 @@ AQ = os.path.dirname(os.path.abspath(__file__))
 DAX = sys.argv[1] if len(sys.argv) > 1 else "/home/claude/ig_ppt/int/dax_clientes.txt"
 DOL = sys.argv[2] if len(sys.argv) > 2 else "/home/claude/cafci/procesado/dolar.csv"
 MES = sys.argv[3] if len(sys.argv) > 3 else "2026-09"
+POS = sys.argv[4] if len(sys.argv) > 4 else None          # carpeta con acdis_<AAAA-MM>.csv (de cargas_a_archivos.py --acdis)
 O = json.load(open(os.path.join(AQ, "acdi_orig.json")))
 hdr_hist = ["dic-24", "dic-23", "dic-22", "dic-21", "dic-20", "dic-19"]
 num = lambda s: float(str(s).replace(".", "").replace(",", ".") or 0)
@@ -20,6 +23,16 @@ fx = pd.read_csv(DOL); fx["m"] = fx.fecha.str[:7]; mep = fx.dropna(subset=["mep"
 meses = [m for m in pd.period_range("2025-12", MES, freq="M").strftime("%Y-%m")][::-1]   # mes .. dic-25
 p = d[d.m.isin(meses)].pivot_table(index="nombre", columns="m", values="aum", aggfunc="sum").reindex(columns=meses).fillna(0)
 ars = p.mul([mep[m] for m in meses], axis=1) / 1e6
+ccl = fx.dropna(subset=["ccl"]).groupby("m").ccl.last()
+fuente = {}
+for m in meses:                                            # la Posición CP del mes reemplaza al DAX
+    f_ = os.path.join(POS, f"acdis_{m}.csv") if POS else ""
+    if POS and os.path.exists(f_):
+        q = pd.read_csv(f_); q["v"] = q.ars_mill + q.usd_mill * ccl[m]
+        ars[m] = 0.0; ars = ars.reindex(ars.index.union(q.acdi)).fillna(0.0)
+        ars.loc[q.acdi, m] = q.set_index("acdi").v; fuente[m] = "Posición CP"
+    else: fuente[m] = "DAX x MEP"
+print("fuente por mes:", fuente)
 def norm(s):        # clave por empresa: sin "(ACDI)", mercado (Matba Rofex, Byma, bilateral, plataforma) ni forma societaria
     s = s.upper()
     s = re.sub(r"\(ACDI[^)]*\)|\bACDI\b|MATBA|ROFEX|\bBYMA\b|BILATERAL|\bPLAT\b|WALLET \d+|\(|\)|-", " ", s)

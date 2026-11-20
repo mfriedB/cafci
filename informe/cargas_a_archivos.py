@@ -57,6 +57,7 @@ def fin_mes(m):
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("cargas"); ap.add_argument("--dax"); ap.add_argument("--internos")
     ap.add_argument("--extras", help="JSON con terceros, emisiones, cerrados, exclusiones, textos y ratings (plantillas 4 a 9)")
+    ap.add_argument("--acdis", help="carpeta donde escribir acdis_<AAAA-MM>.csv (AUM por ACDI de la Posición CP, slide 41)")
     ap.add_argument("--fact-area", help="carpeta donde escribir fact_fondo_area_<Área>.csv (slides 50 a 53 del informe)")
     a = ap.parse_args()
     docs = leer_docs(a.cargas)
@@ -115,6 +116,18 @@ def main():
         json.dump(I, open(a.internos, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"), default=str)
     if a.extras: extras(por, a.extras)
     if a.fact_area: fact_area(por, a.fact_area)
+    if a.acdis: acdis(por, a.acdis)
+
+
+def acdis(por, carpeta):
+    """AUM por ACDI de cada Posición CP subida (la última carga de cada mes): acdi, millones de $ y millones de USD."""
+    os.makedirs(carpeta, exist_ok=True)
+    vig = {}
+    for d in por.get("acdis", []):
+        if d["mes"] not in vig or (d.get("at") or "") > (vig[d["mes"]].get("at") or ""): vig[d["mes"]] = d
+    for mes, d in sorted(vig.items()):
+        pd.DataFrame(d["filas"], columns=["acdi", "ars_mill", "usd_mill"]).to_csv(os.path.join(carpeta, f"acdis_{mes}.csv"), index=False)
+    print("acdis:", sorted(vig))
 
 
 def fact_area(por, carpeta):

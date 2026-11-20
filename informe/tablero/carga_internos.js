@@ -47,6 +47,7 @@
       { k: "clase", ej: "Tipo de Valor Cuotaparte (clase)", al: ["tipodevalorcuotaparte", "tipovalorcuotaparte", "clase", "clasecuotaparte"] },
       { k: "tipo", req: 1, ej: "Tipo de Inversor", tipo: "txt", al: ["tipodeinversor", "tipoinversor", "tipodeinversornombre", "tipoinversornombre", "categoriainversor"] },
       { k: "cp", req: 1, ej: "Cuotapartista (Número o Nombre)", al: ["cuotapartistanumero", "numerocuotapartista", "nrocuotapartista", "cuotapartistanro", "cuotapartista", "cuotapartistanombre", "comitente", "cliente"] },
+      { k: "nom", ej: "Cuotapartista (Nombre)", tipo: "txt", al: ["cuotapartistanombre", "nombrecuotapartista", "nombre", "razonsocial", "cliente", "nombrecliente", "clientenombre"] },
       { k: "importe", req: 1, ej: "Inversión (importe)", tipo: "num", al: ["importe", "inversion", "importeinversion", "monto", "valuacion", "saldo", "tenencia"] },
       { k: "moneda", req: 1, ej: "Moneda (Símbolo: $ / u$s)", tipo: "mon", al: ["monedasimbolo", "moneda", "monedadelfondo"] }] }
   };
@@ -198,7 +199,7 @@
     const g = (r, k) => (m.cols[k] == null ? null : r[m.cols[k]]);
     // fecha de la foto: la del título de la planilla ("Posición de Cuotapartista al 30/10/2026") o la del nombre del archivo
     const fecha = m.fechaTitulo || fechaDeNombre(nombre);
-    const acc = new Map(), inv = new Map(), mes = mesF || (fecha ? fecha.slice(0, 7) : mesDeNombre(nombre)), tc = tcPara(mes, nombre, fecha);
+    const acc = new Map(), inv = new Map(), acdi = new Map(), mes = mesF || (fecha ? fecha.slice(0, 7) : mesDeNombre(nombre)), tc = tcPara(mes, nombre, fecha);
     let filas = 0;
     // copia para el histórico SIN datos personales: ni nombres, ni número de cuenta, ni oficial de cuenta; cada cuotapartista pasa a un código anónimo
     const anon = new Map(), copia = [["Fondo", "Clase", "Tipo de Inversor", "Cuotapartista (código anónimo)", "Inversión", "Moneda"]];
@@ -213,10 +214,14 @@
       // también arma "Inversores por tipo y fondo" (la consulta DAX 4 del comité): persona humana (PF) o jurídica (PJ)
       const tp = /personas humanas/i.test(t) ? "PF" : "PJ", ki = cat + "|" + tp + "|" + f;
       const y = inv.get(ki) || { c: cat, tp, f, v: 0, n: new Set() }; y.v += usd * 1e6; y.n.add(cp); inv.set(ki, y);
+      // AUM por ACDI (slide 41 del informe): los ACDI son sociedades, se guardan con su nombre; pesos y dólares por separado
+      if (cat === "ACDIs") { const nm = limpio(g(r, "nom")) || cp, z = acdi.get(nm) || [nm, 0, 0];
+        if (esPesos(g(r, "moneda"))) z[1] += imp / 1e6; else z[2] += imp / 1e6; acdi.set(nm, z); }
     }
     if (!filas) throw alarma(ESQ.cuotapartistas, m, "Encontré los encabezados pero ninguna fila con fondo e importe numérico.");
     return { tipo: "cuotapartistas", sinFecha: true, tc, hoja: tab.hoja, copia, meses: { [mes]: [...acc.values()].map(x => [x.f, x.c, x.v, x.n.size]) },
-      extra: { tipo: "inversores", meses: { [mes]: [...inv.values()].map(y => [y.c, y.tp, y.f, Math.round(y.v), y.n.size]) } } };
+      extra: { tipo: "inversores", meses: { [mes]: [...inv.values()].map(y => [y.c, y.tp, y.f, Math.round(y.v), y.n.size]) } },
+      extra2: acdi.size ? { tipo: "acdis", meses: { [mes]: [...acdi.values()].map(z => [z[0], Math.round(z[1] * 1000) / 1000, Math.round(z[2] * 1000) / 1000]) } } : null };
   }
 
   // Pase: compra y venta opuestas del mismo fondo, especie, VN y agente con números de operación a menos de 5
@@ -247,7 +252,8 @@
     serie_facturacion: { nombre: "Serie de facturación mensual (Serie Facturación)", cols: ["fecha", "facturacion"], unidad: "USD" },
     cuotapartistas: { nombre: "Posición CP: cuotapartistas por fondo y tipo de inversor", cols: ["Fondo", "categoria_tipo_inversor", "importe_usd_mill", "cuotapartistas"], unidad: "USD" },
     fact_fondo_area: { nombre: "% de facturación por fondo de cada área (Power BI, slides 50 a 53)", cols: ["area", "fondo", "share"], unidad: "%" },
-    ratings: { nombre: "Ratings crediticios de los FCI (slide 44)", cols: ["fondo", "calificadora", "nota", "nota_anterior", "perspectiva", "fecha"], unidad: "" }
+    ratings: { nombre: "Ratings crediticios de los FCI (slide 44)", cols: ["fondo", "calificadora", "nota", "nota_anterior", "perspectiva", "fecha"], unidad: "" },
+    acdis: { nombre: "AUM por ACDI (sale de la Posición CP, slide 41)", cols: ["acdi", "ars_mill", "usd_mill"], unidad: "ARS / USD" }
   };
   /* Plantillas Excel (una hoja, encabezados en la primera fila). Las de AUM, clientes e inversores reemplazan a las
      consultas DAX y se guardan con el mismo formato. Columnas: nombre normalizado → posibles encabezados. */
@@ -576,11 +582,11 @@
   const mesTxt = m => { if (m === "fijo") return "sin mes"; const [y, mm] = m.split("-"); return ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"][+mm - 1] + "-" + y.slice(2); };
   const rango = ms => (ms.length ? mesTxt(ms[0]) + (ms.length > 1 ? " a " + mesTxt(ms[ms.length - 1]) : "") : "–");
   function total(tipo, filas) {
-    const c = { com_unidad: 1, com_fondo: 1, aum_unidad: 1, aum_unidad_fondo: 2, clientes: 2, inversores: 3, terceros: 2, emisiones: 2, cerrados: 2, compraventa: 19, cuotapartistas: 2, serie_facturacion: 1, fact_fondo_area: 2 }[tipo];
+    const c = { com_unidad: 1, com_fondo: 1, aum_unidad: 1, aum_unidad_fondo: 2, clientes: 2, inversores: 3, terceros: 2, emisiones: 2, cerrados: 2, compraventa: 19, cuotapartistas: 2, serie_facturacion: 1, fact_fondo_area: 2, acdis: 1 }[tipo];
     return c == null ? filas.length : filas.reduce((a, r) => a + (+r[c] || 0), 0);
   }
   const queMide = t => ({ com_unidad: "Facturación USD", com_fondo: "Facturación USD", inversores: "AUM", clientes: "AUM USD",
-    terceros: "AUM ARS", emisiones: "Facturación USD", cerrados: "Facturación USD", exclusiones: "Clientes", textos: "Textos", compraventa: "Monto USD mill.", cuotapartistas: "AUM USD mill.", serie_facturacion: "Facturación USD", fact_fondo_area: "Suma de % (≈100)", ratings: "Fondos calificados" })[t] || "AUM USD";
+    terceros: "AUM ARS", emisiones: "Facturación USD", cerrados: "Facturación USD", exclusiones: "Clientes", textos: "Textos", compraventa: "Monto USD mill.", cuotapartistas: "AUM USD mill.", serie_facturacion: "Facturación USD", fact_fondo_area: "Suma de % (≈100)", acdis: "AUM en pesos (millones)", ratings: "Fondos calificados" })[t] || "AUM USD";
   const nuevoId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   // partes de hasta ~180 KB (límite de 256 KB por documento)
   function partir(filas) {
@@ -645,7 +651,7 @@
         const nota = (reemp.length ? `<div class="ci-sub">reemplaza ${reemp.length === 1 ? mesTxt(reemp[0]) : reemp.length + " meses"} ya cargado${reemp.length === 1 ? "" : "s"}</div>` : "")
           + (uc && ult && ult !== "fijo" && ult < uc ? `<div class="mal">es anterior al último mes cargado (${mesTxt(uc)})</div>` : "");
         h += `<tr><td>${esc(p.archivo)}</td><td><select data-i="${i}">${ORDEN.map(t => `<option value="${t}"${t === p.tipo ? " selected" : ""}>${TIPOS[t].nombre}</option>`).join("")}</select></td>
-          <td>${p.sinFecha ? `<input type="month" class="ci-mes" data-i="${i}" value="${ult}" title="El archivo no trae fecha: elegí a qué mes corresponde">` : rango(ms)}</td><td>${rango(g)}${nota}${p.extra ? `<div class="ci-sub">también arma: ${TIPOS[p.extra.tipo].nombre}</div>` : ""}${p.hoja ? `<div class="ci-sub">hoja «${esc(p.hoja)}»</div>` : ""}${p.tipo === "com_unidad" ? `<div class="ci-sub">también completa la serie de facturación (total ${g.length === 1 ? mesTxt(g[0]) : rango(g)}${datos("serie_facturacion").some(d => g.includes(d.mes)) ? ", salvo los meses que ya trae la serie subida" : ""})</div>` : ""}${p.tc ? (p.tc.fuente === "BCRA"
+          <td>${p.sinFecha ? `<input type="month" class="ci-mes" data-i="${i}" value="${ult}" title="El archivo no trae fecha: elegí a qué mes corresponde">` : rango(ms)}</td><td>${rango(g)}${nota}${p.extra ? `<div class="ci-sub">también arma: ${TIPOS[p.extra.tipo].nombre}${p.extra2 ? " y " + TIPOS[p.extra2.tipo].nombre : ""}</div>` : ""}${p.hoja ? `<div class="ci-sub">hoja «${esc(p.hoja)}»</div>` : ""}${p.tipo === "com_unidad" ? `<div class="ci-sub">también completa la serie de facturación (total ${g.length === 1 ? mesTxt(g[0]) : rango(g)}${datos("serie_facturacion").some(d => g.includes(d.mes)) ? ", salvo los meses que ya trae la serie subida" : ""})</div>` : ""}${p.tc ? (p.tc.fuente === "BCRA"
             ? `<div class="ci-sub">pesos a USD al dólar oficial vendedor BCRA del ${p.tc.fecha.split("-").reverse().join("/")}: ${fmt(p.tc.valor, 2)}</div>`
             : `<div class="mal">sin dólar oficial del BCRA para esa fecha: se usa ${fmt(p.tc.valor)}</div>`) : ""}</td>
           <td class="n">${ult ? queMide(p.tipo) + " " + mesTxt(ult) + ": " + fmt(total(p.tipo, p.meses[ult])) : ""}</td><td><button class="ci-x" data-i="${i}" type="button" aria-label="Quitar">✕</button></td></tr>`;
@@ -656,7 +662,7 @@
       prev.innerHTML = h;
       prev.querySelector(".ci-ult").addEventListener("change", e => { soloUltimo = e.target.checked; dibujarPrev(); });
       prev.querySelectorAll("select").forEach(s => s.addEventListener("change", () => { const p = pendientes[+s.dataset.i];
-        try { Object.assign(p, { sinFecha: false, extra: null, tc: null, copia: null }, procesar(p.tab, s.value, p.archivo)); delete p.error; delete p.ayuda; } catch (e) { p.error = e.message; p.ayuda = e.ayuda; } dibujarPrev(); }));
+        try { Object.assign(p, { sinFecha: false, extra: null, extra2: null, tc: null, copia: null }, procesar(p.tab, s.value, p.archivo)); delete p.error; delete p.ayuda; } catch (e) { p.error = e.message; p.ayuda = e.ayuda; } dibujarPrev(); }));
       prev.querySelectorAll(".ci-mes").forEach(m => m.addEventListener("change", () => { const p = pendientes[+m.dataset.i]; if (!/^\d{4}-\d{2}$/.test(m.value)) return;
         try { Object.assign(p, cuotapartistas(p.tab, p.archivo, m.value)); } catch (e) { p.error = e.message; p.ayuda = e.ayuda; } dibujarPrev(); }));
       prev.querySelectorAll(".ci-x").forEach(b => b.addEventListener("click", () => { pendientes.splice(+b.dataset.i, 1); dibujarPrev(); }));
@@ -682,7 +688,7 @@
       const at = new Date().toISOString(); let n = 0, err = null, sinCopia = 0;
       for (const p of pendientes.filter(p => !p.error)) {
         const archivoId = nuevoId(), meses = aGuardar(p);
-        const grupos = [[p.tipo, p.meses]].concat(p.extra ? [[p.extra.tipo, p.extra.meses]] : []);
+        const grupos = [[p.tipo, p.meses]].concat(p.extra ? [[p.extra.tipo, p.extra.meses]] : [], p.extra2 ? [[p.extra2.tipo, p.extra2.meses]] : []);
         try {
           for (const [tipo, mm] of grupos) for (const mes of meses) {
             if (!mm[mes]) continue;
