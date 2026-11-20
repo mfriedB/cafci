@@ -51,6 +51,19 @@ Base: `https://raw.githubusercontent.com/mfriedB/cafci/datos/procesado/`
   clase (99,5% de las cuotas, el resto son errores puntuales de 1816). Las clases en dólares convertidas a pesos (y
   viceversa) difieren en la variación del dólar: 1816 usa una serie propia que no coincide con ninguna oficial.
 
+## Corridas: diarias incrementales y completa mensual
+- **Diaria** (lunes a viernes 12:47 y 18:47): `MESES_PROCESAR=4`. Reprocesa solo los últimos 4 meses, más un mes previo de
+  arrastre que no se publica (da el patrimonio inicial, las altas y las migraciones del primer mes). El resto de la
+  historia (clases_diario, fondos_cafci, fechas del índice y clasificación de fondos que ya no informan) queda como
+  estaba publicado. Probado contra la corrida completa (abr–nov 2026): mismos `fondos_cafci`, índice y taxonomía;
+  la única diferencia son filas en 0 de clases que reaparecen tras meses sin informar.
+- **Completa** (toda la historia desde 2020): el día 1 de cada mes a las 20:17, cada push que cambia `scripts/`, `mapeo/`,
+  `config.json` o el workflow, y las corridas manuales (Actions › Run workflow, modo `completa` por default).
+  Hace falta cuando cambia una regla o una clasificación, para que la historia quede pareja.
+- Un push nuevo o una corrida manual cancela la corrida que esté en curso o esperando; las programadas esperan su turno.
+- La corrida completa usa unos 10 GB de los 16 GB del runner (log `[memoria]` en el paso Procesar). Si se pasa, GitHub
+  corta con "The hosted runner lost communication with the server".
+
 ## Carpetas
 - `scripts/` descarga y procesamiento. `config.json` rango de fechas.
 - `mapeo/` clasificación 1816 (ver arriba).

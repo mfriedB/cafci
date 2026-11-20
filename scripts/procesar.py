@@ -187,9 +187,27 @@ def nombre_fondo(s):
     return re.sub(r"\s*-\s*Clase\s+[A-Z0-9]+.*$", "", str(s)).strip()
 
 SOLO_LEER = "--solo-leer" in __import__("sys").argv
+# Corrida incremental: MESES_PROCESAR=N reprocesa solo los ultimos N meses (mas un mes previo de arrastre que no se
+# publica: da el patrimonio inicial, las altas y las migraciones del primer mes) y conserva lo publicado del resto.
+# Sin la variable (o 0) se reprocesa toda la historia: hace falta cuando cambia el codigo o la clasificacion (mapeo/).
+MESES_PROCESAR = int(os.environ.get("MESES_PROCESAR") or 0)
+
+def ventana_incremental(files):
+    """(primer mes que se publica, primer dia que se lee) o None si corresponde la historia completa."""
+    if not MESES_PROCESAR or not os.path.exists(os.path.join(PROC, "index.json")) or not os.path.exists(os.path.join(PROC, "taxonomia.csv")):
+        return None
+    ult = max(datetime.strptime(os.path.basename(f)[:8], "%Y%m%d").date() for f in files)
+    p0 = pd.Period(ult, "M") - (MESES_PROCESAR - 1)
+    return p0, (p0 - 1).start_time.date()
 
 def main():
     files = sorted(glob.glob(os.path.join(RAW, "*_Planilla_Diaria_A.xlsx")))
+    ventana = None if SOLO_LEER else ventana_incremental(files)
+    if ventana:
+        files = [f for f in files if datetime.strptime(os.path.basename(f)[:8], "%Y%m%d").date() >= ventana[1]]
+        print(f"corrida incremental: se publican los meses desde {ventana[0]} (se leen {len(files)} planillas desde {ventana[1]})")
+    else:
+        print("corrida completa: toda la historia" if not SOLO_LEER else "lectura de planillas")
     dfs = []
     cache = os.path.join(BASE, "raw", "parsed"); os.makedirs(cache, exist_ok=True)
     for f in files:
@@ -248,14 +266,23 @@ def main():
     uno = ~h.duplicated()
     univ = h.map(pd.Series(D.loc[uno].apply(categoria_1816, axis=1).notna().values, index=h[uno].values)).astype(bool)
     del h, uno
+    # datos del fondo = los de su ultimo dia, de la clase en la moneda del fondo y la mas grande (desempate fijo: antes,
+    # con varias clases el mismo dia, dependia del orden de las filas y una clase en otra moneda podia dar otra
+    # clasificacion CAFCI, ej. "Retorno Total Peso" en un fondo en dolares)
     meta = D[["fecha", "codigo_cnv", "fondo", "gerente", "clasificacion_cafci", "moneda_fondo", "region", "horizonte", "plazo_liq",
-              "id_cnv_padre"]]
-    meta = meta.assign(Codigo_CNV=pd.to_numeric(meta.codigo_cnv.astype(object), errors="coerce"))
-    meta = meta.dropna(subset=["Codigo_CNV"]).sort_values("fecha").drop_duplicates("Codigo_CNV", keep="last").drop(columns=["fecha", "codigo_cnv"])
+              "id_cnv_padre", "moneda", "patrimonio", "codigo_cafci"]]
+    meta = meta.assign(Codigo_CNV=pd.to_numeric(meta.codigo_cnv.astype(object), errors="coerce"),
+                       _m=(meta.moneda == meta.moneda_fondo).fillna(False).astype(int))
+    meta = (meta.dropna(subset=["Codigo_CNV"]).sort_values(["fecha", "_m", "patrimonio", "codigo_cafci"])
+            .drop_duplicates("Codigo_CNV", keep="last").drop(columns=["fecha", "codigo_cnv", "moneda", "patrimonio", "codigo_cafci", "_m"]))
     meta = meta.astype(object)
     meta["Codigo_CNV"] = meta.Codigo_CNV.astype(int)
     tax = taxonomia.clasificar(meta).drop_duplicates("Codigo_CNV").set_index("Codigo_CNV")
-    tax.drop(columns=["moneda_fondo", "region", "horizonte", "plazo_liq", "id_cnv_padre"], errors="ignore").to_csv(os.path.join(PROC, "taxonomia.csv"))
+    tax_out = tax.drop(columns=["moneda_fondo", "region", "horizonte", "plazo_liq", "id_cnv_padre"], errors="ignore")
+    if ventana:                                   # fondos que no informan en la ventana: queda su clasificacion publicada
+        vieja = pd.read_csv(os.path.join(PROC, "taxonomia.csv"), index_col="Codigo_CNV")
+        tax_out = pd.concat([tax_out, vieja[~vieja.index.isin(tax_out.index)]])
+    tax_out.to_csv(os.path.join(PROC, "taxonomia.csv"))
     nuevos = tax[~tax.fuente_tax.isin(["1816", "manual"])]
     if len(nuevos): print("fondos clasificados por regla (no estan en mapeo/taxonomia_1816.csv):", len(nuevos))
     cnv = pd.to_numeric(D.codigo_cnv, errors="coerce")
@@ -329,6 +356,9 @@ def main():
     n_plan = pd.Series(sorted(set(_u))).map(lambda x: str(pd.Period(x, "M"))).value_counts()
     proteger = {m for m, e in viejo_idx.items() if not e.get("parcial") and n_plan.get(m, 0) < e.get("planillas", 0)}
     if proteger: print("meses conservados (faltan planillas en esta corrida):", sorted(proteger))
+    if ventana:
+        proteger |= {m for m in viejo_idx if m < str(ventana[0])}
+        proteger |= {str(m) for m in D.mes.unique() if str(m) < str(ventana[0])}   # mes de arrastre: no se publica
     for m, g in D.groupby("mes"):
         if str(m) in proteger: continue
         g[keep].sort_values(["fecha", "codigo_cafci"]).to_csv(os.path.join(PROC, "clases_diario", f"{m}.csv.gz"), index=False, compression={"method": "gzip", "mtime": 0})
@@ -355,7 +385,8 @@ def main():
         if viejo[-14:-7] not in proteger: os.remove(viejo)
     for m in sorted(U.mes.unique()):
         if str(m) in proteger:
-            salidas.append(viejo_idx[str(m)]); continue
+            if str(m) in viejo_idx: salidas.append(viejo_idx[str(m)])
+            continue
         ini = (m.start_time - timedelta(days=1)).date(); fin_mes = m.end_time.date()
         f_mes = [f for f in fechas if ini < f <= fin_mes]
         if not f_mes or pd.Timestamp(ini) < cal_all[0]: continue
@@ -400,11 +431,17 @@ def main():
         salidas.append({"archivo": nombre, "mes": str(m), "desde": ini.isoformat(), "hasta": f1.isoformat(),
                         "parcial": f1 < fin_mes and str(m) == str(U.mes.max()), "fondos": int(len(out)), "planillas": len(f_mes)})
         print(nombre, len(out), "fondos, planillas", len(f_mes), "AUM prom", round(tot / 1e6, 1) if False else round(tot, 1))
+    fechas_idx = [f.isoformat() for f in fechas]
+    if ventana:                                   # las fechas de antes de la ventana salen del indice publicado
+        try: viejas = json.load(open(os.path.join(PROC, "index.json")))["fechas_planilla"]
+        except Exception: viejas = []
+        fechas_idx = sorted(set(f for f in viejas if f < ventana[0].start_time.date().isoformat())
+                            | {f for f in fechas_idx if f >= ventana[0].start_time.date().isoformat()})
     ya = {e["mes"] for e in salidas}
-    salidas += [viejo_idx[m] for m in proteger if m not in ya]
+    salidas += [viejo_idx[m] for m in proteger if m not in ya and m in viejo_idx]
     salidas.sort(key=lambda e: e["mes"])
     json.dump({"actualizado": datetime.now(timezone.utc).isoformat(timespec="seconds"), "fuente": "Planilla Diaria CAFCI archivada por la CNV",
-               "fechas_planilla": [f.isoformat() for f in fechas], "mensual": salidas},
+               "fechas_planilla": fechas_idx, "mensual": salidas},
               open(os.path.join(PROC, "index.json"), "w"), ensure_ascii=False, indent=1)
 
 if __name__ == "__main__":

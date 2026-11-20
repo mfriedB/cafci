@@ -8,22 +8,36 @@ on:
   schedule:
     - cron: '47 15 * * 1-5'     # 12:47 hora Argentina, lunes a viernes
     - cron: '47 21 * * 1-5'     # 18:47 hora Argentina (la CNV suele publicar la planilla del dia anterior al mediodia)
+    - cron: '17 23 1 * *'       # 20:17 hora Argentina del dia 1 de cada mes: corrida COMPLETA (toda la historia)
   push:
     branches: [main]
     paths: ['scripts/**', 'mapeo/**', 'config.json', '.github/workflows/actualizar.yml']
   workflow_dispatch:
+    inputs:
+      modo:
+        description: "completa = toda la historia desde 2020; incremental = solo los ultimos 4 meses"
+        type: choice
+        options: [completa, incremental]
+        default: completa
 
 permissions:
   contents: write
 
+# Una corrida a la vez. Un push nuevo (o una corrida manual) cancela la que este corriendo o esperando: la nueva rehace
+# todo con el codigo mas reciente. Las programadas no cancelan nada: esperan su turno.
 concurrency:
   group: actualizar-base
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name != 'schedule' }}
 
 jobs:
   actualizar:
     runs-on: ubuntu-latest
     timeout-minutes: 300
+    env:
+      # Corrida diaria programada: reprocesa solo los ultimos 4 meses y conserva lo publicado del resto.
+      # Corrida completa (MESES_PROCESAR=0): el dia 1 de cada mes, cada push que cambia codigo, mapeo o config,
+      # y las corridas manuales salvo que se elija "incremental".
+      MESES_PROCESAR: ${{ ((github.event_name == 'schedule' && github.event.schedule != '17 23 1 * *') || (github.event_name == 'workflow_dispatch' && inputs.modo == 'incremental')) && '4' || '0' }}
     steps:
       - uses: actions/checkout@v5
       - name: Traer los datos publicados (rama datos)

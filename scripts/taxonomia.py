@@ -91,6 +91,7 @@ def referencia(clases):
     mayor = c.patrimonio.fillna(-1) == c.groupby("Codigo_CNV").patrimonio.transform(lambda s: s.fillna(-1).max())
     c["referencia"] = ((c.Referencia_1816 == 1) | (~tiene & mayor)).astype(int)
     # si varias empatan en la mas grande, quedarse con una
-    dup = (~tiene) & c.referencia.eq(1) & c.duplicated(["Codigo_CNV", "referencia"])
+    # (desempate fijo: la de menor codigo CAFCI; antes dependia del orden de las filas y podia cambiar entre corridas)
+    dup = (~tiene) & c.referencia.eq(1) & c.sort_values(["Codigo_CNV", "codigo_cafci"]).duplicated(["Codigo_CNV", "referencia"]).reindex(c.index)
     c.loc[dup, "referencia"] = 0
     return c.drop(columns=["Referencia_1816"])
