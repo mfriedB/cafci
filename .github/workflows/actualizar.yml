@@ -63,7 +63,11 @@ jobs:
           path: raw
           key: planillas-${{ github.run_id }}-leidas
       - name: Procesar (formato 1816)
-        run: python -u scripts/procesar.py
+        # deja en el log la memoria usada cada 30 s: si el runner se queda sin memoria, GitHub corta la corrida con
+        # "The hosted runner lost communication with the server" sin otro dato (20/11/2026)
+        run: |
+          (while true; do sleep 30; free -m | awk '/Mem:/{printf "[memoria] usada %s MB de %s MB\n", $3, $2}'; done) &
+          timeout 3600 python -u scripts/procesar.py
       - name: Rendimientos (ranking como 1816)
         run: python -u scripts/rendimientos.py
       - name: Tablero Ranking Fondos Balanz

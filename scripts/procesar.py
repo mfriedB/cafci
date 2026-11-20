@@ -130,10 +130,10 @@ def superposicion_clases(D):
     las dos versiones cuenta el fondo dos veces ese dia en el patrimonio y el AUM promedio (1816 no lo hace).
     Se descarta el dato reconstruido de la clase nueva para un dia anterior a su primera planilla propia cuando otra
     clase del mismo fondo ya informo ese dia en su propia planilla: la clase nueva entra el dia en que aparece."""
-    cnv = D.codigo_cnv
-    propio = D[D.prio == 1]
+    S = D[["prio", "codigo_cafci", "fecha", "codigo_cnv"]]       # solo las columnas que se usan (no copiar el panel entero)
+    propio = S[S.prio == 1]
     primera = propio.groupby("codigo_cafci").fecha.min()
-    rec = D[(D.prio == 0) & cnv.notna()]
+    rec = S[(S.prio == 0) & S.codigo_cnv.notna()]
     p = rec.codigo_cafci.map(primera)
     rec = rec[p.notna() & (pd.to_datetime(rec.fecha) < pd.to_datetime(p))]
     otras = propio[propio.codigo_cnv.notna()][["codigo_cnv", "fecha", "codigo_cafci"]]
@@ -142,7 +142,7 @@ def superposicion_clases(D):
     fuera = set(m["index"])
     if fuera:
         print("dias reconstruidos de clases nuevas descartados (superposicion con otra clase del fondo):", len(fuera))
-    return D.drop(index=list(fuera))
+    return D.drop(index=list(fuera)) if fuera else D
 
 def migraciones(D):
     """Bajas de clases: se agrega un dato con cuotapartes y patrimonio en 0 el dia siguiente al ultimo informado.
@@ -214,15 +214,19 @@ def main():
     D["prio"] = 1
     # Dias sin planilla propia (ej. 30/06/2026): se reconstruyen con las columnas "dia anterior" de la planilla
     # siguiente (valor de cuotaparte, cuotapartes y patrimonio a la fecha del encabezado). Prioridad menor.
-    A = D[(D.fecha_dato == D.planilla) & D.fecha_ant.notna()]
     ya = pd.MultiIndex.from_arrays([D.codigo_cafci, D.fecha_dato])
-    A = A[~pd.MultiIndex.from_arrays([A.codigo_cafci, A.fecha_ant]).isin(ya)].copy()     # solo dias que faltan
+    falta = ~pd.MultiIndex.from_arrays([D.codigo_cafci, D.fecha_ant]).isin(ya)
+    A = D[(D.fecha_dato == D.planilla) & D.fecha_ant.notna() & falta].copy()     # solo dias que faltan
+    del ya, falta
     A["fecha_dato"] = A.fecha_ant
     for a, b in [("vcp", "vcp_ant"), ("ccp", "ccp_ant"), ("patrimonio", "patrimonio_ant")]: A[a] = A[b]
     A[["vcp_ant", "ccp_ant", "patrimonio_ant", "vcp_reexp_ars"]] = None
     A["prio"] = 0
-    D = pd.concat([D, A], ignore_index=True).sort_values(["prio", "planilla"])
-    D = D.drop_duplicates(["codigo_cafci", "fecha_dato"], keep="last")
+    D = pd.concat([D, A], ignore_index=True); del A
+    # mismo resultado que sort_values(["prio", "planilla"]).drop_duplicates(..., keep="last") pero ordenando solo las
+    # columnas clave: el panel completo se copia una sola vez (con la historia entera la memoria del runner no alcanzaba)
+    orden = D[["prio", "planilla", "codigo_cafci", "fecha_dato"]].sort_values(["prio", "planilla"])
+    D = D.loc[orden.drop_duplicates(["codigo_cafci", "fecha_dato"], keep="last").index]; del orden
     D["fecha"] = D.fecha_dato
     # codigo CNV de cada clase = el ultimo informado: en las primeras planillas de una clase nueva a veces viene vacio
     # o con otro codigo (ej. Mills M1000 Balanceado Pesos, 04-05/05/2026, con codigo 73); si no, la suscripcion
@@ -239,11 +243,16 @@ def main():
     D["fondo"] = D.fondo_clase.map(nombre_fondo)
     # universo de fondos (abiertos; igual que 1816) por la clasificacion CAFCI; dentro de el, taxonomia 1816
     # (tipo, subtipo, gerente corto, tipo de gerente) desde mapeo/ o por regla para fondos nuevos (scripts/taxonomia.py)
-    univ = D.apply(categoria_1816, axis=1).notna()
+    # (depende solo de 4 columnas: se evalua una fila por combinacion distinta en vez de las millones del panel)
+    h = pd.util.hash_pandas_object(D[["clasificacion_cafci", "moneda_fondo", "horizonte", "plazo_liq"]], index=False)
+    uno = ~h.duplicated()
+    univ = h.map(pd.Series(D.loc[uno].apply(categoria_1816, axis=1).notna().values, index=h[uno].values)).astype(bool)
+    del h, uno
     meta = D[["fecha", "codigo_cnv", "fondo", "gerente", "clasificacion_cafci", "moneda_fondo", "region", "horizonte", "plazo_liq",
-              "id_cnv_padre"]].astype(object)
-    meta["Codigo_CNV"] = pd.to_numeric(meta.codigo_cnv, errors="coerce")
+              "id_cnv_padre"]]
+    meta = meta.assign(Codigo_CNV=pd.to_numeric(meta.codigo_cnv.astype(object), errors="coerce"))
     meta = meta.dropna(subset=["Codigo_CNV"]).sort_values("fecha").drop_duplicates("Codigo_CNV", keep="last").drop(columns=["fecha", "codigo_cnv"])
+    meta = meta.astype(object)
     meta["Codigo_CNV"] = meta.Codigo_CNV.astype(int)
     tax = taxonomia.clasificar(meta).drop_duplicates("Codigo_CNV").set_index("Codigo_CNV")
     tax.drop(columns=["moneda_fondo", "region", "horizonte", "plazo_liq", "id_cnv_padre"], errors="ignore").to_csv(os.path.join(PROC, "taxonomia.csv"))
@@ -316,15 +325,15 @@ def main():
     if os.path.exists(os.path.join(PROC, "index.json")):
         try: viejo_idx = {e["mes"]: e for e in json.load(open(os.path.join(PROC, "index.json")))["mensual"]}
         except Exception: viejo_idx = {}
-    _u = D[(D.decreto_596 != "S") & D.categoria_1816.notna()]
-    n_plan = pd.Series(sorted(set(_u.fecha))).map(lambda x: str(pd.Period(x, "M"))).value_counts()
+    _u = D.loc[(D.decreto_596 != "S") & D.categoria_1816.notna(), "fecha"]
+    n_plan = pd.Series(sorted(set(_u))).map(lambda x: str(pd.Period(x, "M"))).value_counts()
     proteger = {m for m, e in viejo_idx.items() if not e.get("parcial") and n_plan.get(m, 0) < e.get("planillas", 0)}
     if proteger: print("meses conservados (faltan planillas en esta corrida):", sorted(proteger))
     for m, g in D.groupby("mes"):
         if str(m) in proteger: continue
         g[keep].sort_values(["fecha", "codigo_cafci"]).to_csv(os.path.join(PROC, "clases_diario", f"{m}.csv.gz"), index=False, compression={"method": "gzip", "mtime": 0})
 
-    U = D[(D.decreto_596 != "S") & D.categoria_1816.notna()][["fecha", "mes", "codigo_cafci", "codigo_cnv", "fondo", "gerente",
+    U = D.loc[(D.decreto_596 != "S") & D.categoria_1816.notna(), ["fecha", "mes", "codigo_cafci", "codigo_cnv", "fondo", "gerente",
           "categoria_1816", "subcategoria_1816", "gerente_1816", "tipo_gerente", "fondo_1816", "clasificacion_cafci",
           "patrimonio_ars", "flujo_ars", "hon_sg", "hon_sd"]].copy()
     del D; import gc; gc.collect()
