@@ -12,8 +12,15 @@ Cada slide es: fondo raster del PPT sin textos + textos editables + los gráfico
 | 32 | serie de facturación (`internos.json`) | `gen_internos.py` |
 | 50 a 53 | % de facturación por fondo de cada área (export del Power BI, se sube en "Datos internos") | `gen_internos.py` |
 
-Pendientes de fuente: emisiones primarias (35), ACDIs (41, sale de `dax_clientes`), fondos de terceros (42, solo hay foto
-desde sep-26 en la base de Tenencias), ratings (44, plantilla 9), contrapartes Q3 (48-49, `compravtaespecies3Q.xlsx`).
+| 41 | ACDIs: `dax_clientes.txt` (USD) x dólar MEP de fin de mes; cierres dic-19 a dic-24 fijos del informe anterior | `tablas/acdi.py` + `tablas/acdi_png.py` |
+| 44 | Ratings: FIX SCR (fixscr.com, administradora id 3873) + columnas del informe (anterior, evolución, peers) | `tablas/ratings_png.py` |
+
+Los datos de estas tablas (`ratings.json`, `acdi_orig.json`, `acdi.csv`) no se versionan.
+
+Input manual (pestaña Datos internos): emisiones primarias (35, plantilla 5), fondos de terceros (42, plantilla 4; la serie
+arranca en sep-26 con la foto de la base de Tenencias), ratings (44, plantilla 9 si cambia algo).
+Contrapartes (48-49): la base es el archivo de compra/venta (`compravtaespecies*.xlsx`); el trimestre de las slides se toma
+de las fechas del último archivo subido, no del nombre.
 
 ## Actualización mensual
 1. Matías sube en el tablero › **Datos internos**: comisiones, consultas DAX, % de facturación por fondo de cada área
