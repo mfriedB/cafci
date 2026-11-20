@@ -354,11 +354,13 @@ def main():
         except Exception: viejo_idx = {}
     _u = D.loc[(D.decreto_596 != "S") & D.categoria_1816.notna(), "fecha"]
     n_plan = pd.Series(sorted(set(_u))).map(lambda x: str(pd.Period(x, "M"))).value_counts()
-    proteger = {m for m, e in viejo_idx.items() if not e.get("parcial") and n_plan.get(m, 0) < e.get("planillas", 0)}
+    proteger = {m for m, e in viejo_idx.items() if not e.get("parcial") and n_plan.get(m, 0) < e.get("planillas", 0)
+                and (not ventana or m >= str(ventana[0]))}
     if proteger: print("meses conservados (faltan planillas en esta corrida):", sorted(proteger))
     if ventana:
-        proteger |= {m for m in viejo_idx if m < str(ventana[0])}
-        proteger |= {str(m) for m in D.mes.unique() if str(m) < str(ventana[0])}   # mes de arrastre: no se publica
+        fuera = {m for m in viejo_idx if m < str(ventana[0])} | {str(m) for m in D.mes.unique() if str(m) < str(ventana[0])}
+        if fuera: print(f"corrida incremental: quedan como estaban publicados {len(fuera)} meses ({min(fuera)} a {max(fuera)})")
+        proteger |= fuera                         # incluye el mes de arrastre, que no se publica
     for m, g in D.groupby("mes"):
         if str(m) in proteger: continue
         g[keep].sort_values(["fecha", "codigo_cafci"]).to_csv(os.path.join(PROC, "clases_diario", f"{m}.csv.gz"), index=False, compression={"method": "gzip", "mtime": 0})
