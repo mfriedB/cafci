@@ -1,0 +1,12 @@
+{
+ "fecha_corte": "2026-11-20",
+ "archivos": {
+  "alertas": 963,
+  "liquidez": 962,
+  "estacionalidad": 280,
+  "sensibilidad": 22,
+  "fees": 609,
+  "concentracion": 2013,
+  "cambios": 5200
+ }
+}
